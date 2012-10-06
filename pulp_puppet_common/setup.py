@@ -12,7 +12,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='Pulp Puppet Module Support Library',
+    name='pulp_puppet_common',
     version='2.0.0',
     license='GPLv2+',
     packages=find_packages(),
