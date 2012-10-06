@@ -12,10 +12,9 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 import os
-import shutil
 
-from base import BaseDownloader
-from exceptions import FileNotFoundException
+from pulp_puppet_plugins.pulp_puppet.plugins.importers.puppet_importer.downloaders.base import BaseDownloader
+from pulp_puppet_plugins.pulp_puppet.plugins.importers.puppet_importer.downloaders.exceptions import FileNotFoundException
 from pulp_puppet.common import constants
 
 

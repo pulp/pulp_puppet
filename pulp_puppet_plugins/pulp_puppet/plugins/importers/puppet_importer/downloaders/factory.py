@@ -19,9 +19,9 @@ feed type.
 import logging
 import urlparse
 
-from exceptions import UnsupportedFeedType, InvalidFeed
-from web import HttpDownloader
-from local import LocalDownloader
+from pulp_puppet_plugins.pulp_puppet.plugins.importers.puppet_importer.downloaders.exceptions import UnsupportedFeedType, InvalidFeed
+from pulp_puppet_plugins.pulp_puppet.plugins.importers.puppet_importer.downloaders.web import HttpDownloader
+from pulp_puppet_plugins.pulp_puppet.plugins.importers.puppet_importer.downloaders.local import LocalDownloader
 
 # -- constants ----------------------------------------------------------------
 

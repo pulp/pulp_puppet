@@ -18,13 +18,14 @@ import pycurl
 
 from pulp.common.util import encode_unicode
 
-from   base import BaseDownloader
-import exceptions
+from   pulp_puppet_plugins.pulp_puppet.plugins.importers.puppet_importer.downloaders.base import BaseDownloader
 from   pulp_puppet.common import constants
 
 # -- constants ----------------------------------------------------------------
 
 # Relative to the importer working directory
+from pulp_puppet_plugins.pulp_puppet.plugins.importers.puppet_importer.downloaders import exceptions
+
 DOWNLOAD_TMP_DIR = 'http-downloads'
 
 _LOG = logging.getLogger(__name__)
