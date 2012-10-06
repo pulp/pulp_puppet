@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2012 Red Hat, Inc.
+# Copyright (c) 2012 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -108,4 +106,3 @@ class FullValidationTests(unittest.TestCase):
         all_mock_calls[0].assert_called_once_with(c)
         for x in all_mock_calls[1:]:
             self.assertEqual(0, x.call_count)
-
