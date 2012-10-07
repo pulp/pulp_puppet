@@ -23,9 +23,10 @@ from pulp.client.extensions.extensions import PulpCliOption
 from pulp.client.upload.manager import UploadManager
 
 from pulp_puppet.common import constants
-from pulp_puppet.extension.admin import (copy, modules, repo, structure, status,
-                                         sync_schedules)
-from pulp_puppet.extension.admin import upload as puppet_upload
+from pulp_puppet.extensions.admin import structure
+from pulp_puppet.extensions.admin.repo import (copy, modules, status,
+                                               sync_schedules)
+from pulp_puppet.extensions.admin.repo import upload as puppet_upload
 
 
 DESC_FEED = _('URL of the external source from which to import Puppet modules')
@@ -51,11 +52,11 @@ def initialize(context):
     structure.ensure_repo_structure(context.cli)
 
     repo_section = structure.repo_section(context.cli)
-    repo_section.add_command(repo.CreatePuppetRepositoryCommand(context))
-    repo_section.add_command(repo.UpdatePuppetRepositoryCommand(context))
+    repo_section.add_command(CreatePuppetRepositoryCommand(context))
+    repo_section.add_command(UpdatePuppetRepositoryCommand(context))
     repo_section.add_command(cudl.DeleteRepositoryCommand(context))
-    repo_section.add_command(repo.ListPuppetRepositoriesCommand(context))
-    repo_section.add_command(repo.SearchPuppetRepositoriesCommand(context))
+    repo_section.add_command(ListPuppetRepositoriesCommand(context))
+    repo_section.add_command(SearchPuppetRepositoriesCommand(context))
 
     repo_section.add_command(modules.ModulesCommand(context))
     repo_section.add_command(copy.PuppetModuleCopyCommand(context))

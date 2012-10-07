@@ -15,7 +15,7 @@ import unittest
 from pulp.plugins.config import PluginCallConfiguration
 
 from pulp_puppet.common import constants
-from pulp_puppet.distributor import configuration
+from pulp_puppet.plugins.distributors import configuration
 
 
 class HttpTests(unittest.TestCase):
@@ -64,8 +64,8 @@ class HttpsTests(unittest.TestCase):
 
 class FullValidationTests(unittest.TestCase):
 
-    @mock.patch('pulp_puppet.distributor.configuration._validate_http')
-    @mock.patch('pulp_puppet.distributor.configuration._validate_https')
+    @mock.patch('pulp_puppet.plugins.distributors.configuration._validate_http')
+    @mock.patch('pulp_puppet.plugins.distributors.configuration._validate_https')
     def test_validate(self, mock_https, mock_http):
         # Setup
         all_mock_calls = (mock_http, mock_https)
@@ -84,8 +84,8 @@ class FullValidationTests(unittest.TestCase):
         for x in all_mock_calls:
             x.assert_called_once_with(c)
 
-    @mock.patch('pulp_puppet.distributor.configuration._validate_http')
-    @mock.patch('pulp_puppet.distributor.configuration._validate_https')
+    @mock.patch('pulp_puppet.plugins.distributors.configuration._validate_http')
+    @mock.patch('pulp_puppet.plugins.distributors.configuration._validate_https')
     def test_validate_with_failure(self, mock_https, mock_http):
         # Setup
         all_mock_calls = (mock_http, mock_https)
