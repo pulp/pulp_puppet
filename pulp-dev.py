@@ -32,21 +32,14 @@ DIRS = (
 # Please keep alphabetized and by subproject
 
 # Standard directories
-DIR_ADMIN_EXTENSIONS = '/usr/lib/pulp/admin/extensions/'
-DIR_CONSUMER_EXTENSIONS = '/usr/lib/pulp/consumer/extensions/'
 DIR_PLUGINS = '/usr/lib/pulp/plugins'
 
 LINKS = (
     # Puppet Support Plugins
-    ('puppet-support/etc/httpd/conf.d/pulp_puppet.conf', '/etc/httpd/conf.d/pulp_puppet.conf'),
-    ('puppet-support/plugins/types/puppet.json', DIR_PLUGINS + '/types/puppet.json'),
-    ('puppet-support/plugins/importers/puppet_importer', DIR_PLUGINS + '/importers/puppet_importer'),
-    ('puppet-support/plugins/distributors/puppet_distributor', DIR_PLUGINS + '/distributors/puppet_distributor'),
+    ('pulp_puppet_plugins/pulp_puppet/plugins/types/puppet.json', DIR_PLUGINS + '/types/puppet.json'),
 
     # Puppet Support Admin Extensions
-    ('puppet-support/extensions/admin/puppet_repo', DIR_ADMIN_EXTENSIONS + 'puppet_repo'),
-    ('puppet-support/etc/pulp/admin/conf.d/puppet.conf', '/etc/pulp/admin/conf.d/puppet.conf')
-
+    ('pulp_puppet_extensions_admin/etc/pulp/admin/conf.d/puppet.conf', '/etc/pulp/admin/conf.d/puppet.conf')
 )
 
 def parse_cmdline():

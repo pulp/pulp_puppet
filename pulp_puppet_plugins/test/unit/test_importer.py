@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Red Hat, Inc.
+# Copyright (C) 2012 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -9,20 +9,14 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-from setuptools import setup, find_packages
+import unittest
 
-from pulp.common.constants import ENTRY_POINT_EXTENSIONS
+from pulp_puppet.plugins.importers import importer
+from pulp_puppet.plugins.importers.importer import PuppetModuleImporter
 
-setup(
-    name='pulp_puppet_extensions_admin',
-    version='2.0.0',
-    license='GPLv2+',
-    packages=find_packages(),
-    author='Pulp Team',
-    author_email='pulp-list@redhat.com',
-    entry_points = {
-        ENTRY_POINT_EXTENSIONS: [
-            'repo_admin = pulp_puppet.extensions.admin.repo.pulp_cli:initialize',
-        ]
-    }
-)
+
+class TestImporter(unittest.TestCase):
+    def test_entry_point(self):
+        ret = importer.entry_point()
+        self.assertEqual(ret[0], PuppetModuleImporter)
+        self.assertTrue(isinstance(ret[1], dict))

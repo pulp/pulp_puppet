@@ -23,6 +23,15 @@ _LOG = logging.getLogger(__name__)
 
 # -- plugins ------------------------------------------------------------------
 
+def entry_point():
+    """
+    Entry point that pulp platform uses to load the importer
+    :return: importer class and its config
+    :rtype:  Importer, {}
+    """
+    return PuppetModuleImporter, {}
+
+
 class PuppetModuleImporter(Importer):
 
     def __init__(self):
