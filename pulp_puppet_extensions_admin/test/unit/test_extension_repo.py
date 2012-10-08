@@ -13,13 +13,14 @@
 
 from pulp.client.commands.criteria import CriteriaCommand
 from pulp.client.commands import options
-from pulp.client.commands.repo import cudl
+from pulp.client.commands.repo import cudl as pulp_cudl
 from pulp.client.extensions.core import TAG_SUCCESS, TAG_REASONS, TAG_DOCUMENT, TAG_TITLE
 from pulp.common.compat import json
 
 import base_cli
 from pulp_puppet.common import constants
 from pulp_puppet.extensions.admin.repo import pulp_cli as commands
+from pulp_puppet.extensions.admin.repo import cudl
 
 class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
 
@@ -31,8 +32,8 @@ class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         # Ensure the required options
         expected_options = set([options.OPTION_REPO_ID, options.OPTION_DESCRIPTION,
                                 options.OPTION_NAME, options.OPTION_NOTES,
-                                commands.OPTION_FEED, commands.OPTION_HTTP,
-                                commands.OPTION_HTTPS, commands.OPTION_QUERY])
+                                cudl.OPTION_FEED, cudl.OPTION_HTTP,
+                                cudl.OPTION_HTTPS, cudl.OPTION_QUERY])
         found_options = set(self.command.options)
         self.assertEqual(expected_options, found_options)
 
@@ -41,7 +42,7 @@ class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
 
         # Ensure the correct metadata
         self.assertEqual(self.command.name, 'create')
-        self.assertEqual(self.command.description, cudl.DESC_CREATE)
+        self.assertEqual(self.command.description, pulp_cudl.DESC_CREATE)
 
     def test_run(self):
         # Setup
@@ -50,10 +51,10 @@ class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
             options.OPTION_NAME.keyword : 'Test Name',
             options.OPTION_DESCRIPTION.keyword : 'Test Description',
             options.OPTION_NOTES.keyword : {'a' : 'a'},
-            commands.OPTION_FEED.keyword : 'http://localhost',
-            commands.OPTION_HTTP.keyword : 'true',
-            commands.OPTION_HTTPS.keyword : 'true',
-            commands.OPTION_QUERY.keyword : ['q1', 'q2']
+            cudl.OPTION_FEED.keyword : 'http://localhost',
+            cudl.OPTION_HTTP.keyword : 'true',
+            cudl.OPTION_HTTPS.keyword : 'true',
+            cudl.OPTION_QUERY.keyword : ['q1', 'q2']
         }
 
         self.server_mock.request.return_value = 200, {}
@@ -106,8 +107,8 @@ class UpdatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         # Ensure the required options
         expected_options = set([options.OPTION_REPO_ID, options.OPTION_DESCRIPTION,
                                 options.OPTION_NAME, options.OPTION_NOTES,
-                                commands.OPTION_FEED, commands.OPTION_HTTP,
-                                commands.OPTION_HTTPS, commands.OPTION_QUERY])
+                                cudl.OPTION_FEED, cudl.OPTION_HTTP,
+                                cudl.OPTION_HTTPS, cudl.OPTION_QUERY])
         found_options = set(self.command.options)
         self.assertEqual(expected_options, found_options)
 
@@ -116,7 +117,7 @@ class UpdatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
 
         # Ensure the correct metadata
         self.assertEqual(self.command.name, 'update')
-        self.assertEqual(self.command.description, cudl.DESC_UPDATE)
+        self.assertEqual(self.command.description, pulp_cudl.DESC_UPDATE)
 
     def test_run(self):
         # Setup
@@ -125,10 +126,10 @@ class UpdatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
             options.OPTION_NAME.keyword : 'Test Name',
             options.OPTION_DESCRIPTION.keyword : 'Test Description',
             options.OPTION_NOTES.keyword : {'a' : 'a'},
-            commands.OPTION_FEED.keyword : 'http://localhost',
-            commands.OPTION_HTTP.keyword : 'true',
-            commands.OPTION_HTTPS.keyword : 'true',
-            commands.OPTION_QUERY.keyword : ['q1', 'q2']
+            cudl.OPTION_FEED.keyword : 'http://localhost',
+            cudl.OPTION_HTTP.keyword : 'true',
+            cudl.OPTION_HTTPS.keyword : 'true',
+            cudl.OPTION_QUERY.keyword : ['q1', 'q2']
         }
 
         self.server_mock.request.return_value = 200, {}
@@ -214,7 +215,7 @@ class SearchPuppetRepositoriesCommand(base_cli.ExtensionTests):
     def test_structure(self):
         self.assertTrue(isinstance(self.command, CriteriaCommand))
         self.assertEqual('search', self.command.name)
-        self.assertEqual(commands.DESC_SEARCH, self.command.description)
+        self.assertEqual(cudl.DESC_SEARCH, self.command.description)
 
     def test_run(self):
         # Setup
