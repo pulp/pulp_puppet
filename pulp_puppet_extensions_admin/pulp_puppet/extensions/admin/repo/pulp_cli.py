@@ -14,6 +14,7 @@
 import os
 
 from pulp.client.commands.repo import cudl, sync_publish, upload
+from pulp.client.extensions.decorator import priority
 from pulp.client.upload.manager import UploadManager
 
 from pulp_puppet.extensions.admin import structure
@@ -26,6 +27,7 @@ from pulp_puppet.extensions.admin.repo.cudl import (CreatePuppetRepositoryComman
                                                     SearchPuppetRepositoriesCommand)
 
 
+@priority()
 def initialize(context):
     structure.ensure_repo_structure(context.cli)
 
