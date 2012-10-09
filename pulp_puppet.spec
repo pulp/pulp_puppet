@@ -1,4 +1,4 @@
-# Copyright (c) 2010 Red Hat, Inc.
+# Copyright (c) 2012 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -17,7 +17,7 @@
 # ---- Pulp (puppet) -----------------------------------------------------------
 
 Name: pulp-puppet
-Version: 0.0.331
+Version: 0.0.355
 Release: 1%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
@@ -39,39 +39,60 @@ handlers that provide Puppet support.
 %setup -q
 
 %build
-pushd src
+pushd pulp_puppet_common
+%{__python} setup.py build
+popd
+pushd pulp_puppet_extensions_admin
+%{__python} setup.py build
+popd
+pushd pulp_puppet_plugins
+%{__python} setup.py build
+popd
+pushd pulp_puppet_handlers
 %{__python} setup.py build
 popd
 
 %install
 rm -rf %{buildroot}
-pushd src
+pushd pulp_puppet_common
+%{__python} setup.py install -O1 --skip-build --root %{buildroot}
+popd
+pushd pulp_puppet_extensions_admin
+%{__python} setup.py install -O1 --skip-build --root %{buildroot}
+popd
+pushd pulp_puppet_plugins
+%{__python} setup.py install -O1 --skip-build --root %{buildroot}
+popd
+pushd pulp_puppet_handlers
 %{__python} setup.py install -O1 --skip-build --root %{buildroot}
 popd
 
 # Directories
-mkdir -p %{buildroot}/%{_sysconfdir}/pulp
+mkdir -p %{buildroot}/%{_sysconfdir}/pulp/agent/conf.d
 mkdir -p %{buildroot}/%{_usr}/lib
-mkdir -p %{buildroot}/%{_usr}/lib/pulp/plugins
+mkdir -p %{buildroot}/%{_usr}/lib/pulp/plugins/types
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/admin/extensions
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/agent/handlers
 mkdir -p %{buildroot}/%{_var}/www/pulp_puppet
 
 # Configuration
-cp -R etc/httpd %{buildroot}/%{_sysconfdir}
-cp -R etc/pulp %{buildroot}/%{_sysconfdir}
+cp -R pulp_puppet_plugins/etc/httpd %{buildroot}/%{_sysconfdir}
+cp -R pulp_puppet_extensions_admin/etc/pulp %{buildroot}/%{_sysconfdir}
 
 # Extensions
-cp -R extensions/admin/* %{buildroot}/%{_usr}/lib/pulp/admin/extensions
+#cp -R extensions/admin/* %{buildroot}/%{_usr}/lib/pulp/admin/extensions
 
 # Agent Handlers
-cp handlers/* %{buildroot}/%{_usr}/lib/pulp/agent/handlers
+cp pulp_puppet_handlers/etc/pulp/agent/conf.d/* %{buildroot}/%{_sysconfdir}/pulp/agent/conf.d/
 
-# Plugins
-cp -R plugins/* %{buildroot}/%{_usr}/lib/pulp/plugins
+# Types
+cp -R pulp_puppet_plugins/pulp_puppet/plugins/types/* %{buildroot}/%{_usr}/lib/pulp/plugins/types/
 
 # Remove egg info
 rm -rf %{buildroot}/%{python_sitelib}/*.egg-info
+
+# Remove tests
+rm -rf %{buildroot}/%{python_sitelib}/test
 
 %clean
 rm -rf %{buildroot}
@@ -90,7 +111,7 @@ A collection of modules shared among all Puppet components.
 
 %files -n python-pulp-puppet-common
 %defattr(-,root,root,-)
-%{python_sitelib}/pulp_puppet
+#%{python_sitelib}/pulp_puppet
 %{python_sitelib}/pulp_puppet/__init__.py*
 %{python_sitelib}/pulp_puppet/common/
 %doc
@@ -108,7 +129,7 @@ A collection of components shared among Puppet extensions.
 
 %files -n python-pulp-puppet-extension
 %defattr(-,root,root,-)
-%{python_sitelib}/pulp_puppet/extension/
+%{python_sitelib}/pulp_puppet/extensions/
 %doc
 
 
@@ -126,12 +147,12 @@ to provide Puppet specific support.
 
 %files plugins
 %defattr(-,root,root,-)
-%{python_sitelib}/pulp_puppet/importer/
-%{python_sitelib}/pulp_puppet/distributor/
+#%{python_sitelib}/pulp_puppet/plugins/importers/
+%{python_sitelib}/pulp_puppet/plugins/
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/pulp_puppet.conf
 %{_usr}/lib/pulp/plugins/types/puppet.json
-%{_usr}/lib/pulp/plugins/importers/puppet_importer/
-%{_usr}/lib/pulp/plugins/distributors/puppet_distributor/
+#%{_usr}/lib/pulp/plugins/importers/puppet_importer/
+#%{_usr}/lib/pulp/plugins/distributors/puppet_distributor/
 %{_var}/www/pulp_puppet/
 %doc
 
@@ -150,8 +171,9 @@ client capabilites with Puppet specific features.
 
 %files admin-extensions
 %defattr(-,root,root,-)
+# just one file in this RPM?
 %{_sysconfdir}/pulp/admin/conf.d/puppet.conf
-%{_usr}/lib/pulp/admin/extensions/puppet_repo/
+#%{_usr}/lib/pulp/admin/extensions/puppet_repo/
 %doc
 
 
@@ -172,13 +194,85 @@ management and Linux specific commands such as system reboot.
 
 %files handlers
 %defattr(-,root,root,-)
-%{python_sitelib}/pulp_puppet/handler/
+%{python_sitelib}/pulp_puppet/handlers/
 %{_sysconfdir}/pulp/agent/conf.d/puppet.conf
-%{_usr}/lib/pulp/agent/handlers/puppet.py*
+#%{_usr}/lib/pulp/agent/handlers/puppet.py*
 %doc
 
 
 %changelog
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.355-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.354-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.353-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.352-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.351-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.350-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.349-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.348-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.347-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.346-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.345-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.344-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.343-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.342-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.341-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.340-1
+- 
+
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.339-1
+- 
+
+* Tue Oct 09 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.338-1
+- 
+
+* Tue Oct 09 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.337-1
+- 
+
+* Tue Oct 09 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.336-1
+- 
+
+* Tue Oct 09 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.335-1
+- 
+
+* Tue Oct 09 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.334-1
+- 
+
+* Tue Oct 09 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.333-1
+- 
+
+* Tue Oct 09 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.332-1
+- new package built with tito
+
 * Fri Oct 05 2012 Jeff Ortel <jortel@redhat.com> 0.0.331-1
 - 860408 - repo group member adding and removing now honors the --repo-id
   option, includes a new --all flag, and fails if no matching options are
