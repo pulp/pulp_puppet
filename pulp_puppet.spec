@@ -79,9 +79,6 @@ mkdir -p %{buildroot}/%{_var}/www/pulp_puppet
 cp -R pulp_puppet_plugins/etc/httpd %{buildroot}/%{_sysconfdir}
 cp -R pulp_puppet_extensions_admin/etc/pulp %{buildroot}/%{_sysconfdir}
 
-# Extensions
-#cp -R extensions/admin/* %{buildroot}/%{_usr}/lib/pulp/admin/extensions
-
 # Agent Handlers
 cp pulp_puppet_handlers/etc/pulp/agent/conf.d/* %{buildroot}/%{_sysconfdir}/pulp/agent/conf.d/
 
@@ -111,7 +108,6 @@ A collection of modules shared among all Puppet components.
 
 %files -n python-pulp-puppet-common
 %defattr(-,root,root,-)
-#%{python_sitelib}/pulp_puppet
 %{python_sitelib}/pulp_puppet/__init__.py*
 %{python_sitelib}/pulp_puppet/common/
 %doc
@@ -147,12 +143,9 @@ to provide Puppet specific support.
 
 %files plugins
 %defattr(-,root,root,-)
-#%{python_sitelib}/pulp_puppet/plugins/importers/
 %{python_sitelib}/pulp_puppet/plugins/
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/pulp_puppet.conf
 %{_usr}/lib/pulp/plugins/types/puppet.json
-#%{_usr}/lib/pulp/plugins/importers/puppet_importer/
-#%{_usr}/lib/pulp/plugins/distributors/puppet_distributor/
 %{_var}/www/pulp_puppet/
 %doc
 
@@ -173,7 +166,6 @@ client capabilites with Puppet specific features.
 %defattr(-,root,root,-)
 # just one file in this RPM?
 %{_sysconfdir}/pulp/admin/conf.d/puppet.conf
-#%{_usr}/lib/pulp/admin/extensions/puppet_repo/
 %doc
 
 
@@ -196,7 +188,6 @@ management and Linux specific commands such as system reboot.
 %defattr(-,root,root,-)
 %{python_sitelib}/pulp_puppet/handlers/
 %{_sysconfdir}/pulp/agent/conf.d/puppet.conf
-#%{_usr}/lib/pulp/agent/handlers/puppet.py*
 %doc
 
 
