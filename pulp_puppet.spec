@@ -17,7 +17,7 @@
 # ---- Pulp (puppet) -----------------------------------------------------------
 
 Name: pulp-puppet
-Version: 0.0.355
+Version: 0.0.356
 Release: 1%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
@@ -108,6 +108,7 @@ A collection of modules shared among all Puppet components.
 
 %files -n python-pulp-puppet-common
 %defattr(-,root,root,-)
+%dir %{python_sitelib}/pulp_puppet
 %{python_sitelib}/pulp_puppet/__init__.py*
 %{python_sitelib}/pulp_puppet/common/
 %doc
@@ -192,6 +193,9 @@ management and Linux specific commands such as system reboot.
 
 
 %changelog
+* Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.356-1
+- new package built with tito
+
 * Wed Oct 10 2012 Michael Hrivnak <mhrivnak@redhat.com> 0.0.355-1
 - 
 
