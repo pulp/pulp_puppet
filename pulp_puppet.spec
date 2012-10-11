@@ -99,6 +99,7 @@ rm -rf %{buildroot}
 Summary: Pulp Puppet support common library
 Group: Development/Languages
 Requires: python-pulp-common = %{version}
+Requires: python-setuptools
 
 %description -n python-pulp-puppet-common
 A collection of modules shared among all Puppet components.
@@ -112,30 +113,15 @@ A collection of modules shared among all Puppet components.
 %doc
 
 
-# ---- Puppet Extension Common ----------------------------------------------------
-
-%package -n python-pulp-puppet-extension
-Summary: The Puppet extension common library
-Group: Development/Languages
-Requires: python-pulp-puppet-common = %{version}
-
-%description -n python-pulp-puppet-extension
-A collection of components shared among Puppet extensions.
-
-%files -n python-pulp-puppet-extension
-%defattr(-,root,root,-)
-%{python_sitelib}/pulp_puppet/extensions/
-%{python_sitelib}/pulp_puppet_extensions_admin*.egg-info
-%doc
-
-
 # ---- Plugins -----------------------------------------------------------------
 
 %package plugins
 Summary: Pulp Puppet plugins
 Group: Development/Languages
+Requires: python-pulp-common = %{version}
 Requires: python-pulp-puppet-common = %{version}
 Requires: pulp-server = %{version}
+Requires: python-setuptools
 
 %description plugins
 Provides a collection of platform plugins that extend the Pulp platform
@@ -156,8 +142,12 @@ to provide Puppet specific support.
 %package admin-extensions
 Summary: The Puppet admin client extensions
 Group: Development/Languages
+Requires: python-pulp-common = %{version}
 Requires: python-pulp-puppet-extension = %{version}
+Requires: python-pulp-puppet-common = %{version}
 Requires: pulp-admin-client = %{version}
+Requires: python-setuptools
+Obsoletes: python-pulp-puppet-extension
 
 %description admin-extensions
 A collection of extensions that supplement and override generic admin
@@ -165,8 +155,9 @@ client capabilites with Puppet specific features.
 
 %files admin-extensions
 %defattr(-,root,root,-)
-# just one file in this RPM?
 %{_sysconfdir}/pulp/admin/conf.d/puppet.conf
+%{python_sitelib}/pulp_puppet/extensions/
+%{python_sitelib}/pulp_puppet_extensions_admin*.egg-info
 %doc
 
 
