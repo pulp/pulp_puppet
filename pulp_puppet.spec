@@ -17,7 +17,7 @@
 # ---- Pulp (puppet) -----------------------------------------------------------
 
 Name: pulp-puppet
-Version: 0.0.356
+Version: 0.0.331
 Release: 1%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
@@ -85,9 +85,6 @@ cp pulp_puppet_handlers/etc/pulp/agent/conf.d/* %{buildroot}/%{_sysconfdir}/pulp
 # Types
 cp -R pulp_puppet_plugins/pulp_puppet/plugins/types/* %{buildroot}/%{_usr}/lib/pulp/plugins/types/
 
-# Remove egg info
-rm -rf %{buildroot}/%{python_sitelib}/*.egg-info
-
 # Remove tests
 rm -rf %{buildroot}/%{python_sitelib}/test
 
@@ -111,6 +108,7 @@ A collection of modules shared among all Puppet components.
 %dir %{python_sitelib}/pulp_puppet
 %{python_sitelib}/pulp_puppet/__init__.py*
 %{python_sitelib}/pulp_puppet/common/
+%{python_sitelib}/pulp_puppet_common*.egg-info
 %doc
 
 
@@ -127,6 +125,7 @@ A collection of components shared among Puppet extensions.
 %files -n python-pulp-puppet-extension
 %defattr(-,root,root,-)
 %{python_sitelib}/pulp_puppet/extensions/
+%{python_sitelib}/pulp_puppet_extensions_admin*.egg-info
 %doc
 
 
@@ -148,6 +147,7 @@ to provide Puppet specific support.
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/pulp_puppet.conf
 %{_usr}/lib/pulp/plugins/types/puppet.json
 %{_var}/www/pulp_puppet/
+%{python_sitelib}/pulp_puppet_plugins*.egg-info
 %doc
 
 
@@ -189,6 +189,7 @@ management and Linux specific commands such as system reboot.
 %defattr(-,root,root,-)
 %{python_sitelib}/pulp_puppet/handlers/
 %{_sysconfdir}/pulp/agent/conf.d/puppet.conf
+%{python_sitelib}/pulp_puppet_handlers*.egg-info
 %doc
 
 
