@@ -15,7 +15,7 @@ setup(
     name='pulp_puppet_common',
     version='2.0.0',
     license='GPLv2+',
-    packages=find_packages(),
+    packages=find_packages(exclude=['test', 'test.*']),
     author='Pulp Team',
     author_email='pulp-list@redhat.com',
 )

@@ -1,4 +1,4 @@
-# Copyright (c) 2010 Red Hat, Inc.
+# Copyright (c) 2012 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -39,39 +39,54 @@ handlers that provide Puppet support.
 %setup -q
 
 %build
-pushd src
+pushd pulp_puppet_common
+%{__python} setup.py build
+popd
+pushd pulp_puppet_extensions_admin
+%{__python} setup.py build
+popd
+pushd pulp_puppet_plugins
+%{__python} setup.py build
+popd
+pushd pulp_puppet_handlers
 %{__python} setup.py build
 popd
 
 %install
 rm -rf %{buildroot}
-pushd src
+pushd pulp_puppet_common
+%{__python} setup.py install -O1 --skip-build --root %{buildroot}
+popd
+pushd pulp_puppet_extensions_admin
+%{__python} setup.py install -O1 --skip-build --root %{buildroot}
+popd
+pushd pulp_puppet_plugins
+%{__python} setup.py install -O1 --skip-build --root %{buildroot}
+popd
+pushd pulp_puppet_handlers
 %{__python} setup.py install -O1 --skip-build --root %{buildroot}
 popd
 
 # Directories
-mkdir -p %{buildroot}/%{_sysconfdir}/pulp
+mkdir -p %{buildroot}/%{_sysconfdir}/pulp/agent/conf.d
 mkdir -p %{buildroot}/%{_usr}/lib
-mkdir -p %{buildroot}/%{_usr}/lib/pulp/plugins
+mkdir -p %{buildroot}/%{_usr}/lib/pulp/plugins/types
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/admin/extensions
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/agent/handlers
 mkdir -p %{buildroot}/%{_var}/www/pulp_puppet
 
 # Configuration
-cp -R etc/httpd %{buildroot}/%{_sysconfdir}
-cp -R etc/pulp %{buildroot}/%{_sysconfdir}
-
-# Extensions
-cp -R extensions/admin/* %{buildroot}/%{_usr}/lib/pulp/admin/extensions
+cp -R pulp_puppet_plugins/etc/httpd %{buildroot}/%{_sysconfdir}
+cp -R pulp_puppet_extensions_admin/etc/pulp %{buildroot}/%{_sysconfdir}
 
 # Agent Handlers
-cp handlers/* %{buildroot}/%{_usr}/lib/pulp/agent/handlers
+cp pulp_puppet_handlers/etc/pulp/agent/conf.d/* %{buildroot}/%{_sysconfdir}/pulp/agent/conf.d/
 
-# Plugins
-cp -R plugins/* %{buildroot}/%{_usr}/lib/pulp/plugins
+# Types
+cp -R pulp_puppet_plugins/pulp_puppet/plugins/types/* %{buildroot}/%{_usr}/lib/pulp/plugins/types/
 
-# Remove egg info
-rm -rf %{buildroot}/%{python_sitelib}/*.egg-info
+# Remove tests
+rm -rf %{buildroot}/%{python_sitelib}/test
 
 %clean
 rm -rf %{buildroot}
@@ -84,31 +99,17 @@ rm -rf %{buildroot}
 Summary: Pulp Puppet support common library
 Group: Development/Languages
 Requires: python-pulp-common = %{version}
+Requires: python-setuptools
 
 %description -n python-pulp-puppet-common
 A collection of modules shared among all Puppet components.
 
 %files -n python-pulp-puppet-common
 %defattr(-,root,root,-)
-%{python_sitelib}/pulp_puppet
+%dir %{python_sitelib}/pulp_puppet
 %{python_sitelib}/pulp_puppet/__init__.py*
 %{python_sitelib}/pulp_puppet/common/
-%doc
-
-
-# ---- Puppet Extension Common ----------------------------------------------------
-
-%package -n python-pulp-puppet-extension
-Summary: The Puppet extension common library
-Group: Development/Languages
-Requires: python-pulp-puppet-common = %{version}
-
-%description -n python-pulp-puppet-extension
-A collection of components shared among Puppet extensions.
-
-%files -n python-pulp-puppet-extension
-%defattr(-,root,root,-)
-%{python_sitelib}/pulp_puppet/extension/
+%{python_sitelib}/pulp_puppet_common*.egg-info
 %doc
 
 
@@ -117,8 +118,10 @@ A collection of components shared among Puppet extensions.
 %package plugins
 Summary: Pulp Puppet plugins
 Group: Development/Languages
+Requires: python-pulp-common = %{version}
 Requires: python-pulp-puppet-common = %{version}
 Requires: pulp-server = %{version}
+Requires: python-setuptools
 
 %description plugins
 Provides a collection of platform plugins that extend the Pulp platform
@@ -126,13 +129,11 @@ to provide Puppet specific support.
 
 %files plugins
 %defattr(-,root,root,-)
-%{python_sitelib}/pulp_puppet/importer/
-%{python_sitelib}/pulp_puppet/distributor/
+%{python_sitelib}/pulp_puppet/plugins/
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/pulp_puppet.conf
 %{_usr}/lib/pulp/plugins/types/puppet.json
-%{_usr}/lib/pulp/plugins/importers/puppet_importer/
-%{_usr}/lib/pulp/plugins/distributors/puppet_distributor/
 %{_var}/www/pulp_puppet/
+%{python_sitelib}/pulp_puppet_plugins*.egg-info
 %doc
 
 
@@ -141,8 +142,12 @@ to provide Puppet specific support.
 %package admin-extensions
 Summary: The Puppet admin client extensions
 Group: Development/Languages
+Requires: python-pulp-common = %{version}
 Requires: python-pulp-puppet-extension = %{version}
+Requires: python-pulp-puppet-common = %{version}
 Requires: pulp-admin-client = %{version}
+Requires: python-setuptools
+Obsoletes: python-pulp-puppet-extension
 
 %description admin-extensions
 A collection of extensions that supplement and override generic admin
@@ -151,7 +156,8 @@ client capabilites with Puppet specific features.
 %files admin-extensions
 %defattr(-,root,root,-)
 %{_sysconfdir}/pulp/admin/conf.d/puppet.conf
-%{_usr}/lib/pulp/admin/extensions/puppet_repo/
+%{python_sitelib}/pulp_puppet/extensions/
+%{python_sitelib}/pulp_puppet_extensions_admin*.egg-info
 %doc
 
 
@@ -172,9 +178,9 @@ management and Linux specific commands such as system reboot.
 
 %files handlers
 %defattr(-,root,root,-)
-%{python_sitelib}/pulp_puppet/handler/
+%{python_sitelib}/pulp_puppet/handlers/
 %{_sysconfdir}/pulp/agent/conf.d/puppet.conf
-%{_usr}/lib/pulp/agent/handlers/puppet.py*
+%{python_sitelib}/pulp_puppet_handlers*.egg-info
 %doc
 
 

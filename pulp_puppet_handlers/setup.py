@@ -11,21 +11,11 @@
 
 from setuptools import setup, find_packages
 
-from pulp.common.constants import ENTRY_POINT_DISTRIBUTORS, ENTRY_POINT_IMPORTERS
-
 setup(
-    name='pulp_puppet_plugins',
+    name='pulp_puppet_handlers',
     version='2.0.0',
     license='GPLv2+',
     packages=find_packages(exclude=['test', 'test.*']),
     author='Pulp Team',
     author_email='pulp-list@redhat.com',
-    entry_points = {
-        ENTRY_POINT_DISTRIBUTORS: [
-            'distributor = pulp_puppet.plugins.distributors.distributor:entry_point',
-        ],
-        ENTRY_POINT_IMPORTERS: [
-            'importer = pulp_puppet.plugins.importers.importer:entry_point',
-        ]
-    }
 )
