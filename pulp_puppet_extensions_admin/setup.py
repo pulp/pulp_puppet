@@ -11,8 +11,6 @@
 
 from setuptools import setup, find_packages
 
-from pulp.common.constants import ENTRY_POINT_EXTENSIONS
-
 setup(
     name='pulp_puppet_extensions_admin',
     version='2.0.0',
@@ -21,7 +19,7 @@ setup(
     author='Pulp Team',
     author_email='pulp-list@redhat.com',
     entry_points = {
-        ENTRY_POINT_EXTENSIONS: [
+        'pulp.extensions': [
             'repo_admin = pulp_puppet.extensions.admin.repo.pulp_cli:initialize',
         ]
     }

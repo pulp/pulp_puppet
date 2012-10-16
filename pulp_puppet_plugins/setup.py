@@ -11,8 +11,6 @@
 
 from setuptools import setup, find_packages
 
-from pulp.common.constants import ENTRY_POINT_DISTRIBUTORS, ENTRY_POINT_IMPORTERS
-
 setup(
     name='pulp_puppet_plugins',
     version='2.0.0',
@@ -21,10 +19,10 @@ setup(
     author='Pulp Team',
     author_email='pulp-list@redhat.com',
     entry_points = {
-        ENTRY_POINT_DISTRIBUTORS: [
+        'pulp.distributors': [
             'distributor = pulp_puppet.plugins.distributors.distributor:entry_point',
         ],
-        ENTRY_POINT_IMPORTERS: [
+        'pulp.importers': [
             'importer = pulp_puppet.plugins.importers.importer:entry_point',
         ]
     }
