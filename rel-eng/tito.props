@@ -1,8 +1,7 @@
 [globalconfig]
+lib_dir = rel-eng/lib
 default_builder = tito.builder.Builder
 default_tagger = tito.tagger.VersionTagger
-changelog_do_not_remove_cherrypick = 0
-changelog_format = %s (%ae)
 
 [buildconfig]
-tagger = pulptagger.SlavedTagger
+tagger = pulptagger.PulpTagger
