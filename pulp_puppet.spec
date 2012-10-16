@@ -185,6 +185,9 @@ management and Linux specific commands such as system reboot.
 
 
 %changelog
+* Tue Oct 16 2012 Jeff Ortel <jortel@redhat.com> 0.0.331-1
+- new package built with tito
+
 * Fri Oct 05 2012 Jeff Ortel <jortel@redhat.com> 0.0.331-1
 - 860408 - repo group member adding and removing now honors the --repo-id
   option, includes a new --all flag, and fails if no matching options are
