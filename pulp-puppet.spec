@@ -165,8 +165,6 @@ client capabilites with Puppet specific features.
 %package handlers
 Summary: Pulp agent puppet handlers
 Group: Development/Languages
-Requires: python-rhsm
-Requires: python-pulp-rpm-common = %{version}
 Requires: python-pulp-agent-lib = %{version}
 
 %description handlers
