@@ -143,7 +143,6 @@ to provide Puppet specific support.
 Summary: The Puppet admin client extensions
 Group: Development/Languages
 Requires: python-pulp-common = %{version}
-Requires: python-pulp-puppet-extension = %{version}
 Requires: python-pulp-puppet-common = %{version}
 Requires: pulp-admin-client = %{version}
 Requires: python-setuptools
