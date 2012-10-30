@@ -77,7 +77,10 @@ class CreatePuppetRepositoryCommand(CreateRepositoryCommand):
         arg_utils.convert_removed_options(distributor_config)
         arg_utils.convert_boolean_arguments((constants.CONFIG_SERVE_HTTP, constants.CONFIG_SERVE_HTTPS), distributor_config)
 
-        distributors = [(constants.DISTRIBUTOR_TYPE_ID, distributor_config, True, constants.DISTRIBUTOR_ID)]
+        distributors = [
+            dict(distributor_type=constants.DISTRIBUTOR_TYPE_ID, distributor_config=distributor_config,
+                 auto_publish=True, distributor_id=constants.DISTRIBUTOR_ID)
+        ]
 
         # Create the repository
         self.context.server.repo.create_and_configure(repo_id, name, description,

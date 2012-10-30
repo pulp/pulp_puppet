@@ -84,15 +84,15 @@ class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         self.assertEqual(expected_config, body['importer_config'])
 
         dist = body['distributors'][0]
-        self.assertEqual(constants.DISTRIBUTOR_TYPE_ID, dist[0])
-        self.assertEqual(True, dist[2])
-        self.assertEqual(constants.DISTRIBUTOR_ID, dist[3])
+        self.assertEqual(constants.DISTRIBUTOR_TYPE_ID, dist['distributor_type'])
+        self.assertEqual(True, dist['auto_publish'])
+        self.assertEqual(constants.DISTRIBUTOR_ID, dist['distributor_id'])
 
         expected_config = {
             u'serve_http' : True,
             u'serve_https' : True,
         }
-        self.assertEqual(expected_config, dist[1])
+        self.assertEqual(expected_config, dist['distributor_config'])
 
         self.assertEqual([TAG_SUCCESS], self.prompt.get_write_tags())
 
