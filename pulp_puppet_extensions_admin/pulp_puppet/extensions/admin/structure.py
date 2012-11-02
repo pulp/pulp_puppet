@@ -33,7 +33,7 @@ SECTION_SYNC_SCHEDULES = 'schedules'
 SECTION_PUBLISH = 'publish'
 SECTION_PUBLISH_SCHEDULES = 'schedules'
 
-DESC_ROOT = _('contains commands for working with Puppet repositories')
+DESC_ROOT = _('manage Puppet-related content and features')
 DESC_REPO = _('repository lifecycle commands')
 
 DESC_REMOVE = _('remove copied or uploaded modules from a repository')
