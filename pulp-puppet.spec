@@ -92,13 +92,16 @@ rm -rf %{buildroot}/%{python_sitelib}/test
 rm -rf %{buildroot}
 
 
+# define required pulp platform version
+%global pulp_version %{version}-%{release}
+
 
 # ---- Puppet Common -----------------------------------------------------------
 
 %package -n python-pulp-puppet-common
 Summary: Pulp Puppet support common library
 Group: Development/Languages
-Requires: python-pulp-common = %{version}
+Requires: python-pulp-common = %{pulp_version}
 Requires: python-setuptools
 
 %description -n python-pulp-puppet-common
@@ -118,9 +121,9 @@ A collection of modules shared among all Puppet components.
 %package plugins
 Summary: Pulp Puppet plugins
 Group: Development/Languages
-Requires: python-pulp-common = %{version}
-Requires: python-pulp-puppet-common = %{version}
-Requires: pulp-server = %{version}
+Requires: python-pulp-common = %{pulp_version}
+Requires: python-pulp-puppet-common = %{pulp_version}
+Requires: pulp-server = %{pulp_version}
 Requires: python-setuptools
 
 %description plugins
@@ -142,9 +145,9 @@ to provide Puppet specific support.
 %package admin-extensions
 Summary: The Puppet admin client extensions
 Group: Development/Languages
-Requires: python-pulp-common = %{version}
-Requires: python-pulp-puppet-common = %{version}
-Requires: pulp-admin-client = %{version}
+Requires: python-pulp-common = %{pulp_version}
+Requires: python-pulp-puppet-common = %{pulp_version}
+Requires: pulp-admin-client = %{pulp_version}
 Requires: python-setuptools
 Obsoletes: python-pulp-puppet-extension
 
@@ -165,7 +168,7 @@ client capabilites with Puppet specific features.
 %package handlers
 Summary: Pulp agent puppet handlers
 Group: Development/Languages
-Requires: python-pulp-agent-lib = %{version}
+Requires: python-pulp-agent-lib = %{pulp_version}
 
 %description handlers
 A collection of handlers that provide both Linux and Puppet specific
