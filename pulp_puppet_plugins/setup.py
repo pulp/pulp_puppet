@@ -24,6 +24,9 @@ setup(
         ],
         'pulp.importers': [
             'importer = pulp_puppet.plugins.importers.importer:entry_point',
-        ]
+        ],
+        'pulp.server.db.migrations': [
+            'pulp_puppet = pulp_puppet.plugins.migrations',
+        ],
     }
 )
