@@ -38,6 +38,9 @@ TASK_TEMPLATE = {
     "result": None,
     "progress": {},
     "response": None,
+    "call_request_group_id": 'default-group',
+    "call_request_id": 'default-id',
+    "call_request_tags": [],
 }
 
 
