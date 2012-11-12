@@ -17,7 +17,7 @@
 # ---- Pulp (puppet) -----------------------------------------------------------
 
 Name: pulp-puppet
-Version: 0.0.337
+Version: 0.0.338
 Release: 1
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
@@ -185,6 +185,9 @@ management and Linux specific commands such as system reboot.
 
 
 %changelog
+* Mon Nov 12 2012 Jeff Ortel <jortel@redhat.com> 0.0.338-1
+- 
+
 * Mon Nov 12 2012 Jeff Ortel <jortel@redhat.com> 0.0.337-1
 - 873739 - using the new entry point name that specifies these as admin
   extensions. (mhrivnak@redhat.com)
