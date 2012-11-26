@@ -131,12 +131,16 @@ Provides a collection of platform plugins that extend the Pulp platform
 to provide Puppet specific support.
 
 %files plugins
+
 %defattr(-,root,root,-)
 %{python_sitelib}/pulp_puppet/plugins/
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/pulp_puppet.conf
 %{_usr}/lib/pulp/plugins/types/puppet.json
-%{_var}/www/pulp_puppet/
 %{python_sitelib}/pulp_puppet_plugins*.egg-info
+
+%defattr(-,apache,apache,-)
+%{_var}/www/pulp_puppet/
+
 %doc
 
 
