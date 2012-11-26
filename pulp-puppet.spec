@@ -74,6 +74,8 @@ mkdir -p %{buildroot}/%{_usr}/lib/pulp/plugins/types
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/admin/extensions
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/agent/handlers
 mkdir -p %{buildroot}/%{_var}/www/pulp_puppet
+mkdir -p %{buildroot}/%{_var}/www/pulp_puppet/http
+mkdir -p %{buildroot}/%{_var}/www/pulp_puppet/https
 
 # Configuration
 cp -R pulp_puppet_plugins/etc/httpd %{buildroot}/%{_sysconfdir}
