@@ -74,6 +74,8 @@ mkdir -p %{buildroot}/%{_usr}/lib/pulp/plugins/types
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/admin/extensions
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/agent/handlers
 mkdir -p %{buildroot}/%{_var}/www/pulp_puppet
+mkdir -p %{buildroot}/%{_var}/www/pulp_puppet/http
+mkdir -p %{buildroot}/%{_var}/www/pulp_puppet/https
 
 # Configuration
 cp -R pulp_puppet_plugins/etc/httpd %{buildroot}/%{_sysconfdir}
@@ -131,12 +133,16 @@ Provides a collection of platform plugins that extend the Pulp platform
 to provide Puppet specific support.
 
 %files plugins
+
 %defattr(-,root,root,-)
 %{python_sitelib}/pulp_puppet/plugins/
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/pulp_puppet.conf
 %{_usr}/lib/pulp/plugins/types/puppet.json
-%{_var}/www/pulp_puppet/
 %{python_sitelib}/pulp_puppet_plugins*.egg-info
+
+%defattr(-,apache,apache,-)
+%{_var}/www/pulp_puppet/
+
 %doc
 
 
