@@ -205,6 +205,26 @@ class ListPuppetRepositoriesCommandTests(base_cli.ExtensionTests):
         self.assertTrue('repo-1' in repo_ids)
         self.assertTrue('repo-2' in repo_ids)
 
+    def test_get_other_repositories(self):
+        # Setup
+        repos = [
+            {'repo_id' : 'repo-1', 'notes' : {constants.REPO_NOTE_KEY : constants.REPO_NOTE_PUPPET}},
+            {'repo_id' : 'repo-2', 'notes' : {constants.REPO_NOTE_KEY : 'rpm'}},
+            {'repo_id' : 'repo-3', 'notes' : {}},
+            ]
+
+        self.server_mock.request.return_value = 200, repos
+
+        # Test
+        repos = self.command.get_other_repositories({})
+
+        # Verify
+        self.assertEqual(2, len(repos))
+
+        repo_ids = [r['repo_id'] for r in repos]
+        self.assertTrue('repo-2' in repo_ids)
+        self.assertTrue('repo-3' in repo_ids)
+
 
 class SearchPuppetRepositoriesCommand(base_cli.ExtensionTests):
 
