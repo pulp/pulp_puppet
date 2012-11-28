@@ -11,6 +11,7 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
+from pulp.bindings.exceptions import BadRequestException
 from pulp.common.compat import json
 from pulp.client.commands.unit import UnitCopyCommand
 from pulp.client.extensions.core import TAG_REASONS
@@ -71,3 +72,34 @@ class CopyCommandTests(base_cli.ExtensionTests):
 
         # Verify
         self.assertEqual(['postponed', TAG_REASONS], self.prompt.get_write_tags())
+
+    def test_run_invalid_source_repo(self):
+        # Setup
+        data = {
+            'from-repo-id' : 'from',
+            'to-repo-id' : 'to',
+        }
+
+        error_report =  {
+            'exception': None,
+            'traceback': None,
+            'property_names': [
+                'source_repo_id'
+            ],
+            '_href': '/pulp/api/v2/repositories/test-repo/actions/associate/',
+            'error_message': 'Invalid properties: [\'source_repo_id\']',
+            'http_request_method': 'POST',
+            'http_status': 400
+        }
+
+        self.server_mock.request.return_value = 400, error_report
+
+        # Test
+        try:
+            self.command.run(**data)
+            self.fail('Expected bad data exception')
+        except BadRequestException, e:
+            # Verify the translation from server-side property name to
+            # client-side flag took place
+            self.assertEqual(['from-repo-id'], e.extra_data['property_names'])
+            self.assertTrue('source_repo_id' not in e.extra_data['property_names'])
