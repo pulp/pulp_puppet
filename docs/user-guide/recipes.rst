@@ -1,6 +1,0 @@
-Recipes
-=======
-
-
-Mirror PuppetForge
-------------------
