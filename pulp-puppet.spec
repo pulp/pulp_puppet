@@ -18,7 +18,7 @@
 
 Name: pulp-puppet
 Version: 2.0.6
-Release: 0.9.beta
+Release: 0.10.beta
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -191,6 +191,14 @@ management and Linux specific commands such as system reboot.
 
 
 %changelog
+* Thu Nov 29 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.10.beta
+- 866491 - Added translation from server-side property name to client-side flag
+  (jason.dobies@redhat.com)
+- 862290 - Added support for non-Puppet repo listing (jason.dobies@redhat.com)
+- 880229 - I think we need to create these as well. (jason.dobies@redhat.com)
+- 880229 - Apache needs to be able to write to the publish directories
+  (jason.dobies@redhat.com)
+
 * Mon Nov 26 2012 Jay Dobies <jason.dobies@redhat.com> 2.0.6-0.9.beta
 - 
 
