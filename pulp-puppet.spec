@@ -18,7 +18,7 @@
 
 Name: pulp-puppet
 Version: 2.0.6
-Release: 0.10.beta
+Release: 0.11.beta
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -191,6 +191,9 @@ management and Linux specific commands such as system reboot.
 
 
 %changelog
+* Thu Nov 29 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.11.beta
+- 
+
 * Thu Nov 29 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.10.beta
 - 866491 - Added translation from server-side property name to client-side flag
   (jason.dobies@redhat.com)
