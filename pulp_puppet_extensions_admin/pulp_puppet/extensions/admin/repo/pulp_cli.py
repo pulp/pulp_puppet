@@ -16,10 +16,11 @@ import os
 from pulp.client.commands.repo import cudl, sync_publish, upload
 from pulp.client.extensions.decorator import priority
 from pulp.client.upload.manager import UploadManager
+from pulp_puppet.common import constants
 
 from pulp_puppet.extensions.admin import structure
-from pulp_puppet.extensions.admin.repo import (copy, modules, remove, status,
-                                               sync_schedules)
+from pulp_puppet.extensions.admin.repo import (copy, modules, publish_schedules,
+                                               remove, status, sync_schedules)
 from pulp_puppet.extensions.admin.repo import upload as puppet_upload
 from pulp_puppet.extensions.admin.repo.cudl import (CreatePuppetRepositoryCommand,
                                                     UpdatePuppetRepositoryCommand,
@@ -30,6 +31,21 @@ from pulp_puppet.extensions.admin.repo.cudl import (CreatePuppetRepositoryComman
 @priority()
 def initialize(context):
     structure.ensure_repo_structure(context.cli)
+
+    renderer = status.PuppetStatusRenderer(context)
+
+    publish_section = structure.repo_publish_section(context.cli)
+    publish_section.add_command(
+        sync_publish.RunPublishRepositoryCommand(
+            context, renderer, constants.DISTRIBUTOR_TYPE_ID))
+    publish_section.add_command(sync_publish.PublishStatusCommand(context, renderer))
+
+    publish_schedules_section = structure.repo_publish_schedules_section(context.cli)
+    publish_schedules_section.add_command(publish_schedules.PuppetCreateScheduleCommand(context))
+    publish_schedules_section.add_command(publish_schedules.PuppetUpdateScheduleCommand(context))
+    publish_schedules_section.add_command(publish_schedules.PuppetDeleteScheduleCommand(context))
+    publish_schedules_section.add_command(publish_schedules.PuppetListScheduleCommand(context))
+    publish_schedules_section.add_command(publish_schedules.PuppetNextRunCommand(context))
 
     repo_section = structure.repo_section(context.cli)
     repo_section.add_command(CreatePuppetRepositoryCommand(context))
@@ -43,7 +59,6 @@ def initialize(context):
     repo_section.add_command(copy.PuppetModuleCopyCommand(context))
 
     sync_section = structure.repo_sync_section(context.cli)
-    renderer = status.PuppetStatusRenderer(context)
     sync_section.add_command(sync_publish.RunSyncRepositoryCommand(context, renderer))
     sync_section.add_command(sync_publish.SyncStatusCommand(context, renderer))
 
