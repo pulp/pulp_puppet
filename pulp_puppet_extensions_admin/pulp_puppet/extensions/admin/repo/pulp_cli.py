@@ -18,7 +18,7 @@ from pulp.client.extensions.decorator import priority
 from pulp.client.upload.manager import UploadManager
 
 from pulp_puppet.extensions.admin import structure
-from pulp_puppet.extensions.admin.repo import (copy, modules, status,
+from pulp_puppet.extensions.admin.repo import (copy, modules, remove, status,
                                                sync_schedules)
 from pulp_puppet.extensions.admin.repo import upload as puppet_upload
 from pulp_puppet.extensions.admin.repo.cudl import (CreatePuppetRepositoryCommand,
@@ -37,6 +37,7 @@ def initialize(context):
     repo_section.add_command(cudl.DeleteRepositoryCommand(context))
     repo_section.add_command(ListPuppetRepositoriesCommand(context))
     repo_section.add_command(SearchPuppetRepositoriesCommand(context))
+    repo_section.add_command(remove.RemoveCommand(context))
 
     repo_section.add_command(modules.ModulesCommand(context))
     repo_section.add_command(copy.PuppetModuleCopyCommand(context))
