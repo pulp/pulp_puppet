@@ -18,7 +18,7 @@
 
 Name: pulp-puppet
 Version: 2.0.6
-Release: 0.11.beta
+Release: 0.12.beta
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -191,6 +191,10 @@ management and Linux specific commands such as system reboot.
 
 
 %changelog
+* Thu Dec 06 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.12.beta
+- 882419 - adding publish commands to the CLI (mhrivnak@redhat.com)
+- 882421 - added unit remove command. (mhrivnak@redhat.com)
+
 * Thu Nov 29 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.11.beta
 - 
 
