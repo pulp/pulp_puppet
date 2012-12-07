@@ -14,6 +14,7 @@
 from pulp.client.commands.criteria import CriteriaCommand
 from pulp.client.commands import options
 from pulp.client.commands.repo import cudl as pulp_cudl
+import pulp.client.commands.unit
 from pulp.client.extensions.core import TAG_SUCCESS, TAG_REASONS, TAG_DOCUMENT, TAG_TITLE
 from pulp.common.compat import json
 
@@ -21,6 +22,7 @@ import base_cli
 from pulp_puppet.common import constants
 from pulp_puppet.extensions.admin.repo import pulp_cli as commands
 from pulp_puppet.extensions.admin.repo import cudl
+from pulp_puppet.extensions.admin.repo.remove import RemoveCommand
 
 class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
 
@@ -205,6 +207,26 @@ class ListPuppetRepositoriesCommandTests(base_cli.ExtensionTests):
         self.assertTrue('repo-1' in repo_ids)
         self.assertTrue('repo-2' in repo_ids)
 
+    def test_get_other_repositories(self):
+        # Setup
+        repos = [
+            {'repo_id' : 'repo-1', 'notes' : {constants.REPO_NOTE_KEY : constants.REPO_NOTE_PUPPET}},
+            {'repo_id' : 'repo-2', 'notes' : {constants.REPO_NOTE_KEY : 'rpm'}},
+            {'repo_id' : 'repo-3', 'notes' : {}},
+            ]
+
+        self.server_mock.request.return_value = 200, repos
+
+        # Test
+        repos = self.command.get_other_repositories({})
+
+        # Verify
+        self.assertEqual(2, len(repos))
+
+        repo_ids = [r['repo_id'] for r in repos]
+        self.assertTrue('repo-2' in repo_ids)
+        self.assertTrue('repo-3' in repo_ids)
+
 
 class SearchPuppetRepositoriesCommand(base_cli.ExtensionTests):
 
@@ -237,3 +259,17 @@ class SearchPuppetRepositoriesCommand(base_cli.ExtensionTests):
         expected_tags = [TAG_TITLE]
         expected_tags += map(lambda x : TAG_DOCUMENT, range(0, 12)) # 3 fields * 4 repos
         self.assertEqual(expected_tags, self.prompt.get_write_tags())
+
+
+class RemovePuppetModulesCommand(base_cli.ExtensionTests):
+    def setUp(self):
+        super(RemovePuppetModulesCommand, self).setUp()
+        self.command = RemoveCommand(self.context)
+
+    def test_defaults(self):
+        self.assertTrue(isinstance(self.command, pulp.client.commands.unit.UnitRemoveCommand))
+        self.assertEqual('remove', self.command.name)
+        self.assertEqual(RemoveCommand.DESC, self.command.description)
+        # uses default remove method
+        self.assertEqual(self.command.method, self.command.remove)
+

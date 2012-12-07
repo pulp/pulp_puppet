@@ -18,7 +18,7 @@
 
 Name: pulp-puppet
 Version: 2.0.6
-Release: 0.9.beta
+Release: 0.12.beta
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -127,6 +127,7 @@ Requires: python-pulp-common = %{pulp_version}
 Requires: python-pulp-puppet-common = %{pulp_version}
 Requires: pulp-server = %{pulp_version}
 Requires: python-setuptools
+Requires: python-pycurl
 
 %description plugins
 Provides a collection of platform plugins that extend the Pulp platform
@@ -179,8 +180,7 @@ Requires: python-pulp-agent-lib = %{pulp_version}
 %description handlers
 A collection of handlers that provide both Linux and Puppet specific
 functionality within the Pulp agent.  This includes Puppet install, update,
-uninstall; Puppet profile reporting; binding through yum repository
-management and Linux specific commands such as system reboot.
+uninstall; Puppet profile reporting; and Linux specific commands such as system reboot.
 
 %files handlers
 %defattr(-,root,root,-)
@@ -191,6 +191,21 @@ management and Linux specific commands such as system reboot.
 
 
 %changelog
+* Thu Dec 06 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.12.beta
+- 882419 - adding publish commands to the CLI (mhrivnak@redhat.com)
+- 882421 - added unit remove command. (mhrivnak@redhat.com)
+
+* Thu Nov 29 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.11.beta
+- 
+
+* Thu Nov 29 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.10.beta
+- 866491 - Added translation from server-side property name to client-side flag
+  (jason.dobies@redhat.com)
+- 862290 - Added support for non-Puppet repo listing (jason.dobies@redhat.com)
+- 880229 - I think we need to create these as well. (jason.dobies@redhat.com)
+- 880229 - Apache needs to be able to write to the publish directories
+  (jason.dobies@redhat.com)
+
 * Mon Nov 26 2012 Jay Dobies <jason.dobies@redhat.com> 2.0.6-0.9.beta
 - 
 

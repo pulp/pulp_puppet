@@ -12,7 +12,7 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 from pulp.client.commands import options
-from pulp.client.commands.criteria import UnitAssociationCriteriaCommand
+from pulp.client.commands.criteria import DisplayUnitAssociationsCommand
 
 import base_cli
 from pulp_puppet.extensions.admin.repo import modules
@@ -91,7 +91,7 @@ class ModulesCommandTests(base_cli.ExtensionTests):
         self.command = modules.ModulesCommand(self.context)
 
     def test_structure(self):
-        self.assertTrue(isinstance(self.command, UnitAssociationCriteriaCommand))
+        self.assertTrue(isinstance(self.command, DisplayUnitAssociationsCommand))
         self.assertEqual('modules', self.command.name)
         self.assertEqual(modules.DESC_SEARCH, self.command.description)
 
@@ -115,7 +115,7 @@ class ModulesCommandTests(base_cli.ExtensionTests):
     def test_modules_with_metadata(self):
         # Setup
         data = {options.OPTION_REPO_ID.keyword : 'test-repo',
-                UnitAssociationCriteriaCommand.ASSOCIATION_FLAG.keyword: True}
+                DisplayUnitAssociationsCommand.ASSOCIATION_FLAG.keyword: True}
 
         self.server_mock.request.return_value = 200, SAMPLE_RESPONSE_BODY
 
