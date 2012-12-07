@@ -9,6 +9,7 @@ Contents:
    introduction
    installation
    quick-start
+   recipes
 
 Indices and tables
 ==================
