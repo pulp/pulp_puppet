@@ -127,6 +127,7 @@ Requires: python-pulp-common = %{pulp_version}
 Requires: python-pulp-puppet-common = %{pulp_version}
 Requires: pulp-server = %{pulp_version}
 Requires: python-setuptools
+Requires: python-pycurl
 
 %description plugins
 Provides a collection of platform plugins that extend the Pulp platform
