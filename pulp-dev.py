@@ -35,9 +35,9 @@ DIRS = (
 DIR_PLUGINS = '/usr/lib/pulp/plugins'
 
 LINKS = (
+    ('pulp_puppet_plugins/etc/httpd/conf.d/pulp_puppet.conf', '/etc/httpd/conf.d/pulp_puppet.conf'),
     # Puppet Support Plugins
     ('pulp_puppet_plugins/pulp_puppet/plugins/types/puppet.json', DIR_PLUGINS + '/types/puppet.json'),
-
     # Puppet Support Admin Extensions
     ('pulp_puppet_extensions_admin/etc/pulp/admin/conf.d/puppet.conf', '/etc/pulp/admin/conf.d/puppet.conf')
 )
