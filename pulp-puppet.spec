@@ -179,8 +179,7 @@ Requires: python-pulp-agent-lib = %{pulp_version}
 %description handlers
 A collection of handlers that provide both Linux and Puppet specific
 functionality within the Pulp agent.  This includes Puppet install, update,
-uninstall; Puppet profile reporting; binding through yum repository
-management and Linux specific commands such as system reboot.
+uninstall; Puppet profile reporting; and Linux specific commands such as system reboot.
 
 %files handlers
 %defattr(-,root,root,-)
