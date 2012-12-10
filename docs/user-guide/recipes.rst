@@ -2,7 +2,7 @@ Recipes
 =======
 
 
-Mirror PuppetForge
+Mirror Puppet Forge
 ------------------
 
 Start by creating a new repository that includes the URL for Puppet Forge. Use

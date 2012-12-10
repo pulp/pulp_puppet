@@ -16,10 +16,16 @@ The default admin password is "admin".
 Create a Repository
 -------------------
 
+This creates a basic repository that will fetch modules from Puppet Forge.
+
 ::
 
   $ pulp-admin puppet repo create --repo-id=repo1 --description="Mirror of Puppet Forge" --display-name="Repo 1" --feed=http://forge.puppetlabs.com
   Successfully created repository [repo1]
+
+By default, Pulp will serve this repository over HTTP without SSL. Adding
+``--serve-https=true`` would cause it to also be served over HTTPS. Non-SSL
+HTTP can similarly be disabled.
 
 Update a Repository
 -------------------
@@ -110,6 +116,10 @@ This is a search for all repositories with more than 0 modules.
 Sync a Repository
 -----------------
 
+This process downloads content from an existing repository and places it into a
+repository hosted by Pulp. This allows you to make a local copy of all or
+part of a remote repository.
+
 ::
 
   $ pulp-admin puppet repo sync run --repo-id=repo1
@@ -146,6 +156,8 @@ Sync a Repository
   ... skipped
 
 At this point, the repository has been published and is available via HTTP.
+You can see it at `http://localhost/pulp/puppet/repo1/ <http://localhost/pulp/puppet/repo1/>`_
+(adjust the hostname as necessary).
 
 List Modules in a Repository
 ----------------------------
@@ -215,7 +227,7 @@ Copy Modules Between Repositories
 ---------------------------------
 
 Assuming we have repositories "repo1" and "repo2", and "repo1" has two units as
-resulted from the above sync.
+a result of the above sync.
 
 ::
 
