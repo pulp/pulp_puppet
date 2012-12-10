@@ -24,16 +24,6 @@ support installed. If not, just install the following package.
 
   $ sudo yum install pulp-puppet-plugins
 
-Admin Client
-------------
-
-If you followed the Pulp User Guide install instructions, you already have Puppet
-support installed. If not, just install the following package.
-
-::
-
-  $ sudo yum install pulp-puppet-admin-extensions
-
 Then run ``pulp-manage-db`` to initialize the new types in Pulp's database.
 
 ::
@@ -45,3 +35,14 @@ Finally, restart Apache.
 ::
 
   $ sudo apachectl restart
+
+Admin Client
+------------
+
+If you followed the Pulp User Guide install instructions, you already have Puppet
+support installed. If not, just install the following package.
+
+::
+
+  $ sudo yum install pulp-puppet-admin-extensions
+
