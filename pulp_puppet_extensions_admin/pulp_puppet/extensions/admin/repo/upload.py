@@ -11,7 +11,9 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
+from gettext import gettext as _
 import os
+import re
 
 from pulp.client.commands.repo import upload as upload_commands
 
@@ -24,6 +26,8 @@ class UploadModuleCommand(upload_commands.UploadCommand):
 
     def __init__(self, context, upload_manager):
         super(UploadModuleCommand, self).__init__(context, upload_manager)
+
+        upload_commands.OPTION_FILE.validate_func = self.validate_file_name
 
     def generate_unit_key(self, filename, **kwargs):
         root_filename = os.path.basename(filename)
@@ -39,3 +43,15 @@ class UploadModuleCommand(upload_commands.UploadCommand):
         all_files_in_dir = super(UploadModuleCommand, self).matching_files_in_dir(dir)
         modules = [f for f in all_files_in_dir if f.endswith('.tar.gz')]
         return modules
+
+    @staticmethod
+    def validate_file_name(name_list):
+        """
+        Validator for use with okaara's CLI argument validation framework.
+
+        :param name_list: list of filenames
+        :type  name_list: type
+        """
+        for name in name_list:
+            if re.match('^.+-.+-.+\.tar\.gz$', name) is None:
+                raise ValueError(_('Filename must have the format author-name-version.tar.gz'))

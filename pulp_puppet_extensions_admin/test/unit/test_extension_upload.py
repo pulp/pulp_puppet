@@ -12,9 +12,10 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 import os
+import unittest
 
 import mock
-from pulp.client.commands.repo.upload import UploadCommand
+from pulp.client.commands.repo.upload import UploadCommand, OPTION_FILE
 
 import base_cli
 from pulp_puppet.common import constants
@@ -60,3 +61,32 @@ class UploadModuleCommandTests(base_cli.ExtensionTests):
         # Make sure the full paths are valid
         for m in module_files:
             self.assertTrue(os.path.exists(m))
+
+    def test_validator_presence(self):
+        self.assertTrue(OPTION_FILE in self.command.options)
+        self.assertEqual(self.command.validate_file_name, OPTION_FILE.validate_func)
+
+
+class TestValidateFileName(unittest.TestCase):
+    def test_good(self):
+        upload.UploadModuleCommand.validate_file_name(['author-foo-1.0.0.tar.gz'])
+
+    def test_multiple(self):
+        upload.UploadModuleCommand.validate_file_name(
+            ['author-foo-1.0.0.tar.gz', 'author-bar-0.2.0.tar.gz'])
+
+    def test_require_author(self):
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['-foo-1.0.0.tar.gz'])
+
+    def test_require_name(self):
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['author--1.0.0.tar.gz'])
+
+    def test_require_version(self):
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['author-foo.tar.gz'])
+
+    def test_require_extension(self):
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['author-foo-1.0.0.gz'])
+
+    def test_empty(self):
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, [''])
+
