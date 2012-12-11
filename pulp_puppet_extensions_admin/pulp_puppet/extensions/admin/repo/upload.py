@@ -22,12 +22,17 @@ from pulp_puppet.common.model import Module
 
 # -- commands -----------------------------------------------------------------
 
+DESC_FILE = _('full path to a file to upload; may be specified multiple times '
+              'for multiple files. Format must be '
+              'author-name-version.tar.gz')
+
 class UploadModuleCommand(upload_commands.UploadCommand):
 
     def __init__(self, context, upload_manager):
         super(UploadModuleCommand, self).__init__(context, upload_manager)
 
         upload_commands.OPTION_FILE.validate_func = self.validate_file_name
+        upload_commands.OPTION_FILE.description = DESC_FILE
 
     def generate_unit_key(self, filename, **kwargs):
         root_filename = os.path.basename(filename)
