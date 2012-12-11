@@ -325,6 +325,12 @@ class PuppetStatusRendererTests(base_cli.ExtensionTests):
         expected_tags = [TAG_FAILURE]
         self.assertEqual(expected_tags, self.prompt.get_write_tags())
 
+        # grab every printed line except the first message, the blank line after
+        # it, and the blank line at the end
+        printed_module_names = set(x.strip() for x in self.prompt.output.lines[2:-1])
+        # verify that only module names were printed, and not tracebacks
+        self.assertEqual(printed_module_names, set(individual_errors.keys()))
+
     def test_display_report(self):
         # Test
         self.renderer.display_report(FULL_REPORT)

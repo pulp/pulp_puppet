@@ -258,38 +258,23 @@ class PuppetStatusRenderer(StatusRenderer):
             self.prompt.render_spacer()
 
     def _render_module_errors(self, individual_errors):
+        """
+        :param individual_errors:   dictionary where keys are module names and
+                                    values are dicts with keys 'exception' and
+                                    'traceback'.
+        :type  individual_errors:   dict
+        """
 
-        if individual_errors is not None:
-
+        if individual_errors:
             # TODO: read this from config
-            display_error_count = 5
+            display_error_count = 20
 
-            num_errors = min(len(individual_errors), display_error_count)
+            self.prompt.render_failure_message(_('Could not import the following modules:'))
 
-            if num_errors > 0:
-                self.prompt.render_failure_message(_('Individual module errors occurred:'))
+            for module_name in individual_errors.keys()[:display_error_count]:
+                self.prompt.write(module_name, color=COLOR_FAILURE)
 
-                for i, module_name in enumerate(individual_errors):
-                    if i >= num_errors:
-                        break
-
-                    exception = individual_errors[module_name]['exception']
-                    tb = individual_errors[module_name]['traceback']
-                    tb = traceback.format_list(tb)
-
-                    # render_failure_message puts too many blank lines, so
-                    # simulate that rendering here
-
-                    message =  _('Module: %(m)s') % {'m' : module_name}
-                    self.prompt.write(message, color=COLOR_FAILURE)
-
-                    message = _('Exception: %(e)s' % {'e' : exception})
-                    self.prompt.write(message, color=COLOR_FAILURE)
-
-                    message = _('Traceback:\n%(t)s') % {'t' : ''.join(tb)}
-                    self.prompt.write(message, color=COLOR_FAILURE, skip_wrap=True)
-
-                    self.prompt.render_spacer()
+            self.prompt.render_spacer()
 
     def _render_error(self, error_message, exception, traceback):
         msg = _('The following error was encountered during the previous '
