@@ -68,15 +68,15 @@ class UploadModuleCommandTests(base_cli.ExtensionTests):
 
 
 class TestValidateFileName(unittest.TestCase):
-    def test_good(self):
+    def test_full(self):
         upload.UploadModuleCommand.validate_file_name(['/path/to/author-foo-1.0.0.tar.gz'])
+
+    def test_relative(self):
+        upload.UploadModuleCommand.validate_file_name(['author-foo-1.0.0.tar.gz'])
 
     def test_multiple(self):
         upload.UploadModuleCommand.validate_file_name(
             ['/author-foo-1.0.0.tar.gz', '/tmp/author-bar-0.2.0.tar.gz'])
-
-    def test_relative_path(self):
-        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['tmp/author-foo-1.0.0.tar.gz'])
 
     def test_require_author(self):
         self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['/-foo-1.0.0.tar.gz'])

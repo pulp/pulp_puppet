@@ -23,9 +23,9 @@ from pulp_puppet.common.model import Module
 
 # -- commands -----------------------------------------------------------------
 
-DESC_FILE = _('full path to a file to upload; may be specified multiple times '
-              'for multiple files. Format must be '
-              '/path/to/author-name-version.tar.gz')
+DESC_FILE = _('path to a file to upload; may be specified multiple times '
+              'for multiple files. File name format must be '
+              'author-name-version.tar.gz')
 
 class UploadModuleCommand(upload_commands.UploadCommand):
 
@@ -63,5 +63,5 @@ class UploadModuleCommand(upload_commands.UploadCommand):
         :type  name_list: type
         """
         for name in name_list:
-            if re.match('^\/.*\/?.+?-.+?-.+?\.tar\.gz$', name) is None:
+            if re.match('^.+?-.+?-.+?\.tar\.gz$', os.path.basename(name)) is None:
                 raise ValueError(_('Filename must have the format author-name-version.tar.gz'))
