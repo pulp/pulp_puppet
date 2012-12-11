@@ -11,6 +11,7 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
+import copy
 from gettext import gettext as _
 import os
 import re
@@ -24,15 +25,19 @@ from pulp_puppet.common.model import Module
 
 DESC_FILE = _('full path to a file to upload; may be specified multiple times '
               'for multiple files. Format must be '
-              'author-name-version.tar.gz')
+              '/path/to/author-name-version.tar.gz')
 
 class UploadModuleCommand(upload_commands.UploadCommand):
 
     def __init__(self, context, upload_manager):
         super(UploadModuleCommand, self).__init__(context, upload_manager)
 
-        upload_commands.OPTION_FILE.validate_func = self.validate_file_name
-        upload_commands.OPTION_FILE.description = DESC_FILE
+        # add a customized file option that replaces the original
+        option_file = copy.copy(upload_commands.OPTION_FILE)
+        option_file.validate_func = self.validate_file_name
+        option_file.description = DESC_FILE
+        self.options.remove(upload_commands.OPTION_FILE)
+        self.add_option(option_file)
 
     def generate_unit_key(self, filename, **kwargs):
         root_filename = os.path.basename(filename)
@@ -58,5 +63,5 @@ class UploadModuleCommand(upload_commands.UploadCommand):
         :type  name_list: type
         """
         for name in name_list:
-            if re.match('^.+-.+-.+\.tar\.gz$', name) is None:
+            if re.match('^\/.*\/?.+?-.+?-.+?\.tar\.gz$', name) is None:
                 raise ValueError(_('Filename must have the format author-name-version.tar.gz'))

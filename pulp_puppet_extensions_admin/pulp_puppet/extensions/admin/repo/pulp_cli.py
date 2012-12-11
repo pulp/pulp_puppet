@@ -19,7 +19,7 @@ from pulp.client.upload.manager import UploadManager
 from pulp_puppet.common import constants
 
 from pulp_puppet.extensions.admin import structure
-from pulp_puppet.extensions.admin.repo import (copy, modules, publish_schedules,
+from pulp_puppet.extensions.admin.repo import (copy_modules, modules, publish_schedules,
                                                remove, status, sync_schedules)
 from pulp_puppet.extensions.admin.repo import upload as puppet_upload
 from pulp_puppet.extensions.admin.repo.cudl import (CreatePuppetRepositoryCommand,
@@ -56,7 +56,7 @@ def initialize(context):
     repo_section.add_command(remove.RemoveCommand(context))
 
     repo_section.add_command(modules.ModulesCommand(context))
-    repo_section.add_command(copy.PuppetModuleCopyCommand(context))
+    repo_section.add_command(copy_modules.PuppetModuleCopyCommand(context))
 
     sync_section = structure.repo_sync_section(context.cli)
     sync_section.add_command(sync_publish.RunSyncRepositoryCommand(context, renderer))

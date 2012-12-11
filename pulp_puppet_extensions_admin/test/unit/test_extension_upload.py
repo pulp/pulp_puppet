@@ -63,30 +63,38 @@ class UploadModuleCommandTests(base_cli.ExtensionTests):
             self.assertTrue(os.path.exists(m))
 
     def test_validator_presence(self):
-        self.assertTrue(OPTION_FILE in self.command.options)
-        self.assertEqual(self.command.validate_file_name, OPTION_FILE.validate_func)
+        option_file =  [opt for opt in self.command.options if opt.keyword == OPTION_FILE.keyword][0]
+        self.assertEqual(self.command.validate_file_name, option_file.validate_func)
 
 
 class TestValidateFileName(unittest.TestCase):
     def test_good(self):
-        upload.UploadModuleCommand.validate_file_name(['author-foo-1.0.0.tar.gz'])
+        upload.UploadModuleCommand.validate_file_name(['/path/to/author-foo-1.0.0.tar.gz'])
 
     def test_multiple(self):
         upload.UploadModuleCommand.validate_file_name(
-            ['author-foo-1.0.0.tar.gz', 'author-bar-0.2.0.tar.gz'])
+            ['/author-foo-1.0.0.tar.gz', '/tmp/author-bar-0.2.0.tar.gz'])
+
+    def test_relative_path(self):
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['tmp/author-foo-1.0.0.tar.gz'])
 
     def test_require_author(self):
-        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['-foo-1.0.0.tar.gz'])
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['/-foo-1.0.0.tar.gz'])
 
     def test_require_name(self):
-        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['author--1.0.0.tar.gz'])
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['/author--1.0.0.tar.gz'])
 
     def test_require_version(self):
-        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['author-foo.tar.gz'])
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['/author-foo.tar.gz'])
 
     def test_require_extension(self):
-        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['author-foo-1.0.0.gz'])
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['/author-foo-1.0.0.gz'])
 
     def test_empty(self):
         self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, [''])
 
+    def test_dir(self):
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['/tmp'])
+
+    def test_root(self):
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['/'])

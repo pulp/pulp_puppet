@@ -18,7 +18,7 @@ from pulp.client.extensions.core import TAG_REASONS
 
 import base_cli
 from pulp_puppet.common import constants
-from pulp_puppet.extensions.admin.repo import copy as copy_commands
+from pulp_puppet.extensions.admin.repo import copy_modules as copy_commands
 
 class CopyCommandTests(base_cli.ExtensionTests):
 
