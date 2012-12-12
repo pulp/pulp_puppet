@@ -189,10 +189,10 @@ class ListPuppetRepositoriesCommandTests(base_cli.ExtensionTests):
     def test_get_repositories(self):
         # Setup
         repos = [
-            {'repo_id' : 'repo-1', 'notes' : {constants.REPO_NOTE_KEY : constants.REPO_NOTE_PUPPET}},
-            {'repo_id' : 'repo-2', 'notes' : {constants.REPO_NOTE_KEY : constants.REPO_NOTE_PUPPET}},
-            {'repo_id' : 'repo-3', 'notes' : {constants.REPO_NOTE_KEY : 'rpm'}},
-            {'repo_id' : 'repo-4', 'notes' : {}},
+            {'id' : 'repo-1', 'notes' : {constants.REPO_NOTE_KEY : constants.REPO_NOTE_PUPPET}},
+            {'id' : 'repo-2', 'notes' : {constants.REPO_NOTE_KEY : constants.REPO_NOTE_PUPPET}},
+            {'id' : 'repo-3', 'notes' : {constants.REPO_NOTE_KEY : 'rpm'}},
+            {'id' : 'repo-4', 'notes' : {}},
         ]
 
         self.server_mock.request.return_value = 200, repos
@@ -203,16 +203,16 @@ class ListPuppetRepositoriesCommandTests(base_cli.ExtensionTests):
         # Verify
         self.assertEqual(2, len(repos))
 
-        repo_ids = [r['repo_id'] for r in repos]
+        repo_ids = [r['id'] for r in repos]
         self.assertTrue('repo-1' in repo_ids)
         self.assertTrue('repo-2' in repo_ids)
 
     def test_get_other_repositories(self):
         # Setup
         repos = [
-            {'repo_id' : 'repo-1', 'notes' : {constants.REPO_NOTE_KEY : constants.REPO_NOTE_PUPPET}},
-            {'repo_id' : 'repo-2', 'notes' : {constants.REPO_NOTE_KEY : 'rpm'}},
-            {'repo_id' : 'repo-3', 'notes' : {}},
+            {'id' : 'repo-1', 'notes' : {constants.REPO_NOTE_KEY : constants.REPO_NOTE_PUPPET}},
+            {'id' : 'repo-2', 'notes' : {constants.REPO_NOTE_KEY : 'rpm'}},
+            {'id' : 'repo-3', 'notes' : {}},
             ]
 
         self.server_mock.request.return_value = 200, repos
@@ -223,9 +223,29 @@ class ListPuppetRepositoriesCommandTests(base_cli.ExtensionTests):
         # Verify
         self.assertEqual(2, len(repos))
 
-        repo_ids = [r['repo_id'] for r in repos]
+        repo_ids = [r['id'] for r in repos]
         self.assertTrue('repo-2' in repo_ids)
         self.assertTrue('repo-3' in repo_ids)
+
+    def test_get_with_distributors(self):
+        # Setup
+        repos = [
+            {
+                'id' : 'repo-1',
+                'notes' : {constants.REPO_NOTE_KEY : constants.REPO_NOTE_PUPPET},
+                'distributors': [{}],
+            },
+        ]
+
+        self.server_mock.request.return_value = 200, repos
+
+        # Test
+        repos = self.command.get_repositories({})
+
+        # make sure the "relative_path" attribute was added correctly
+        # to the distributor
+        self.assertEqual(
+            repos[0]['distributors'][0].get('relative_path'), 'puppet/repo-1/')
 
 
 class SearchPuppetRepositoriesCommand(base_cli.ExtensionTests):
