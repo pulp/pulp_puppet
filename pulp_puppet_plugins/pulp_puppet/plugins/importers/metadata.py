@@ -20,17 +20,19 @@ import shutil
 import sys
 import tarfile
 
+from pulp.server.exceptions import InvalidValue
+
 from pulp_puppet.common import constants
 
 # -- exceptions ---------------------------------------------------------------
 
-class ExtractionException(Exception):
+class ExtractionException(InvalidValue):
     """
     Root exception of all exceptions that can occur while extracting a module's
     metadata.
     """
     def __init__(self, module_filename):
-        Exception.__init__(self, module_filename)
+        InvalidValue.__init__(self, module_filename)
         self.module_filename = module_filename
 
 
