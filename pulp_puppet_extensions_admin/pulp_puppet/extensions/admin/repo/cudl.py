@@ -159,6 +159,10 @@ class ListPuppetRepositoriesCommand(ListRepositoriesCommand):
             if constants.REPO_NOTE_KEY in notes and notes[constants.REPO_NOTE_KEY] == constants.REPO_NOTE_PUPPET:
                 puppet_repos.append(repo)
 
+        for repo in puppet_repos:
+            if repo.get('distributors'):
+                repo['distributors'][0]['relative_path'] = 'puppet/%s/' % repo['id']
+
         return puppet_repos
 
     def get_other_repositories(self, query_params, **kwargs):
