@@ -18,7 +18,7 @@
 
 Name: pulp-puppet
 Version: 2.0.6
-Release: 0.14.beta
+Release: 0.15.beta
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -191,6 +191,16 @@ uninstall; Puppet profile reporting; and Linux specific commands such as system 
 
 
 %changelog
+* Thu Dec 13 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.15.beta
+- 886689 - puppet distributor output from the CLI now includes a relative path
+  to the published content. (mhrivnak@redhat.com)
+- 882414 - Using an exception from the pulp server that allows a helpful error
+  message to be returned to clients. (mhrivnak@redhat.com)
+- 882404 - now validating file name format when uploading modules.
+  (mhrivnak@redhat.com)
+- 882427 - No longer displaying traceback to user when a sync fails to import a
+  module (mhrivnak@redhat.com)
+
 * Mon Dec 10 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.14.beta
 - 
 
