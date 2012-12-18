@@ -137,7 +137,7 @@ to provide Puppet specific support.
 
 %defattr(-,root,root,-)
 %{python_sitelib}/pulp_puppet/plugins/
-%config(noreplace) %{_sysconfdir}/httpd/conf.d/pulp_puppet.conf
+%config(noreplace) %{_sysconfdir}/httpd/conf.d/puppet.conf
 %{_usr}/lib/pulp/plugins/types/puppet.json
 %{python_sitelib}/pulp_puppet_plugins*.egg-info
 
