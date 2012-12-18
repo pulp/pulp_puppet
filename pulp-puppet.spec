@@ -18,7 +18,7 @@
 
 Name: pulp-puppet
 Version: 2.0.6
-Release: 0.17.beta
+Release: 0.18.beta
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -191,6 +191,14 @@ uninstall; Puppet profile reporting; and Linux specific commands such as system 
 
 
 %changelog
+* Tue Dec 18 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.18.beta
+- 887959 - renaming pulp_puppet.conf to puppet.conf (skarmark@redhat.com)
+- 887959 - renaming pulp_puppet.conf to puppet.conf (skarmark@redhat.com)
+- 887959 - renaming pulp_puppet.conf file to puppet.conf so that it get's
+  loaded after pulp_rpm.conf (skarmark@redhat.com)
+- 887959 - Removing NameVirtualHost entries from plugin httpd conf files and
+  adding it only at one place in main pulp.conf (skarmark@redhat.com)
+
 * Thu Dec 13 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.17.beta
 - 
 
