@@ -30,6 +30,9 @@ from pulp_puppet.extensions.admin.repo.cudl import (CreatePuppetRepositoryComman
 
 @priority()
 def initialize(context):
+    """
+    :type context: pulp.client.extensions.core.ClientContext
+    """
     structure.ensure_repo_structure(context.cli)
 
     renderer = status.PuppetStatusRenderer(context)
