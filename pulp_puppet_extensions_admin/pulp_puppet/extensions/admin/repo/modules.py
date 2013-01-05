@@ -18,7 +18,7 @@ Commands related to searching for modules in a Puppet repository.
 from gettext import gettext as _
 
 from pulp.client.commands import options
-from pulp.client.commands.criteria import UnitAssociationCriteriaCommand
+from pulp.client.commands.criteria import DisplayUnitAssociationsCommand
 
 from pulp_puppet.common import constants
 
@@ -28,7 +28,7 @@ DESC_SEARCH = _('search for modules in a repository')
 
 # -- commands -----------------------------------------------------------------
 
-class ModulesCommand(UnitAssociationCriteriaCommand):
+class ModulesCommand(DisplayUnitAssociationsCommand):
     def __init__(self, context):
         super(ModulesCommand, self).__init__(self.run, name='modules',
                                              description=DESC_SEARCH)

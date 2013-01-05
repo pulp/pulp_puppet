@@ -25,7 +25,6 @@ SECTION_ROOT = 'puppet'
 
 SECTION_REPO = 'repo'
 
-SECTION_REMOVE = 'remove'
 SECTION_UPLOADS = 'uploads'
 
 SECTION_SYNC = 'sync'
@@ -36,7 +35,6 @@ SECTION_PUBLISH_SCHEDULES = 'schedules'
 DESC_ROOT = _('manage Puppet-related content and features')
 DESC_REPO = _('repository lifecycle commands')
 
-DESC_REMOVE = _('remove copied or uploaded modules from a repository')
 DESC_UPLOADS = _('upload modules into a repository')
 
 DESC_SYNC = _('run, schedule, or view the status of sync tasks')
@@ -83,7 +81,6 @@ def ensure_repo_structure(cli):
 
     # Add the direct subsections of repo
     direct_subsections = (
-        (SECTION_REMOVE, DESC_REMOVE),
         (SECTION_UPLOADS, DESC_UPLOADS),
         (SECTION_SYNC, DESC_SYNC),
         (SECTION_PUBLISH, DESC_PUBLISH),
@@ -104,10 +101,6 @@ def ensure_repo_structure(cli):
 
 def repo_section(cli):
     return _find_section(cli, SECTION_ROOT, SECTION_REPO)
-
-
-def repo_remove_section(cli):
-    return _find_section(cli, SECTION_ROOT, SECTION_REPO, SECTION_REMOVE)
 
 
 def repo_uploads_section(cli):

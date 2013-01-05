@@ -140,9 +140,18 @@ class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand):
 
 class ListPuppetRepositoriesCommand(ListRepositoriesCommand):
 
+    def __init__(self, context):
+        repos_title = _('Puppet Repositories')
+        super(ListPuppetRepositoriesCommand, self).__init__(context,
+                                                            repos_title=repos_title)
+
+        # Both get_repositories and get_other_repositories will act on the full
+        # list of repositories. Lazy cache the data here since both will be
+        # called in succession, saving the round trip to the server.
+        self.all_repos_cache = None
+
     def get_repositories(self, query_params, **kwargs):
-        all_repos = super(ListPuppetRepositoriesCommand, self).get_repositories(
-            query_params, **kwargs)
+        all_repos = self._all_repos(query_params, **kwargs)
 
         puppet_repos = []
         for repo in all_repos:
@@ -150,7 +159,30 @@ class ListPuppetRepositoriesCommand(ListRepositoriesCommand):
             if constants.REPO_NOTE_KEY in notes and notes[constants.REPO_NOTE_KEY] == constants.REPO_NOTE_PUPPET:
                 puppet_repos.append(repo)
 
+        for repo in puppet_repos:
+            if repo.get('distributors'):
+                repo['distributors'][0]['relative_path'] = 'puppet/%s/' % repo['id']
+
         return puppet_repos
+
+    def get_other_repositories(self, query_params, **kwargs):
+        all_repos = self._all_repos(query_params, **kwargs)
+
+        non_puppet_repos = []
+        for repo in all_repos:
+            notes = repo['notes']
+            if notes.get(constants.REPO_NOTE_KEY, None) != constants.REPO_NOTE_PUPPET:
+                non_puppet_repos.append(repo)
+
+        return non_puppet_repos
+
+    def _all_repos(self, query_params, **kwargs):
+
+        # This is safe from any issues with concurrency due to how the CLI works
+        if self.all_repos_cache is None:
+            self.all_repos_cache = self.context.server.repo.repositories(query_params).response_body
+
+        return self.all_repos_cache
 
 
 class SearchPuppetRepositoriesCommand(CriteriaCommand):

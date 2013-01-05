@@ -16,6 +16,8 @@ import shutil
 import tempfile
 import unittest
 
+from pulp.server.exceptions import InvalidValue
+
 from pulp_puppet.common.model import Module
 from pulp_puppet.plugins.importers import metadata
 
@@ -130,6 +132,8 @@ class NegativeMetadataTests(unittest.TestCase):
             self.fail()
         except metadata.ExtractionException, e:
             self.assertEqual(e.module_filename, filename)
+            self.assertEqual(e.property_names[0], filename)
+            self.assertTrue(isinstance(e, InvalidValue))
 
     def test_extract_non_standard_bad_tarball(self):
         # Setup
