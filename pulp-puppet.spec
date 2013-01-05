@@ -17,8 +17,8 @@
 # ---- Pulp (puppet) -----------------------------------------------------------
 
 Name: pulp-puppet
-Version: 0.0.341
-Release: 1
+Version: 2.1.0
+Release: 0.1.alpha
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -74,6 +74,8 @@ mkdir -p %{buildroot}/%{_usr}/lib/pulp/plugins/types
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/admin/extensions
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/agent/handlers
 mkdir -p %{buildroot}/%{_var}/www/pulp_puppet
+mkdir -p %{buildroot}/%{_var}/www/pulp_puppet/http
+mkdir -p %{buildroot}/%{_var}/www/pulp_puppet/https
 
 # Configuration
 cp -R pulp_puppet_plugins/etc/httpd %{buildroot}/%{_sysconfdir}
@@ -93,7 +95,7 @@ rm -rf %{buildroot}
 
 
 # define required pulp platform version
-%global pulp_version %{version}-%{release}
+%global pulp_version %{version}
 
 
 # ---- Puppet Common -----------------------------------------------------------
@@ -125,18 +127,23 @@ Requires: python-pulp-common = %{pulp_version}
 Requires: python-pulp-puppet-common = %{pulp_version}
 Requires: pulp-server = %{pulp_version}
 Requires: python-setuptools
+Requires: python-pycurl
 
 %description plugins
 Provides a collection of platform plugins that extend the Pulp platform
 to provide Puppet specific support.
 
 %files plugins
+
 %defattr(-,root,root,-)
 %{python_sitelib}/pulp_puppet/plugins/
-%config(noreplace) %{_sysconfdir}/httpd/conf.d/pulp_puppet.conf
+%config(noreplace) %{_sysconfdir}/httpd/conf.d/puppet.conf
 %{_usr}/lib/pulp/plugins/types/puppet.json
-%{_var}/www/pulp_puppet/
 %{python_sitelib}/pulp_puppet_plugins*.egg-info
+
+%defattr(-,apache,apache,-)
+%{_var}/www/pulp_puppet/
+
 %doc
 
 
@@ -173,8 +180,7 @@ Requires: python-pulp-agent-lib = %{pulp_version}
 %description handlers
 A collection of handlers that provide both Linux and Puppet specific
 functionality within the Pulp agent.  This includes Puppet install, update,
-uninstall; Puppet profile reporting; binding through yum repository
-management and Linux specific commands such as system reboot.
+uninstall; Puppet profile reporting; and Linux specific commands such as system reboot.
 
 %files handlers
 %defattr(-,root,root,-)
@@ -185,13 +191,70 @@ management and Linux specific commands such as system reboot.
 
 
 %changelog
-* Mon Nov 19 2012 Jeff Ortel <jortel@redhat.com> 0.0.341-1
+* Thu Dec 20 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.19.rc
 - 
 
-* Mon Nov 19 2012 Jeff Ortel <jortel@redhat.com> 0.0.340-1
+* Wed Dec 19 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.19.beta
 - 
 
-* Wed Nov 14 2012 Jeff Ortel <jortel@redhat.com> 0.0.339-1
+* Tue Dec 18 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.18.beta
+- 887959 - renaming pulp_puppet.conf to puppet.conf (skarmark@redhat.com)
+- 887959 - renaming pulp_puppet.conf to puppet.conf (skarmark@redhat.com)
+- 887959 - renaming pulp_puppet.conf file to puppet.conf so that it get's
+  loaded after pulp_rpm.conf (skarmark@redhat.com)
+- 887959 - Removing NameVirtualHost entries from plugin httpd conf files and
+  adding it only at one place in main pulp.conf (skarmark@redhat.com)
+
+* Thu Dec 13 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.17.beta
+- 
+
+* Thu Dec 13 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.15.beta
+- 886689 - puppet distributor output from the CLI now includes a relative path
+  to the published content. (mhrivnak@redhat.com)
+- 882414 - Using an exception from the pulp server that allows a helpful error
+  message to be returned to clients. (mhrivnak@redhat.com)
+- 882404 - now validating file name format when uploading modules.
+  (mhrivnak@redhat.com)
+- 882427 - No longer displaying traceback to user when a sync fails to import a
+  module (mhrivnak@redhat.com)
+
+* Mon Dec 10 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.14.beta
+- 
+
+* Fri Dec 07 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.13.beta
+- 
+
+* Thu Dec 06 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.12.beta
+- 882419 - adding publish commands to the CLI (mhrivnak@redhat.com)
+- 882421 - added unit remove command. (mhrivnak@redhat.com)
+
+* Thu Nov 29 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.11.beta
+- 
+
+* Thu Nov 29 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.10.beta
+- 866491 - Added translation from server-side property name to client-side flag
+  (jason.dobies@redhat.com)
+- 862290 - Added support for non-Puppet repo listing (jason.dobies@redhat.com)
+- 880229 - I think we need to create these as well. (jason.dobies@redhat.com)
+- 880229 - Apache needs to be able to write to the publish directories
+  (jason.dobies@redhat.com)
+
+* Mon Nov 26 2012 Jay Dobies <jason.dobies@redhat.com> 2.0.6-0.9.beta
+- 
+
+* Wed Nov 21 2012 Jay Dobies <jason.dobies@redhat.com> 2.0.6-0.8.beta
+- 
+
+* Wed Nov 21 2012 Jay Dobies <jason.dobies@redhat.com> 2.0.6-0.7.beta
+- 
+
+* Tue Nov 20 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.3.beta
+- 
+
+* Mon Nov 12 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.2.beta
+- 
+
+* Mon Nov 12 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.1.beta
 - 
 
 * Mon Nov 12 2012 Jeff Ortel <jortel@redhat.com> 0.0.338-1
