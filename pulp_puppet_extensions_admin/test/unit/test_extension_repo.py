@@ -35,7 +35,7 @@ class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         expected_options = set([options.OPTION_REPO_ID, options.OPTION_DESCRIPTION,
                                 options.OPTION_NAME, options.OPTION_NOTES,
                                 cudl.OPTION_FEED, cudl.OPTION_HTTP,
-                                cudl.OPTION_HTTPS, cudl.OPTION_QUERY])
+                                cudl.OPTION_HTTPS, cudl.OPTION_QUERY, cudl.OPTION_QUERIES])
         found_options = set(self.command.options)
         self.assertEqual(expected_options, found_options)
 
@@ -56,7 +56,8 @@ class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
             cudl.OPTION_FEED.keyword : 'http://localhost',
             cudl.OPTION_HTTP.keyword : 'true',
             cudl.OPTION_HTTPS.keyword : 'true',
-            cudl.OPTION_QUERY.keyword : ['q1', 'q2']
+            cudl.OPTION_QUERY.keyword : ['q1', 'q2'],
+            cudl.OPTION_QUERIES.keyword : None
         }
 
         self.server_mock.request.return_value = 200, {}
@@ -98,6 +99,34 @@ class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
 
         self.assertEqual([TAG_SUCCESS], self.prompt.get_write_tags())
 
+    def test_queries_overrides_query(self):
+        # make sure --queries overrides --query, which is deprecated
+        data = {
+            options.OPTION_REPO_ID.keyword : 'test-repo',
+            options.OPTION_NAME.keyword : 'Test Name',
+            options.OPTION_DESCRIPTION.keyword : 'Test Description',
+            options.OPTION_NOTES.keyword : {'a' : 'a'},
+            cudl.OPTION_FEED.keyword : 'http://localhost',
+            cudl.OPTION_HTTP.keyword : 'true',
+            cudl.OPTION_HTTPS.keyword : 'true',
+            cudl.OPTION_QUERY.keyword : ['q1', 'q2'],
+            cudl.OPTION_QUERIES.keyword : ['x', 'y']
+        }
+
+        self.server_mock.request.return_value = 200, {}
+
+        # Test
+        self.command.run(**data)
+
+        body = self.server_mock.request.call_args[0][2]
+        body = json.loads(body)
+
+        expected_config = {
+            u'feed' : u'http://localhost',
+            u'queries' : [u'x', u'y'],
+            }
+        self.assertEqual(expected_config, body['importer_config'])
+
 
 class UpdatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
 
@@ -110,7 +139,7 @@ class UpdatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         expected_options = set([options.OPTION_REPO_ID, options.OPTION_DESCRIPTION,
                                 options.OPTION_NAME, options.OPTION_NOTES,
                                 cudl.OPTION_FEED, cudl.OPTION_HTTP,
-                                cudl.OPTION_HTTPS, cudl.OPTION_QUERY])
+                                cudl.OPTION_HTTPS, cudl.OPTION_QUERY, cudl.OPTION_QUERIES_UPDATE])
         found_options = set(self.command.options)
         self.assertEqual(expected_options, found_options)
 
@@ -164,6 +193,63 @@ class UpdatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         self.assertEqual(expected_config, body['distributor_configs']['puppet_distributor'])
 
         self.assertEqual([TAG_SUCCESS], self.prompt.get_write_tags())
+
+    def test_queries_overrides_query(self):
+        # make sure --queries overrides --query, which is deprecated
+        data = {
+            options.OPTION_REPO_ID.keyword : 'test-repo',
+            options.OPTION_NAME.keyword : 'Test Name',
+            options.OPTION_DESCRIPTION.keyword : 'Test Description',
+            options.OPTION_NOTES.keyword : {'a' : 'a'},
+            cudl.OPTION_FEED.keyword : 'http://localhost',
+            cudl.OPTION_HTTP.keyword : 'true',
+            cudl.OPTION_HTTPS.keyword : 'true',
+            cudl.OPTION_QUERY.keyword : ['q1', 'q2'],
+            cudl.OPTION_QUERIES_UPDATE.keyword : ['x', 'y']
+        }
+
+        self.server_mock.request.return_value = 200, {}
+
+        # Test
+        self.command.run(**data)
+
+        body = self.server_mock.request.call_args[0][2]
+        body = json.loads(body)
+
+        expected_config = {
+            u'feed' : u'http://localhost',
+            u'queries' : [u'x', u'y'],
+            }
+        self.assertEqual(expected_config, body['importer_config'])
+
+    def test_unset_queries(self):
+        # make sure an empty list gets sent as the new value for "queries",
+        # and definitely not None
+        data = {
+            options.OPTION_REPO_ID.keyword : 'test-repo',
+            options.OPTION_NAME.keyword : 'Test Name',
+            options.OPTION_DESCRIPTION.keyword : 'Test Description',
+            options.OPTION_NOTES.keyword : {'a' : 'a'},
+            cudl.OPTION_FEED.keyword : 'http://localhost',
+            cudl.OPTION_HTTP.keyword : 'true',
+            cudl.OPTION_HTTPS.keyword : 'true',
+            cudl.OPTION_QUERY.keyword : None,
+            cudl.OPTION_QUERIES_UPDATE.keyword : []
+        }
+
+        self.server_mock.request.return_value = 200, {}
+
+        # Test
+        self.command.run(**data)
+
+        body = self.server_mock.request.call_args[0][2]
+        body = json.loads(body)
+
+        expected_config = {
+            u'feed' : u'http://localhost',
+            u'queries' : [], # this is the key part of this test
+            }
+        self.assertEqual(expected_config, body['importer_config'])
 
     def test_run_postponed_and_skipped_change_values(self):
         # Setup
