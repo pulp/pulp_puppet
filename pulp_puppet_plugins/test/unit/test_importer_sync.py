@@ -140,6 +140,20 @@ class PuppetModuleSyncRunTests(unittest.TestCase):
         self.assertEqual(pr.modules_total_count, None)
         self.assertEqual(pr.modules_finished_count, None)
 
+    def test_perform_sync_no_feed(self):
+        # Setup
+        del self.config.repo_plugin_config[constants.CONFIG_FEED]
+
+        # Test
+        report = self.run.perform_sync()
+
+        # Verify
+        self.assertTrue(not report.success_flag)
+        pr = self.run.progress_report
+        self.assertEqual(pr.metadata_state, constants.STATE_FAILED)
+        self.assertTrue(len(pr.metadata_error_message) > 0)
+        self.assertEqual(pr.modules_state, constants.STATE_NOT_STARTED)
+
     @mock.patch('pulp_puppet.plugins.importers.sync.PuppetModuleSyncRun._resolve_remove_units')
     def test_perform_sync_with_remove_units(self, mock_resolve):
         # Setup
