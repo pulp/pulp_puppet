@@ -11,7 +11,7 @@
 
 from gettext import gettext as _
 
-from pulp.client import arg_utils
+from pulp.client import arg_utils, parsers
 from pulp.client.commands import options
 from pulp.client.extensions.extensions import PulpCliOption
 from pulp.client.commands.criteria import CriteriaCommand
@@ -24,11 +24,28 @@ DESC_FEED = _('URL of the external source from which to import Puppet modules')
 OPTION_FEED = PulpCliOption('--feed', DESC_FEED, required=False)
 
 DESC_QUERY = _(
+    '(deprecated) ignored if "--queries" is specified. '
     'query to issue against the feed\'s modules.json file to scope which '
     'modules are imported; multiple queries may be added by specifying this '
     'argument multiple times'
 )
 OPTION_QUERY = PulpCliOption('--query', DESC_QUERY, required=False, allow_multiple=True)
+
+DESC_QUERIES = _(
+    'comma-separated list of queries to issue against the feed\'s modules.json '
+    'file to scope which modules are imported.'
+)
+OPTION_QUERIES = PulpCliOption(
+    '--queries', DESC_QUERIES, required=False, allow_multiple=False,
+    parse_func=parsers.csv)
+
+DESC_QUERIES_UPDATE = _(
+    'comma-separated list of queries to issue against the feed\'s modules.json '
+    'file to scope which modules are imported. overwrites previous values.'
+)
+OPTION_QUERIES_UPDATE = PulpCliOption(
+    '--queries', DESC_QUERIES_UPDATE, required=False, allow_multiple=False,
+    parse_func=parsers.csv)
 
 DESC_HTTP = _('if "true", the repository will be served over HTTP; defaults to true')
 OPTION_HTTP = PulpCliOption('--serve-http', DESC_HTTP, required=False)
@@ -44,6 +61,7 @@ class CreatePuppetRepositoryCommand(CreateRepositoryCommand):
         super(CreatePuppetRepositoryCommand, self).__init__(context)
 
         self.add_option(OPTION_FEED)
+        self.add_option(OPTION_QUERIES)
         self.add_option(OPTION_QUERY)
         self.add_option(OPTION_HTTP)
         self.add_option(OPTION_HTTPS)
@@ -65,7 +83,7 @@ class CreatePuppetRepositoryCommand(CreateRepositoryCommand):
         # -- importer metadata --
         importer_config = {
             constants.CONFIG_FEED : kwargs[OPTION_FEED.keyword],
-            constants.CONFIG_QUERIES : kwargs[OPTION_QUERY.keyword],
+            constants.CONFIG_QUERIES : kwargs[OPTION_QUERIES.keyword] or kwargs[OPTION_QUERY.keyword],
             }
         arg_utils.convert_removed_options(importer_config)
 
@@ -96,6 +114,7 @@ class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand):
         super(UpdatePuppetRepositoryCommand, self).__init__(context)
 
         self.add_option(OPTION_FEED)
+        self.add_option(OPTION_QUERIES_UPDATE)
         self.add_option(OPTION_QUERY)
         self.add_option(OPTION_HTTP)
         self.add_option(OPTION_HTTPS)
@@ -108,9 +127,12 @@ class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand):
         notes = kwargs.pop(options.OPTION_NOTES.keyword, None)
 
         # -- importer metadata --
+        queries = kwargs.pop(OPTION_QUERIES.keyword, None)
+        if queries is None:
+            queries = kwargs.pop(OPTION_QUERY.keyword, None)
         importer_config = {
             constants.CONFIG_FEED : kwargs.pop(OPTION_FEED.keyword, None),
-            constants.CONFIG_QUERIES : kwargs.pop(OPTION_QUERY.keyword, None),
+            constants.CONFIG_QUERIES : queries
             }
         arg_utils.convert_removed_options(importer_config)
 

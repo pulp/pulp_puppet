@@ -32,9 +32,12 @@ Update a Repository
 
 Let's add a query to limit the scope of how many modules get synced.
 
+.. note::
+  The ``--query`` option was deprecated in version 2.1
+
 ::
 
-  $ pulp-admin puppet repo update --repo-id=repo1 --query=libvirt
+  $ pulp-admin puppet repo update --repo-id=repo1 --queries=libvirt
   Repository [repo1] successfully updated
 
 List Repositories
