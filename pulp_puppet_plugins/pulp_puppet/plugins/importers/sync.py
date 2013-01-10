@@ -62,6 +62,14 @@ class PuppetModuleSyncRun(object):
         """
         _LOG.info('Beginning sync for repository <%s>' % self.repo.id)
 
+        # quit now if there is no feed URL defined
+        if not self.config.get(constants.CONFIG_FEED):
+            self.progress_report.metadata_state = STATE_FAILED
+            self.progress_report.metadata_error_message =_(
+                'Cannot perform repository sync on a repository with no feed')
+            self.progress_report.update_progress()
+            return self.progress_report.build_final_report()
+
         try:
             metadata = self._parse_metadata()
             if not metadata:
