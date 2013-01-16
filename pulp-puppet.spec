@@ -95,7 +95,11 @@ rm -rf %{buildroot}
 
 
 # define required pulp platform version
+%if %(echo %release | cut -f1 -d'.') < 1
 %global pulp_version %{version}-%{release}
+%else
+%global pulp_version %{version}
+%endif
 
 
 # ---- Puppet Common -----------------------------------------------------------
