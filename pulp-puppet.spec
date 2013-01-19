@@ -197,6 +197,35 @@ uninstall; Puppet profile reporting; and Linux specific commands such as system 
 
 
 %changelog
+* Sat Jan 19 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.1.alpha
+- 887372 - importer now gracefully fails when a feed URL is not present in the
+  config (mhrivnak@redhat.com)
+- 861211 - Adding a "--queries" option to repo create and update that takes a
+  CSV list of query terms, and deprecating the previous "--query" option.
+  (mhrivnak@redhat.com)
+- 887959 - renaming pulp_puppet.conf to puppet.conf (skarmark@redhat.com)
+- 887959 - renaming pulp_puppet.conf to puppet.conf (skarmark@redhat.com)
+- 887959 - renaming pulp_puppet.conf file to puppet.conf so that it get's
+  loaded after pulp_rpm.conf (skarmark@redhat.com)
+- 887959 - Removing NameVirtualHost entries from plugin httpd conf files and
+  adding it only at one place in main pulp.conf (skarmark@redhat.com)
+- 886689 - puppet distributor output from the CLI now includes a relative path
+  to the published content. (mhrivnak@redhat.com)
+- 882414 - Using an exception from the pulp server that allows a helpful error
+  message to be returned to clients. (mhrivnak@redhat.com)
+- 882404 - now validating file name format when uploading modules.
+  (mhrivnak@redhat.com)
+- 882427 - No longer displaying traceback to user when a sync fails to import a
+  module (mhrivnak@redhat.com)
+- 882419 - adding publish commands to the CLI (mhrivnak@redhat.com)
+- 882421 - added unit remove command. (mhrivnak@redhat.com)
+- 866491 - Added translation from server-side property name to client-side flag
+  (jason.dobies@redhat.com)
+- 862290 - Added support for non-Puppet repo listing (jason.dobies@redhat.com)
+- 880229 - I think we need to create these as well. (jason.dobies@redhat.com)
+- 880229 - Apache needs to be able to write to the publish directories
+  (jason.dobies@redhat.com)
+
 * Thu Dec 20 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.19.rc
 - 
 
