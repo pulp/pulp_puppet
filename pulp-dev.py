@@ -40,7 +40,10 @@ LINKS = (
     # Puppet Support Plugins
     ('pulp_puppet_plugins/pulp_puppet/plugins/types/puppet.json', DIR_PLUGINS + '/types/puppet.json'),
     # Puppet Support Admin Extensions
-    ('pulp_puppet_extensions_admin/etc/pulp/admin/conf.d/puppet.conf', '/etc/pulp/admin/conf.d/puppet.conf')
+    ('pulp_puppet_extensions_admin/etc/pulp/admin/conf.d/puppet.conf', '/etc/pulp/admin/conf.d/puppet.conf'),
+    # handlers
+    ('pulp_puppet_handlers/etc/pulp/agent/conf.d/puppet_bind.conf', '/etc/pulp/agent/conf.d/puppet_bind.conf'),
+    ('pulp_puppet_handlers/etc/pulp/agent/conf.d/puppet_module.conf', '/etc/pulp/agent/conf.d/puppet_module.conf'),
 )
 
 def parse_cmdline():

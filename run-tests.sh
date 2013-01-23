@@ -8,6 +8,6 @@ find $PROJECT_DIR -name "*.pyc" -delete
 PACKAGES="pulp_puppet"
 
 # Test Directories
-TESTS="pulp_puppet_common/test/unit pulp_puppet_extensions_admin/test/unit pulp_puppet_plugins/test/unit"
+TESTS="pulp_puppet_common/test/unit pulp_puppet_extensions_admin/test/unit pulp_puppet_handlers/test/unit pulp_puppet_plugins/test/unit"
 
 nosetests --with-coverage --cover-html --cover-erase --cover-package $PACKAGES $TESTS
