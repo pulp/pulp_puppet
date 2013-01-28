@@ -43,6 +43,10 @@ REPO_NOTE_PUPPET = 'puppet-repo'
 # Name of the hosted file describing the contents of the repository
 REPO_METADATA_FILENAME = 'modules.json'
 
+# Name of the file that holds dependency data, which is required by the WSGI
+# app that implements puppet forge's API
+REPO_DEPDATA_FILENAME = '.dependency_db'
+
 # File name inside of a module where its metadata is found
 MODULE_METADATA_FILENAME = 'metadata.json'
 
@@ -99,3 +103,7 @@ DEFAULT_HTTP_DIR = '/var/www/pulp_puppet/http/repos'
 # Local directory the web server will serve for HTTPS repositories
 CONFIG_HTTPS_DIR = 'https_dir'
 DEFAULT_HTTPS_DIR = '/var/www/pulp_puppet/https/repos'
+
+# Default absolute path component of URL where repos are stored
+CONFIG_ABSOLUTE_PATH = 'absolute_path'
+DEFAULT_ABSOLUTE_PATH = '/pulp/puppet/'

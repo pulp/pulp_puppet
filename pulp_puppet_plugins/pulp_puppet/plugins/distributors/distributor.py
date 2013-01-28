@@ -20,18 +20,13 @@ from pulp_puppet.plugins.distributors import configuration, publish
 
 # -- plugins ------------------------------------------------------------------
 
-CONFIG = {
-    'http_dir' : '/var/www/pulp_puppet/http/repos',
-    'https_dir' : '/var/www/pulp_puppet/https/repos'
-}
-
 def entry_point():
     """
     Entry point that pulp platform uses to load the distributor
     :return: distributor class and its config
     :rtype:  Distributor, {}
     """
-    return PuppetModuleDistributor, CONFIG
+    return PuppetModuleDistributor, configuration.DEFAULT_CONFIG
 
 
 class PuppetModuleDistributor(Distributor):
