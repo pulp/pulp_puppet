@@ -13,7 +13,9 @@
 
 import copy
 from   datetime import datetime
+import gdbm
 from   gettext import gettext as _
+import json
 import logging
 import os
 import shutil
@@ -145,6 +147,7 @@ class PuppetModulePublishRun(object):
 
         try:
             self._generate_metadata(modules)
+            self._generate_dependency_data(modules)
             self._copy_to_published()
             self._cleanup_build_dir()
         except Exception, e:
@@ -225,20 +228,43 @@ class PuppetModulePublishRun(object):
         self.progress_report.update_progress()
 
         for module in modules:
-            subs = (module.unit_key['author'][0], module.unit_key['author'])
-            served_relative_path = constants.HOSTED_MODULE_FILE_RELATIVE_PATH % subs
+            served_relative_path = self._build_relative_path(module)
             symlink_path = os.path.join(build_dir, served_relative_path)
-            symlink_filename = os.path.join(symlink_path, os.path.basename(module.storage_path))
+            symlink_dir = os.path.split(symlink_path)[0]
 
             try:
-                if not os.path.exists(symlink_path):
-                    os.makedirs(symlink_path)
-                os.symlink(module.storage_path, symlink_filename)
+                if not os.path.exists(symlink_dir):
+                    os.makedirs(symlink_dir)
+                os.symlink(module.storage_path, symlink_path)
                 self.progress_report.modules_finished_count += 1
             except Exception, e:
                 self.progress_report.add_failed_module(module, sys.exc_info()[2])
 
             self.progress_report.update_progress()
+
+    def _build_relative_path(self, module):
+        """
+        build a relative path from the repository root to the module
+
+        :param module:  puppet module
+        :type  module:  pulp.plugins.model.AssociatedUnit
+        :return:    relative path to module file
+        :rtype:     str
+        """
+        subs = (module.unit_key['author'][0], module.unit_key['author'])
+        served_relative_path = constants.HOSTED_MODULE_FILE_RELATIVE_PATH % subs
+        return os.path.join(served_relative_path, os.path.basename(module.storage_path))
+
+    @property
+    def _repo_path(self):
+        """
+        build an absolute path (URL component) to the repo being published
+
+        :return:    absolute path (URL component) to the repo being published
+        :rtype:     str
+        """
+        base_path = self.config.get(constants.CONFIG_ABSOLUTE_PATH, constants.DEFAULT_ABSOLUTE_PATH)
+        return os.path.join(base_path, self.repo.id)
 
     def _generate_metadata(self, modules):
         """
@@ -265,6 +291,41 @@ class PuppetModulePublishRun(object):
         f = open(metadata_file, 'w')
         f.write(json_metadata)
         f.close()
+
+    def _generate_dependency_data(self, modules):
+        """
+        generate the dependency metadata that is required to provide the API
+        that the "puppet module" tool uses. Store the metadata in a gdbm
+        database at the root of the repo. Generating and storing it at publish
+        time means the API requests will always return results that are in-sync
+        with the most recent publish and are not influenced by more recent
+        changes to the repo or its contents.
+
+        :type modules: list of pulp.plugins.model.AssociatedUnit
+        """
+        filename = os.path.join(self._build_dir(), constants.REPO_DEPDATA_FILENAME)
+        _LOG.debug('generating dependency metadata in file %s' % filename)
+        # opens a new file for writing and overwrites any existing file
+        db = gdbm.open(filename, 'n')
+        try:
+            for module in modules:
+                version = module.unit_key['version']
+                deps = module.metadata.get('dependencies', [])
+                path = os.path.join(self._repo_path, self._build_relative_path(module))
+                value = {'file' : path, 'version' : version, 'dependencies' : deps}
+
+                name = module.unit_key['name']
+                author = module.unit_key['author']
+                key = '%s/%s' % (author, name)
+
+                if db.has_key(key):
+                    module_list = json.loads(db[key])
+                else:
+                    module_list = []
+                module_list.append(value)
+                db[key] = json.dumps(module_list)
+        finally:
+            db.close()
 
     def _copy_to_published(self):
         """

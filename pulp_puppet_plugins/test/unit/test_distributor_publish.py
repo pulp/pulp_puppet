@@ -11,6 +11,8 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
+import gdbm
+import json
 import os
 import shutil
 import tempfile
@@ -91,6 +93,39 @@ class PublishRunTests(unittest.TestCase):
         if os.path.exists(self.working_dir):
             shutil.rmtree(self.working_dir)
 
+    @mock.patch('gdbm.open')
+    def test_generate_dep_data(self, mock_open):
+        class FakeDB(dict):
+            """Fake version of gdbm database"""
+            close_called = False
+            def close(self):
+                self.close_called = True
+        mock_open.return_value = FakeDB()
+
+        units = [
+            Unit(constants.TYPE_PUPPET_MODULE,
+                 {'name':'foo', 'version':'1.0.3', 'author':'me'},
+                 {'dependencies':[]}, '/tmp'),
+            Unit(constants.TYPE_PUPPET_MODULE,
+                {'name':'foo', 'version':'1.1.0', 'author':'me'},
+                {'dependencies':[]}, '/tmp'),
+            Unit(constants.TYPE_PUPPET_MODULE,
+                {'name':'bar', 'version':'1.0.0', 'author':'me'},
+                {'dependencies': [{'name':'me/foo', 'version_requirement': '>= 1.0.0'}]}, '/tmp'),
+        ]
+        self.run._generate_dependency_data(units)
+
+        db = mock_open.return_value
+        self.assertTrue(db.close_called)
+        self.assertTrue('me/foo' in db)
+        self.assertTrue('me/bar' in db)
+        foo_data = json.loads(db['me/foo'])
+        self.assertEqual(len(foo_data), 2)
+        bar_data = json.loads(db['me/bar'])
+        self.assertEqual(len(bar_data), 1)
+        self.assertEqual(bar_data[0]['dependencies'][0]['name'], 'me/foo')
+        self.assertEqual(bar_data[0]['dependencies'][0]['version_requirement'], '>= 1.0.0')
+
     def test_perform_publish(self):
         # Test
         report = self.run.perform_publish()
@@ -113,6 +148,23 @@ class PublishRunTests(unittest.TestCase):
 
         # Build directory was cleaned up
         self.assertTrue(not os.path.exists(self.run._build_dir()))
+
+        # Dependency metadata was generated
+        expected_dep_file = os.path.join(self.test_http_dir, self.repo.id, constants.REPO_DEPDATA_FILENAME)
+        self.assertTrue(os.path.exists(expected_dep_file))
+        db = gdbm.open(expected_dep_file)
+        for unit in self.units:
+            name = '%s/%s' % (unit.unit_key['author'], unit.unit_key['name'])
+            self.assertTrue(db.has_key(name))
+            data = json.loads(db[name])
+            self.assertIsInstance(data, list)
+            if len(data) == 1:
+                self.assertEqual(data[0]['version'], unit.unit_key['version'])
+                self.assertIsInstance(data[0].get('dependencies'), list)
+                self.assertTrue('file' in data[0])
+        db.close()
+
+        self.assertTrue(os.path.exists(self.test_http_dir))
 
         # Final report
         self.assertTrue(report.success_flag)

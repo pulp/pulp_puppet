@@ -24,6 +24,8 @@ DEFAULT_CONFIG = {
 
     constants.CONFIG_HTTP_DIR : constants.DEFAULT_HTTP_DIR,
     constants.CONFIG_HTTPS_DIR : constants.DEFAULT_HTTPS_DIR,
+
+    constants.CONFIG_ABSOLUTE_PATH : constants.DEFAULT_ABSOLUTE_PATH,
 }
 
 
