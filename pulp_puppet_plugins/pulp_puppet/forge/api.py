@@ -34,6 +34,17 @@ MODULE_PATTERN = re.compile('^[a-zA-Z0-9]+/[a-zA-Z0-9_]+$')
 
 class Releases(object):
     def GET(self):
+        """
+        Credentials here are not actually used for authorization, but instead
+        are used to identify:
+
+            consumer ID in the username field
+            repository ID in the password field
+
+        This is to work around the fact that the "puppet module install"
+        command has hard-coded absolute paths, so we cannot put consumer or
+        repository IDs in the URL's path.
+        """
         credentials = self._get_credentials()
         if not credentials:
             return web.unauthorized()

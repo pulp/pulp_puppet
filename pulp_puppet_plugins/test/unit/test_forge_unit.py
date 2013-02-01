@@ -66,7 +66,7 @@ class TestBuildDepMetadata(unittest.TestCase):
 
         self.assertEqual(result, {unit.name: [unit.to_dict()]})
 
-    @mock.patch.object(Unit, 'add_dep_to_metadata', spec=unit_generator().add_dep_to_metadata)
+    @mock.patch.object(Unit, '_add_dep_to_metadata', spec=unit_generator()._add_dep_to_metadata)
     def test_with_dep(self, mock_add_dep):
         unit = unit_generator()
 
@@ -87,7 +87,7 @@ class TestAddDepToMetadata(unittest.TestCase):
         unit = unit_generator()
         data = {}
 
-        unit.add_dep_to_metadata('foo/bar', data)
+        unit._add_dep_to_metadata('foo/bar', data)
 
         # verify that this method was called correctly
         self.assertEqual(mock_units_from_json.call_count, 2)
@@ -105,7 +105,7 @@ class TestAddDepToMetadata(unittest.TestCase):
         mock_list_of_module_metadata = mock.MagicMock()
         root = {'foo/bar': mock_list_of_module_metadata}
 
-        unit.add_dep_to_metadata('foo/bar', root)
+        unit._add_dep_to_metadata('foo/bar', root)
 
         self.assertEqual(root['foo/bar'], mock_list_of_module_metadata)
 

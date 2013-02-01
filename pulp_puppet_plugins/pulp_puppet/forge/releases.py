@@ -28,6 +28,7 @@ NULL_AUTH_VALUE = '.'
 
 _LOGGER = logging.getLogger(__name__)
 
+
 def view(consumer_id, repo_id, module_name, version=None):
     """
     produces data for the "releases.json" view

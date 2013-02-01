@@ -20,7 +20,107 @@ _LOGGER = logging.getLogger(__name__)
 class Unit(object):
     """
     Represents a unit for purposes of generating dependency data equivalent to
-    the puppet forge API's output.
+    the Puppet Forge API's output.
+
+    Note that the requested module will only have one version present in the
+    output, even if multiple versions exist. I don't know why, but this is how
+    the original API behaves.
+
+    Also, when an included module has dependencies, all available versions of
+    that module will be included; even versions that do not meet the dependency's
+    version requirement. Again, I don't know why, but this is how the original
+    API behaves.
+
+    Unlike the examples below which are taken from Puppet Forge, we return full
+    URLs to each file so that the basic auth credentials get stripped off.
+
+    A basic example with no dependencies will look like this:
+
+    http://forge.puppetlabs.com/api/v1/releases.json?module=puppetlabs/stdlib
+
+    {
+      "puppetlabs/stdlib": [
+        {
+          "dependencies": [],
+          "version": "3.2.0",
+          "file": "/system/releases/p/puppetlabs/puppetlabs-stdlib-3.2.0.tar.gz"
+        }
+      ]
+    }
+
+    An example with dependencies will look like this (many versions of stdlib
+    were removed for brevity):
+
+    http://forge.puppetlabs.com/api/v1/releases.json?module=branan/minecraft
+
+    {
+      "branan/minecraft": [
+        {
+          "dependencies": [
+            [
+              "branan/s3file",
+              ">= 1.0.0"
+            ],
+            [
+              "puppetlabs/java",
+              ">= 0.1.6"
+            ],
+            [
+              "puppetlabs/stdlib",
+              ">= 2.2.0"
+            ]
+          ],
+          "version": "1.0.0",
+          "file": "/system/releases/b/branan/branan-minecraft-1.0.0.tar.gz"
+        }
+      ],
+      "puppetlabs/stdlib": [
+        {
+          "dependencies": [],
+          "version": "3.1.0",
+          "file": "/system/releases/p/puppetlabs/puppetlabs-stdlib-3.1.0.tar.gz"
+        },
+        {
+          "dependencies": [],
+          "version": "3.1.1",
+          "file": "/system/releases/p/puppetlabs/puppetlabs-stdlib-3.1.1.tar.gz"
+        },
+        {
+          "dependencies": [],
+          "version": "3.2.0",
+          "file": "/system/releases/p/puppetlabs/puppetlabs-stdlib-3.2.0.tar.gz"
+        }
+      ],
+      "branan/s3file": [
+        {
+          "dependencies": [],
+          "version": "1.0.0",
+          "file": "/system/releases/b/branan/branan-s3file-1.0.0.tar.gz"
+        }
+      ],
+      "puppetlabs/java": [
+        {
+          "dependencies": [
+            [
+              "puppetlabs/stdlib",
+              ">= 0.1.6"
+            ]
+          ],
+          "version": "0.1.6",
+          "file": "/system/releases/p/puppetlabs/puppetlabs-java-0.1.6.tar.gz"
+        },
+        {
+          "dependencies": [
+            [
+              "puppetlabs/stdlib",
+              ">= 0.1.6"
+            ]
+          ],
+          "version": "0.2.0",
+          "file": "/system/releases/p/puppetlabs/puppetlabs-java-0.2.0.tar.gz"
+        }
+      ]
+    }
     """
 
     def __init__(self, name, version, file, dependencies, db, repo_id, host, protocol):
@@ -99,10 +199,10 @@ class Unit(object):
         """
         root = {self.name: [self.to_dict()]}
         for dep in self.dependencies:
-            self.add_dep_to_metadata(dep['name'], root)
+            self._add_dep_to_metadata(dep['name'], root)
         return root
 
-    def add_dep_to_metadata(self, name, root):
+    def _add_dep_to_metadata(self, name, root):
         """
         Given a dependency metadata structure, add a new dependency to it. This
         will recursively add dependencies of the current dependency being added.
@@ -119,7 +219,7 @@ class Unit(object):
             root[name] = [unit.to_dict() for unit in units]
             for unit in units:
                 for dep in unit.dependencies:
-                    self.add_dep_to_metadata(dep['name'], root)
+                    self._add_dep_to_metadata(dep['name'], root)
 
     @property
     def _deps_as_list(self):
