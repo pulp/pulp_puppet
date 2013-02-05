@@ -142,6 +142,7 @@ to provide Puppet specific support.
 %files plugins
 
 %defattr(-,root,root,-)
+%{python_sitelib}/pulp_puppet/forge/
 %{python_sitelib}/pulp_puppet/plugins/
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/puppet.conf
 %{_usr}/lib/pulp/plugins/types/puppet.json
