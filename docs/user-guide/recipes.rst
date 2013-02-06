@@ -86,7 +86,7 @@ basic auth credentials as part of the URL.
 
 .. note:: Puppet Forge implements a web API that their client uses to obtain dependency
           data when installing a module. Unfortunately, their command line tool has
-          hard-coded absolute paths instead of relative, which means that API must live at
+          hard-coded absolute paths instead of relative, which means the API must live at
           the root of a web server. As a result, we cannot put the repository ID in the
           path as you would expect with the above example.
 
