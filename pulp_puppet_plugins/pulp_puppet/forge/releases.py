@@ -75,28 +75,55 @@ PROTOCOL_CONFIG_KEYS = {
 }
 
 
-def get_repo_dep_dbs(repo_ids):
+def get_repo_data(repo_ids):
     """
     Find, open, and return the gdbm database file associated with each repo
+    plus that repo's publish protocol
 
     :param repo_ids: list of repository IDs.
     :type  repo_ids: list
 
-    :return:    dictionary where values are open gdbm objects and keys are
-                repo_ids
+    :return:    dictionary where keys are repo IDs, and values are dicts that
+                contain an open gdbm database under key "db", and a protocol
+                under key "protocol".
     :rtype:     dict
     """
     ret = {}
     for distributor in RepoDistributorManager.find_by_repo_list(repo_ids):
-        protocol_key, protocol_default_value = PROTOCOL_CONFIG_KEYS[web.ctx.protocol.lower()]
+        publish_protocol = _get_protocol_from_distributor(distributor)
+        protocol_key, protocol_default_value = PROTOCOL_CONFIG_KEYS[publish_protocol]
         repo_path = distributor['config'].get(protocol_key, protocol_default_value)
         repo_id = distributor['repo_id']
         db_path = os.path.join(repo_path, repo_id, constants.REPO_DEPDATA_FILENAME)
         try:
-            ret[repo_id] = gdbm.open(db_path, 'r')
+            ret[repo_id] = {'db': gdbm.open(db_path, 'r'), 'protocol': publish_protocol}
         except gdbm.error:
             _LOGGER.error('failed to find dependency database for repo %s. re-publish to fix.' % repo_id)
     return ret
+
+
+def _get_protocol_from_distributor(distributor):
+    """
+    Look at a distributor's config and determine what protocol it gets published
+    for. Gives preference to https in case a distributor is configured for both.
+
+    :param distributor: distributor as returned by
+                        pulp.server.managers.RepoDistributorManager, should be
+                        a dict with key 'config'
+    :type  distributor: dict
+    :return:
+    """
+    config = distributor['config']
+    # look for an explicit setting for this distributor
+    if config.get(constants.CONFIG_SERVE_HTTPS):
+        return 'https'
+    elif config.get(constants.CONFIG_SERVE_HTTP):
+        return 'http'
+    # look for the default
+    elif constants.DEFAULT_SERVE_HTTPS:
+        return 'https'
+    elif constants.DEFAULT_SERVE_HTTP:
+        return 'http'
 
 
 def find_version(repo_ids, module_name, version):
@@ -113,11 +140,12 @@ def find_version(repo_ids, module_name, version):
     :return:    Unit instance
     :rtype:     puppet.forge.unit.Unit
     """
-    dbs = get_repo_dep_dbs(repo_ids)
+    dbs = get_repo_data(repo_ids)
+    host = get_host_and_protocol()['host']
     ret = None
     try:
-        for repo_id, db in dbs.iteritems():
-            units = Unit.units_from_json(module_name, db, repo_id, **get_host_and_protocol())
+        for repo_id, data in dbs.iteritems():
+            units = Unit.units_from_json(module_name, data['db'], repo_id, host, data['protocol'])
             for unit in units:
                 if unit.version == version:
                     ret = unit
@@ -127,8 +155,8 @@ def find_version(repo_ids, module_name, version):
         # close database files we don't need to use
         if ret:
             del dbs[ret.repo_id]
-        for db in dbs.itervalues():
-            db.close()
+        for data in dbs.itervalues():
+            data['db'].close()
 
     return ret
 
@@ -145,11 +173,12 @@ def find_newest(repo_ids, module_name):
     :return:    Unit instance, or None if not found
     :rtype:     puppet.forge.unit.Unit
     """
-    dbs = get_repo_dep_dbs(repo_ids)
+    dbs = get_repo_data(repo_ids)
+    host = get_host_and_protocol()['host']
     ret = None
     try:
-        for repo_id, db in dbs.iteritems():
-            units = Unit.units_from_json(module_name, db, repo_id, **get_host_and_protocol())
+        for repo_id, data in dbs.iteritems():
+            units = Unit.units_from_json(module_name, data['db'], repo_id, host, data['protocol'])
             if units:
                 repo_max = max(units)
                 if ret is None or repo_max > ret:
@@ -158,8 +187,8 @@ def find_newest(repo_ids, module_name):
         # close database files we don't need to use
         if ret:
             del dbs[ret.repo_id]
-        for db in dbs.itervalues():
-            db.close()
+        for data in dbs.itervalues():
+            data['db'].close()
     return ret
 
 
