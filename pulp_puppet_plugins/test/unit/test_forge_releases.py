@@ -12,6 +12,7 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 import functools
+import gdbm
 import unittest
 
 import mock
@@ -37,7 +38,9 @@ MOCK_HOST_PROTOCOL = {
 
 class TestView(unittest.TestCase):
     def test_null_auth(self):
-        self.assertRaises(web.Unauthorized, releases.view, releases.NULL_AUTH_VALUE, releases.NULL_AUTH_VALUE, 'foo/bar')
+        self.assertRaises(
+            web.Unauthorized, releases.view, releases.NULL_AUTH_VALUE,
+            releases.NULL_AUTH_VALUE, 'foo/bar')
 
     @mock.patch.object(releases, 'find_newest', autospec=True)
     def test_repo_only(self, mock_find):
@@ -85,7 +88,7 @@ class TestView(unittest.TestCase):
         mock_find.return_value.db.close.assert_called_once_with()
 
 
-class TestGetRepoDepDBs(unittest.TestCase):
+class TestGetRepoData(unittest.TestCase):
     @mock.patch('web.ctx')
     @mock.patch('pulp.server.managers.repo.distributor.RepoDistributorManager.find_by_repo_list')
     @mock.patch('gdbm.open', autospec=True)
@@ -93,11 +96,11 @@ class TestGetRepoDepDBs(unittest.TestCase):
         mock_ctx.protocol = 'http'
         mock_find.return_value = [{'repo_id':'repo1', 'config':{}}]
 
-        result = releases.get_repo_dep_dbs(['repo1'])
+        result = releases.get_repo_data(['repo1'])
 
         self.assertIsInstance(result, dict)
         self.assertEqual(result.keys(), ['repo1'])
-        self.assertEqual(result['repo1'], mock_open.return_value)
+        self.assertEqual(result['repo1']['db'], mock_open.return_value)
         mock_open.assert_called_once_with('/var/www/pulp_puppet/http/repos/repo1/.dependency_db', 'r')
 
     @mock.patch('web.ctx')
@@ -110,7 +113,7 @@ class TestGetRepoDepDBs(unittest.TestCase):
             {'repo_id':'repo2', 'config':{}}
         ]
 
-        result = releases.get_repo_dep_dbs(['repo1', 'repo2'])
+        result = releases.get_repo_data(['repo1', 'repo2'])
 
         self.assertTrue('repo1' in result)
         self.assertTrue('repo2' in result)
@@ -125,45 +128,84 @@ class TestGetRepoDepDBs(unittest.TestCase):
              'config':{constants.CONFIG_HTTP_DIR: '/var/www/pulp_puppet/foo'}}
         ]
 
-        result = releases.get_repo_dep_dbs(['repo1'])
+        result = releases.get_repo_data(['repo1'])
 
         mock_open.assert_called_once_with('/var/www/pulp_puppet/foo/repo1/.dependency_db', 'r')
+
+    @mock.patch('web.ctx')
+    @mock.patch('pulp.server.managers.repo.distributor.RepoDistributorManager.find_by_repo_list')
+    @mock.patch('gdbm.open', autospec=True)
+    def test_db_open_error(self, mock_open, mock_find, mock_ctx):
+        mock_ctx.protocol = 'http'
+        mock_find.return_value = [{'repo_id':'repo1', 'config':{}}]
+        mock_open.side_effect = gdbm.error
+
+        result = releases.get_repo_data(['repo1'])
+
+        self.assertEqual(result, {})
+        mock_open.assert_called_once_with('/var/www/pulp_puppet/http/repos/repo1/.dependency_db', 'r')
+
+
+class TestGetProtocol(unittest.TestCase):
+    def test_default(self):
+        result = releases._get_protocol_from_distributor({'config':{}})
+
+        # http is currently the default protocol for publishes
+        self.assertEqual(result, 'http')
+
+    def test_no_config(self):
+        # if there is no config, don't return a default. This is an error.
+        self.assertRaises(KeyError, releases._get_protocol_from_distributor, {})
+
+    def test_http(self):
+        distributor = {'config': {constants.CONFIG_SERVE_HTTP: True}}
+        result = releases._get_protocol_from_distributor(distributor)
+
+        self.assertEqual(result, 'http')
+
+    def test_https(self):
+        distributor = {'config': {constants.CONFIG_SERVE_HTTPS: True}}
+        result = releases._get_protocol_from_distributor(distributor)
+
+        self.assertEqual(result, 'https')
 
 
 class TestFindVersion(unittest.TestCase):
     @mock.patch.object(releases, 'get_host_and_protocol', return_value=MOCK_HOST_PROTOCOL)
     @mock.patch('pulp_puppet.forge.unit.Unit.units_from_json')
-    @mock.patch.object(releases, 'get_repo_dep_dbs', autospec=True)
-    def test_calls_units_from_json(self, mock_get_dbs, mock_units_from_json, mock_get_host_and_protocol):
-        mock_get_dbs.return_value = {
-            'repo1' : mock.MagicMock(),
-            'repo2' : mock.MagicMock()
+    @mock.patch.object(releases, 'get_repo_data', autospec=True)
+    def test_calls_units_from_json(self, mock_get_data, mock_units_from_json, mock_get_host_and_protocol):
+        mock_get_data.return_value = {
+            'repo1' : {'db': mock.MagicMock(), 'protocol': 'http'},
+            'repo2' : {'db': mock.MagicMock(), 'protocol': 'http'},
         }
         mock_units_from_json.return_value = []
 
         result = releases.find_version(['repo1', 'repo2'], 'foo/bar', '1.0.0')
 
         mock_units_from_json.assert_any_call(
-            'foo/bar', mock_get_dbs.return_value['repo1'], 'repo1', **MOCK_HOST_PROTOCOL
+            'foo/bar', mock_get_data.return_value['repo1']['db'],
+            'repo1', MOCK_HOST_PROTOCOL['host'], 'http'
         )
         mock_units_from_json.assert_any_call(
-            'foo/bar', mock_get_dbs.return_value['repo2'], 'repo2', **MOCK_HOST_PROTOCOL
+            'foo/bar', mock_get_data.return_value['repo2']['db'],
+            'repo2', MOCK_HOST_PROTOCOL['host'], 'http'
         )
 
     @mock.patch.object(releases, 'get_host_and_protocol')
     @mock.patch('pulp_puppet.forge.unit.Unit.units_from_json')
-    @mock.patch.object(releases, 'get_repo_dep_dbs', autospec=True)
-    def test_returns_version(self, mock_get_dbs, mock_units_from_json, mock_get_host_and_protocol):
-        mock_get_dbs.return_value = {
-            'repo1' : mock.MagicMock(),
-            'repo2' : mock.MagicMock()
+    @mock.patch.object(releases, 'get_repo_data', autospec=True)
+    def test_returns_version(self, mock_get_data, mock_units_from_json, mock_get_host_and_protocol):
+        mock_get_data.return_value = {
+            'repo1' : {'db': mock.MagicMock(), 'protocol': 'http'},
+            'repo2' : {'db': mock.MagicMock(), 'protocol': 'http'},
         }
         mock_units_from_json.return_value = [
             unit_generator(version='2.1.3'),
             unit_generator(version='1.6.2'),
             unit_generator(version='2.0.3'),
             unit_generator(version='3.1.5'),
-            ]
+        ]
 
         result = releases.find_version(['repo1', 'repo2'], 'foo/bar', '2.0.3')
 
@@ -172,12 +214,12 @@ class TestFindVersion(unittest.TestCase):
 
     @mock.patch.object(releases, 'get_host_and_protocol')
     @mock.patch('pulp_puppet.forge.unit.Unit.units_from_json')
-    @mock.patch.object(releases, 'get_repo_dep_dbs', autospec=True)
-    def test_no_units_found(self, mock_get_dbs, mock_units_from_json, mock_get_host_and_protocol):
+    @mock.patch.object(releases, 'get_repo_data', autospec=True)
+    def test_no_units_found(self, mock_get_data, mock_units_from_json, mock_get_host_and_protocol):
         # make sure it correctly returns None if there are no units found
-        mock_get_dbs.return_value = {
-            'repo1' : mock.MagicMock(),
-            'repo2' : mock.MagicMock()
+        mock_get_data.return_value = {
+            'repo1' : {'db': mock.MagicMock(), 'protocol': 'http'},
+            'repo2' : {'db': mock.MagicMock(), 'protocol': 'http'},
         }
         mock_units_from_json.return_value = []
 
@@ -187,46 +229,48 @@ class TestFindVersion(unittest.TestCase):
 
     @mock.patch.object(releases, 'get_host_and_protocol')
     @mock.patch('pulp_puppet.forge.unit.Unit.units_from_json', side_effect=Exception)
-    @mock.patch.object(releases, 'get_repo_dep_dbs', autospec=True)
-    def test_close_dbs_on_error(self, mock_get_dbs, mock_units_from_json, mock_get_host_and_protocol):
-        mock_get_dbs.return_value = {
-            'repo1' : mock.MagicMock(),
-            'repo2' : mock.MagicMock()
+    @mock.patch.object(releases, 'get_repo_data', autospec=True)
+    def test_close_dbs_on_error(self, mock_get_data, mock_units_from_json, mock_get_host_and_protocol):
+        mock_get_data.return_value = {
+            'repo1' : {'db': mock.MagicMock(), 'protocol': 'http'},
+            'repo2' : {'db': mock.MagicMock(), 'protocol': 'http'},
         }
 
         self.assertRaises(Exception, releases.find_version, ['repo1', 'repo2'], 'foo/bar', '1.0.0')
 
-        for mock_db in mock_get_dbs.return_value.itervalues():
-            mock_db.close.assert_called_once_with()
+        for mock_data in mock_get_data.return_value.itervalues():
+            mock_data['db'].close.assert_called_once_with()
 
 
 class TestFindNewest(unittest.TestCase):
     @mock.patch.object(releases, 'get_host_and_protocol', return_value=MOCK_HOST_PROTOCOL)
     @mock.patch('pulp_puppet.forge.unit.Unit.units_from_json')
-    @mock.patch.object(releases, 'get_repo_dep_dbs', autospec=True)
-    def test_calls_units_from_json(self, mock_get_dbs, mock_units_from_json, mock_get_host_and_protocol):
-        mock_get_dbs.return_value = {
-            'repo1' : mock.MagicMock(),
-            'repo2' : mock.MagicMock()
+    @mock.patch.object(releases, 'get_repo_data', autospec=True)
+    def test_calls_units_from_json(self, mock_get_data, mock_units_from_json, mock_get_host_and_protocol):
+        mock_get_data.return_value = {
+            'repo1' : {'db': mock.MagicMock(), 'protocol': 'http'},
+            'repo2' : {'db': mock.MagicMock(), 'protocol': 'http'},
         }
         mock_units_from_json.return_value = []
 
         result = releases.find_newest(['repo1', 'repo2'], 'foo/bar')
 
         mock_units_from_json.assert_any_call(
-            'foo/bar', mock_get_dbs.return_value['repo1'], 'repo1', **MOCK_HOST_PROTOCOL
+            'foo/bar', mock_get_data.return_value['repo1']['db'],
+            'repo1', MOCK_HOST_PROTOCOL['host'], 'http'
         )
         mock_units_from_json.assert_any_call(
-            'foo/bar', mock_get_dbs.return_value['repo2'], 'repo2', **MOCK_HOST_PROTOCOL
+            'foo/bar', mock_get_data.return_value['repo2']['db'],
+            'repo2', MOCK_HOST_PROTOCOL['host'], 'http'
         )
 
     @mock.patch.object(releases, 'get_host_and_protocol')
     @mock.patch('pulp_puppet.forge.unit.Unit.units_from_json')
-    @mock.patch.object(releases, 'get_repo_dep_dbs', autospec=True)
-    def test_returns_newest(self, mock_get_dbs, mock_units_from_json, mock_get_host_and_protocol):
-        mock_get_dbs.return_value = {
-            'repo1' : mock.MagicMock(),
-            'repo2' : mock.MagicMock()
+    @mock.patch.object(releases, 'get_repo_data', autospec=True)
+    def test_returns_newest(self, mock_get_data, mock_units_from_json, mock_get_host_and_protocol):
+        mock_get_data.return_value = {
+            'repo1' : {'db': mock.MagicMock(), 'protocol': 'http'},
+            'repo2' : {'db': mock.MagicMock(), 'protocol': 'http'},
         }
         mock_units_from_json.return_value = [
             unit_generator(version='2.1.3'),
@@ -242,12 +286,12 @@ class TestFindNewest(unittest.TestCase):
 
     @mock.patch.object(releases, 'get_host_and_protocol')
     @mock.patch('pulp_puppet.forge.unit.Unit.units_from_json')
-    @mock.patch.object(releases, 'get_repo_dep_dbs', autospec=True)
-    def test_no_units_found(self, mock_get_dbs, mock_units_from_json, mock_get_host_and_protocol):
+    @mock.patch.object(releases, 'get_repo_data', autospec=True)
+    def test_no_units_found(self, mock_get_data, mock_units_from_json, mock_get_host_and_protocol):
         # make sure it correctly returns None if there are no units found
-        mock_get_dbs.return_value = {
-            'repo1' : mock.MagicMock(),
-            'repo2' : mock.MagicMock()
+        mock_get_data.return_value = {
+            'repo1' : {'db': mock.MagicMock(), 'protocol': 'http'},
+            'repo2' : {'db': mock.MagicMock(), 'protocol': 'http'},
         }
         mock_units_from_json.return_value = []
 
@@ -257,17 +301,17 @@ class TestFindNewest(unittest.TestCase):
 
     @mock.patch.object(releases, 'get_host_and_protocol')
     @mock.patch('pulp_puppet.forge.unit.Unit.units_from_json', side_effect=Exception)
-    @mock.patch.object(releases, 'get_repo_dep_dbs', autospec=True)
-    def test_close_dbs_on_error(self, mock_get_dbs, mock_units_from_json, mock_get_host_and_protocol):
-        mock_get_dbs.return_value = {
-            'repo1' : mock.MagicMock(),
-            'repo2' : mock.MagicMock()
+    @mock.patch.object(releases, 'get_repo_data', autospec=True)
+    def test_close_dbs_on_error(self, mock_get_data, mock_units_from_json, mock_get_host_and_protocol):
+        mock_get_data.return_value = {
+            'repo1' : {'db': mock.MagicMock(), 'protocol': 'http'},
+            'repo2' : {'db': mock.MagicMock(), 'protocol': 'http'},
         }
 
         self.assertRaises(Exception, releases.find_newest, ['repo1', 'repo2'], 'foo/bar')
 
-        for mock_db in mock_get_dbs.return_value.itervalues():
-            mock_db.close.assert_called_once_with()
+        for mock_data in mock_get_data.return_value.itervalues():
+            mock_data['db'].close.assert_called_once_with()
 
 
 
