@@ -44,7 +44,7 @@ class TestUnitsFromJSON(unittest.TestCase):
         result = Unit.units_from_json(name, db, 'repo1', 'localhost', 'http')
 
         self.assertEqual(len(result), 1)
-        self.assertIsInstance(result[0], Unit)
+        self.assertTrue(isinstance(result[0], Unit))
         self.assertEqual(result[0].name, name)
         self.assertEqual(result[0].repo_id, 'repo1')
         self.assertEqual(result[0].host, 'localhost')
@@ -115,7 +115,7 @@ class TestDepsAsList(unittest.TestCase):
         unit = unit_generator()
         result = unit._deps_as_list
 
-        self.assertIsInstance(result, list)
+        self.assertTrue(isinstance(result, list))
         self.assertEqual(len(result), 1)
         self.assertEqual(len(result[0]), 2)
         self.assertEqual(result[0][0], unit.dependencies[0]['name'])

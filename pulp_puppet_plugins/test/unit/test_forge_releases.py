@@ -37,7 +37,8 @@ MOCK_HOST_PROTOCOL = {
 
 
 class TestView(unittest.TestCase):
-    def test_null_auth(self):
+    @mock.patch('web.webapi.ctx')
+    def test_null_auth(self, mock_ctx):
         self.assertRaises(
             web.Unauthorized, releases.view, releases.NULL_AUTH_VALUE,
             releases.NULL_AUTH_VALUE, 'foo/bar')
@@ -98,7 +99,7 @@ class TestGetRepoData(unittest.TestCase):
 
         result = releases.get_repo_data(['repo1'])
 
-        self.assertIsInstance(result, dict)
+        self.assertTrue(isinstance(result, dict))
         self.assertEqual(result.keys(), ['repo1'])
         self.assertEqual(result['repo1']['db'], mock_open.return_value)
         mock_open.assert_called_once_with('/var/www/pulp_puppet/http/repos/repo1/.dependency_db', 'r')
@@ -209,7 +210,7 @@ class TestFindVersion(unittest.TestCase):
 
         result = releases.find_version(['repo1', 'repo2'], 'foo/bar', '2.0.3')
 
-        self.assertIsInstance(result, Unit)
+        self.assertTrue(isinstance(result, Unit))
         self.assertEqual(result.version, '2.0.3')
 
     @mock.patch.object(releases, 'get_host_and_protocol')
@@ -225,7 +226,7 @@ class TestFindVersion(unittest.TestCase):
 
         result = releases.find_version(['repo1', 'repo2'], 'foo/bar', '1.0.0')
 
-        self.assertIsNone(result)
+        self.assertTrue(result is None)
 
     @mock.patch.object(releases, 'get_host_and_protocol')
     @mock.patch('pulp_puppet.forge.unit.Unit.units_from_json', side_effect=Exception)
@@ -281,7 +282,7 @@ class TestFindNewest(unittest.TestCase):
 
         result = releases.find_newest(['repo1', 'repo2'], 'foo/bar')
 
-        self.assertIsInstance(result, Unit)
+        self.assertTrue(isinstance(result, Unit))
         self.assertEqual(result.version, '3.1.5')
 
     @mock.patch.object(releases, 'get_host_and_protocol')
@@ -297,7 +298,7 @@ class TestFindNewest(unittest.TestCase):
 
         result = releases.find_newest(['repo1', 'repo2'], 'foo/bar')
 
-        self.assertIsNone(result)
+        self.assertTrue(result is None)
 
     @mock.patch.object(releases, 'get_host_and_protocol')
     @mock.patch('pulp_puppet.forge.unit.Unit.units_from_json', side_effect=Exception)
