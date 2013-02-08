@@ -157,10 +157,10 @@ class PublishRunTests(unittest.TestCase):
             name = '%s/%s' % (unit.unit_key['author'], unit.unit_key['name'])
             self.assertTrue(db.has_key(name))
             data = json.loads(db[name])
-            self.assertIsInstance(data, list)
+            self.assertTrue(isinstance(data, list))
             if len(data) == 1:
                 self.assertEqual(data[0]['version'], unit.unit_key['version'])
-                self.assertIsInstance(data[0].get('dependencies'), list)
+                self.assertTrue(isinstance(data[0].get('dependencies'), list))
                 self.assertTrue('file' in data[0])
         db.close()
 

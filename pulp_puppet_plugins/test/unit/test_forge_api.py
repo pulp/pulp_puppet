@@ -77,7 +77,7 @@ class TestGET(unittest.TestCase):
         mock_ctx.env = {}
 
         result = api.Releases().GET()
-        self.assertIsInstance(result, web.webapi.Unauthorized)
+        self.assertTrue(isinstance(result, web.webapi.Unauthorized))
 
     @mock.patch('web.ctx')
     @mock.patch.object(api.Releases, '_get_credentials')
@@ -88,7 +88,7 @@ class TestGET(unittest.TestCase):
         mock_ctx.env = {}
 
         result = api.Releases().GET()
-        self.assertIsInstance(result, web.webapi.BadRequest)
+        self.assertTrue(isinstance(result, web.webapi.BadRequest))
 
     @mock.patch('pulp_puppet.forge.releases.view', autospec=True)
     @mock.patch.object(web, 'input')
@@ -132,13 +132,13 @@ class TestGetCredentials(unittest.TestCase):
     def test_invalid_string(self, mock_ctx):
         mock_ctx.env = {'HTTP_AUTHORIZATION' : 'Basic notreallyencoded'}
         result = api.Releases._get_credentials()
-        self.assertIsNone(result)
+        self.assertTrue(result is None)
 
     @mock.patch('web.ctx')
     def test_not_provided(self, mock_ctx):
         mock_ctx.env = {}
         result = api.Releases._get_credentials()
-        self.assertIsNone(result)
+        self.assertTrue(result is None)
 
 
 class TestGetModuleName(unittest.TestCase):
@@ -153,5 +153,5 @@ class TestGetModuleName(unittest.TestCase):
     def test_not_provided(self, mock_input):
         result = api.Releases._get_module_name()
 
-        self.assertIsNone(result)
+        self.assertTrue(result is None)
         mock_input.assert_called_once_with()
