@@ -183,16 +183,17 @@ client capabilites with Puppet specific features.
 Summary: Pulp agent puppet handlers
 Group: Development/Languages
 Requires: python-pulp-agent-lib = %{pulp_version}
+Requires: python-pulp-common = %{pulp_version}
 
 %description handlers
-A collection of handlers that provide both Linux and Puppet specific
+A collection of handlers that provide Puppet specific
 functionality within the Pulp agent.  This includes Puppet install, update,
-uninstall; Puppet profile reporting; and Linux specific commands such as system reboot.
+uninstall, bind, and unbind.
 
 %files handlers
 %defattr(-,root,root,-)
 %{python_sitelib}/pulp_puppet/handlers/
-%{_sysconfdir}/pulp/agent/conf.d/puppet.conf
+%{_sysconfdir}/pulp/agent/conf.d/
 %{python_sitelib}/pulp_puppet_handlers*.egg-info
 %doc
 

@@ -31,6 +31,9 @@ DISTRIBUTOR_TYPE_ID = 'puppet_distributor'
 # ID used to refer to the puppet distributor instance on a repository
 DISTRIBUTOR_ID = 'puppet_distributor'
 
+# ID used to refer to the whole repo profiler
+WHOLE_REPO_PROFILER_ID = 'puppet_whole_repo_profiler'
+
 # ID of the puppet module type definition (must match what's in puppet.json)
 TYPE_PUPPET_MODULE = 'puppet_module'
 
@@ -113,3 +116,13 @@ DEFAULT_ABSOLUTE_PATH = '/pulp/puppet/'
 # value passed as either username or password in basic auth to signify that the
 # field should be considered null
 FORGE_NULL_AUTH_VALUE = '.'
+
+# -- REST API ----------------------------------------------------------------
+
+# Option key passed to an "install" consumer request with a repository ID
+# as its value that should be used for the request
+REPO_ID_OPTION = 'repo_id'
+
+# Option key passed to an "install" consumer request with a repository ID
+# as its value that should have its entire contents installed
+WHOLE_REPO_OPTION = 'whole_repo'
