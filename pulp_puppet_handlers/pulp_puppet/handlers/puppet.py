@@ -282,7 +282,7 @@ class ModuleHandler(handler.ContentHandler):
             elif operation == 'upgrade':
                 module_reports = report.get('affected_modules', [])
             else:
-               continue
+                continue
             cls._clean_inner_module_reports(module_reports, operation)
 
     @classmethod
