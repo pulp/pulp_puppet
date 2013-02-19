@@ -193,7 +193,8 @@ uninstall, bind, and unbind.
 %files handlers
 %defattr(-,root,root,-)
 %{python_sitelib}/pulp_puppet/handlers/
-%{_sysconfdir}/pulp/agent/conf.d/
+%{_sysconfdir}/pulp/agent/conf.d/puppet_bind.conf
+%{_sysconfdir}/pulp/agent/conf.d/puppet_module.conf
 %{python_sitelib}/pulp_puppet_handlers*.egg-info
 %doc
 
