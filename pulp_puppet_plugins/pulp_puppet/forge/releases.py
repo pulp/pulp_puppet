@@ -22,10 +22,6 @@ import web
 from pulp_puppet.common import constants
 from pulp_puppet.forge.unit import Unit
 
-# value passed as either username or password in basic auth to signify that the
-# field should be considered null
-NULL_AUTH_VALUE = '.'
-
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -47,8 +43,8 @@ def view(consumer_id, repo_id, module_name, version=None):
                 generates, except this structure is not yet JSON serialized
     :rtype:     dict
     """
-    if repo_id == NULL_AUTH_VALUE:
-        if consumer_id == NULL_AUTH_VALUE:
+    if repo_id == constants.FORGE_NULL_AUTH_VALUE:
+        if consumer_id == constants.FORGE_NULL_AUTH_VALUE:
             # must provide either consumer ID or repo ID
             raise web.Unauthorized()
         repo_ids = get_bound_repos(consumer_id)

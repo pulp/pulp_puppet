@@ -107,3 +107,9 @@ DEFAULT_HTTPS_DIR = '/var/www/pulp_puppet/https/repos'
 # Default absolute path component of URL where repos are stored
 CONFIG_ABSOLUTE_PATH = 'absolute_path'
 DEFAULT_ABSOLUTE_PATH = '/pulp/puppet/'
+
+# -- forge API ---------------------------------------------------------------
+
+# value passed as either username or password in basic auth to signify that the
+# field should be considered null
+FORGE_NULL_AUTH_VALUE = '.'

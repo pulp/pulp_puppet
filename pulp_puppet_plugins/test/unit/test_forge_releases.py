@@ -40,12 +40,12 @@ class TestView(unittest.TestCase):
     @mock.patch('web.webapi.ctx')
     def test_null_auth(self, mock_ctx):
         self.assertRaises(
-            web.Unauthorized, releases.view, releases.NULL_AUTH_VALUE,
-            releases.NULL_AUTH_VALUE, 'foo/bar')
+            web.Unauthorized, releases.view, constants.FORGE_NULL_AUTH_VALUE,
+            constants.FORGE_NULL_AUTH_VALUE, 'foo/bar')
 
     @mock.patch.object(releases, 'find_newest', autospec=True)
     def test_repo_only(self, mock_find):
-        result = releases.view(releases.NULL_AUTH_VALUE, 'repo1', 'foo/bar')
+        result = releases.view(constants.FORGE_NULL_AUTH_VALUE, 'repo1', 'foo/bar')
         mock_find.assert_called_once_with(['repo1'], 'foo/bar')
         self.assertEqual(result, mock_find.return_value.build_dep_metadata.return_value)
 
@@ -60,32 +60,32 @@ class TestView(unittest.TestCase):
     def test_consumer_only(self, mock_get_bound, mock_find):
         mock_get_bound.return_value = ['repo1', 'repo2']
 
-        releases.view('consumer1', releases.NULL_AUTH_VALUE, 'foo/bar')
+        releases.view('consumer1', constants.FORGE_NULL_AUTH_VALUE, 'foo/bar')
 
         mock_get_bound.assert_called_once_with('consumer1')
         mock_find.assert_called_once_with(['repo1', 'repo2'], 'foo/bar')
 
     @mock.patch.object(releases, 'find_version', autospec=True)
     def test_with_version(self, mock_find):
-        result = releases.view(releases.NULL_AUTH_VALUE, 'repo1', 'foo/bar', '1.0.0')
+        result = releases.view(constants.FORGE_NULL_AUTH_VALUE, 'repo1', 'foo/bar', '1.0.0')
         mock_find.assert_called_once_with(['repo1'], 'foo/bar', '1.0.0')
         self.assertEqual(result, mock_find.return_value.build_dep_metadata.return_value)
 
     @mock.patch.object(releases, 'find_newest', autospec=True, return_value=None)
     @mock.patch('web.NotFound', return_value=Exception())
     def test_unit_not_found(self, mock_not_found, mock_find):
-        self.assertRaises(Exception, releases.view, releases.NULL_AUTH_VALUE, 'repo1', 'foo/bar')
+        self.assertRaises(Exception, releases.view, constants.FORGE_NULL_AUTH_VALUE, 'repo1', 'foo/bar')
         mock_not_found.assert_called_once_with()
 
     @mock.patch.object(releases, 'find_newest', autospec=True)
     def test_close_unit_db(self, mock_find):
-        result = releases.view(releases.NULL_AUTH_VALUE, 'repo1', 'foo/bar')
+        result = releases.view(constants.FORGE_NULL_AUTH_VALUE, 'repo1', 'foo/bar')
         mock_find.return_value.db.close.assert_called_once_with()
 
     @mock.patch.object(releases, 'find_newest', autospec=True)
     def test_close_unit_db_with_error(self, mock_find):
         mock_find.return_value.build_dep_metadata.side_effect=Exception
-        self.assertRaises(Exception, releases.view, releases.NULL_AUTH_VALUE, 'repo1', 'foo/bar')
+        self.assertRaises(Exception, releases.view, constants.FORGE_NULL_AUTH_VALUE, 'repo1', 'foo/bar')
         mock_find.return_value.db.close.assert_called_once_with()
 
 
