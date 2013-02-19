@@ -231,7 +231,9 @@ class ModuleHandler(handler.ContentHandler):
         """
         Makes a best effort to locate and deserialize the JSON output from the
         "puppet module" tool. The tool does not document exactly how this will
-        be included in the output, so this method
+        be included in the output, so this method returns an empty dictionary if
+        a JSON-serialized report is not found. It also logs a warning in that
+        case.
 
         :param output:      text output from the "puppet module" tool, which
                             presumably includes some JSON
