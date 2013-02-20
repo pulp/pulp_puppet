@@ -25,6 +25,9 @@ setup(
         'pulp.importers': [
             'importer = pulp_puppet.plugins.importers.importer:entry_point',
         ],
+        'pulp.profilers': [
+            'profiler = pulp_puppet.plugins.profilers.wholerepo:entry_point',
+        ],
         'pulp.server.db.migrations': [
             'pulp_puppet = pulp_puppet.plugins.migrations',
         ],

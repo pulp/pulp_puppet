@@ -16,6 +16,7 @@ import unittest
 
 import mock
 from pulp.agent.lib.report import ContentReport
+from pulp_puppet.common import constants
 
 from pulp_puppet.handlers.puppet import ModuleHandler
 
@@ -100,6 +101,22 @@ notice: Installing -- do not interrupt ...
         self.assertTrue(successes.get('puppetlabs/stdlib'))
 
     @mock.patch('subprocess.Popen', autospec=True)
+    def test_with_units_and_repo_id(self, mock_popen):
+        mock_popen.return_value.communicate.side_effect = self.POPEN_OUTPUT
+        mock_popen.return_value.returncode = 0
+        options = {constants.REPO_ID_OPTION: 'repo1'}
+
+        report = self.handler.install(self.conduit, self.UNITS, options)
+
+        mock_popen.assert_any_call(
+            ['puppet', 'module', 'install', '--render-as', 'json', '--module_repository',
+             'http://.:repo1@localhost', 'puppetlabs/java'],
+            stdout=subprocess.PIPE
+        )
+        self.assertTrue(report.succeeded)
+        self.assertEqual(report.num_changes, 2)
+
+    @mock.patch('subprocess.Popen', autospec=True)
     def test_with_error(self, mock_popen):
         mock_popen.return_value.communicate.return_value = (self.POPEN_STDOUT_ERROR, '')
         mock_popen.return_value.returncode = 1
@@ -170,6 +187,23 @@ notice: Upgrading -- do not interrupt ...
         # content. Don't pay much attention to the content, since it is generated
         # by the puppet module tool, which is out of our control.
         self.assertTrue(successes.get('puppetlabs/stdlib'))
+
+    @mock.patch('subprocess.Popen', autospec=True)
+    def test_with_unit_and_repo_id(self, mock_popen):
+        mock_popen.return_value.communicate.return_value = (self.POPEN_STDOUT, '')
+        mock_popen.return_value.returncode = 0
+        options = {constants.REPO_ID_OPTION: 'repo1'}
+
+        report = self.handler.update(self.conduit, self.UNITS, options)
+
+        self.assertTrue(report.succeeded)
+        self.assertEqual(report.num_changes, 1)
+
+        mock_popen.assert_called_once_with(
+            ['puppet', 'module', 'upgrade', '--render-as', 'json', '--module_repository',
+             'http://.:repo1@localhost', 'puppetlabs/stdlib'],
+            stdout=subprocess.PIPE
+        )
 
     @mock.patch('subprocess.Popen', autospec=True)
     def test_with_error(self, mock_popen):

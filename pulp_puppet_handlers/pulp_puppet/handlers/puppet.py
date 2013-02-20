@@ -67,8 +67,9 @@ class ModuleHandler(handler.ContentHandler):
                     tool indicated an error. Everything else is in "successes".
         :rtype:     pulp.agent.lib.report.ContentReport
         """
+        repo_id = options.get(constants.REPO_ID_OPTION)
         successes, errors, num_changes = cls._perform_operation(
-            'install', units, cls._generate_forge_url(conduit))
+            'install', units, cls._generate_forge_url(conduit, repo_id))
         report = ContentReport()
         report.set_succeeded({'successes': successes, 'errors': errors}, num_changes)
         return report
@@ -91,8 +92,9 @@ class ModuleHandler(handler.ContentHandler):
                     tool indicated an error. Everything else is in "successes".
         :rtype:     pulp.agent.lib.report.ContentReport
         """
+        repo_id = options.get(constants.REPO_ID_OPTION)
         successes, errors, num_changes = cls._perform_operation(
-            'upgrade', units, cls._generate_forge_url(conduit))
+            'upgrade', units, cls._generate_forge_url(conduit, repo_id))
         report = ContentReport()
         report.set_succeeded({'successes': successes, 'errors': errors}, num_changes)
         return report
