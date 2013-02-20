@@ -20,7 +20,7 @@ setup(
     author_email='pulp-list@redhat.com',
     entry_points = {
         'pulp.extensions.admin': [
-            'repo_admin = pulp_puppet.extensions.admin.repo.pulp_cli:initialize',
+            'repo_admin = pulp_puppet.extensions.admin.pulp_cli:initialize',
         ]
     }
 )

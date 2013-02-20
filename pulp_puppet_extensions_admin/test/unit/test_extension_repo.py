@@ -20,7 +20,7 @@ from pulp.common.compat import json
 
 import base_cli
 from pulp_puppet.common import constants
-from pulp_puppet.extensions.admin.repo import pulp_cli as commands
+from pulp_puppet.extensions.admin import pulp_cli as commands
 from pulp_puppet.extensions.admin.repo import cudl
 from pulp_puppet.extensions.admin.repo.remove import RemoveCommand
 
