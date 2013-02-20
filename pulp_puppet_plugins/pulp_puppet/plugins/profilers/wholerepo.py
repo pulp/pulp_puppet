@@ -54,7 +54,6 @@ class WholeRepoProfiler(Profiler):
 
     def install_units(self, consumer, units, options, config, conduit):
         """
-
         Inspect the options, and if constants.WHOLE_REPO_ID has a non-False
         value, replace the list of units with a list of all units in the given
         repository. Omits version numbers, which allows the install tool to
