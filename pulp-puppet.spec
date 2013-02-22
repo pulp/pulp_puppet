@@ -45,6 +45,9 @@ popd
 pushd pulp_puppet_extensions_admin
 %{__python} setup.py build
 popd
+pushd pulp_puppet_extensions_consumer
+%{__python} setup.py build
+popd
 pushd pulp_puppet_plugins
 %{__python} setup.py build
 popd
@@ -58,6 +61,9 @@ pushd pulp_puppet_common
 %{__python} setup.py install -O1 --skip-build --root %{buildroot}
 popd
 pushd pulp_puppet_extensions_admin
+%{__python} setup.py install -O1 --skip-build --root %{buildroot}
+popd
+pushd pulp_puppet_extensions_consumer
 %{__python} setup.py install -O1 --skip-build --root %{buildroot}
 popd
 pushd pulp_puppet_plugins
@@ -120,6 +126,8 @@ A collection of modules shared among all Puppet components.
 %dir %{python_sitelib}/pulp_puppet
 %{python_sitelib}/pulp_puppet/__init__.py*
 %{python_sitelib}/pulp_puppet/common/
+%dir %{python_sitelib}/pulp_puppet/extensions
+%{python_sitelib}/pulp_puppet/extensions/__init__.py*
 %{python_sitelib}/pulp_puppet_common*.egg-info
 %doc
 
@@ -172,10 +180,29 @@ client capabilites with Puppet specific features.
 %files admin-extensions
 %defattr(-,root,root,-)
 %{_sysconfdir}/pulp/admin/conf.d/puppet.conf
-%{python_sitelib}/pulp_puppet/extensions/
+%{python_sitelib}/pulp_puppet/extensions/admin/
 %{python_sitelib}/pulp_puppet_extensions_admin*.egg-info
 %doc
 
+
+# ---- Consumer Extensions --------------------------------------------------------
+
+%package consumer-extensions
+Summary: The Puppet consumer client extensions
+Group: Development/Languages
+Requires: python-pulp-puppet-common = %{pulp_version}
+Requires: pulp-consumer-client = %{pulp_version}
+Requires: python-setuptools
+
+%description consumer-extensions
+A collection of extensions that supplement generic consumer
+client capabilites with Puppet specific features.
+
+%files consumer-extensions
+%defattr(-,root,root,-)
+%{python_sitelib}/pulp_puppet/extensions/consumer/
+%{python_sitelib}/pulp_puppet_extensions_consumer*.egg-info
+%doc
 
 # ---- Agent Handlers ----------------------------------------------------------
 
