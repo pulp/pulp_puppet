@@ -16,9 +16,10 @@ import os
 from pulp.client.commands.repo import cudl, sync_publish, upload
 from pulp.client.extensions.decorator import priority
 from pulp.client.upload.manager import UploadManager
-from pulp_puppet.common import constants
 
+from pulp_puppet.common import constants
 from pulp_puppet.extensions.admin import structure
+from pulp_puppet.extensions.admin.consumer import bind, content
 from pulp_puppet.extensions.admin.repo import (copy_modules, modules, publish_schedules,
                                                remove, status, sync_schedules)
 from pulp_puppet.extensions.admin.repo import upload as puppet_upload
@@ -34,8 +35,22 @@ def initialize(context):
     :type context: pulp.client.extensions.core.ClientContext
     """
     structure.ensure_repo_structure(context.cli)
+    structure.ensure_consumer_structure(context.cli)
 
     renderer = status.PuppetStatusRenderer(context)
+
+    consumer_section = structure.consumer_section(context.cli)
+    consumer_section.add_command(bind.BindCommand(context))
+    consumer_section.add_command(bind.UnbindCommand(context))
+
+    consumer_install_section = structure.consumer_install_section(context.cli)
+    consumer_install_section.add_command(content.InstallCommand(context))
+
+    consumer_update_section = structure.consumer_update_section(context.cli)
+    consumer_update_section.add_command(content.UpdateCommand(context))
+
+    consumer_uninstall_section = structure.consumer_uninstall_section(context.cli)
+    consumer_uninstall_section.add_command(content.UninstallCommand(context))
 
     publish_section = structure.repo_publish_section(context.cli)
     publish_section.add_command(
