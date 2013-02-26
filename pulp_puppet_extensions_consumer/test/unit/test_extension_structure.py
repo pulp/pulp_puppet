@@ -47,3 +47,4 @@ class TestInit(base_cli.ExtensionTests):
         root = self.context.cli.find_subsection(structure.SECTION_ROOT)
         self.assertTrue(bind.BindCommand(self.context).name in root.commands)
         self.assertTrue(bind.UnbindCommand(self.context).name in root.commands)
+        self.assertTrue(pulp_cli.SEARCH_NAME in root.commands)
