@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Red Hat, Inc.
+# Copyright (c) 2013 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -66,7 +66,7 @@ class ExtensionTests(unittest.TestCase):
         self.exception_handler = ExceptionHandler(self.prompt, self.config)
 
         self.context = ClientContext(self.bindings, self.config, self.logger, self.prompt,
-            self.exception_handler)
+                                     self.exception_handler)
 
         self.cli = PulpCli(self.context)
         self.context.cli = self.cli

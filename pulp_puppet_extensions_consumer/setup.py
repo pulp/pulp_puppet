@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Red Hat, Inc.
+# Copyright (c) 2013 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -13,7 +13,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pulp_puppet_extensions_consumer',
-    version='2.0.0',
+    version='2.1.0',
     license='GPLv2+',
     packages=find_packages(exclude=['test', 'test.*']),
     author='Pulp Team',

@@ -66,7 +66,7 @@ class ExtensionTests(unittest.TestCase):
         self.exception_handler = ExceptionHandler(self.prompt, self.config)
 
         self.context = ClientContext(self.bindings, self.config, self.logger, self.prompt,
-            self.exception_handler)
+                                     self.exception_handler)
 
         self.cli = PulpCli(self.context)
         self.context.cli = self.cli

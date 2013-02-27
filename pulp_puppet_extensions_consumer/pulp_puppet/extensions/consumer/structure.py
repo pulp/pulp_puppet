@@ -14,7 +14,7 @@
 from gettext import gettext as _
 
 SECTION_ROOT = 'puppet'
-DESC_ROOT = _('manage Puppet-related features')
+DESC_ROOT = _('manage Puppet bindings')
 
 
 def ensure_puppet_root(cli):
