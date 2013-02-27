@@ -1,4 +1,6 @@
-# Copyright (c) 2012 Red Hat, Inc.
+# -*- coding: utf-8 -*-
+#
+# Copyright © 2013 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -9,13 +11,20 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-from setuptools import setup, find_packages
+from pulp.client.extensions.decorator import priority
 
-setup(
-    name='pulp_puppet_handlers',
-    version='2.1.0',
-    license='GPLv2+',
-    packages=find_packages(exclude=['test', 'test.*']),
-    author='Pulp Team',
-    author_email='pulp-list@redhat.com',
-)
+from pulp_puppet.extensions.consumer import bind, structure
+
+
+@priority()
+def initialize(context):
+    """
+    :type context: pulp.client.extensions.core.ClientContext
+    """
+
+    structure.ensure_puppet_root(context.cli)
+
+    root_section = structure.root_section(context.cli)
+    root_section.add_command(bind.BindCommand(context))
+    root_section.add_command(bind.UnbindCommand(context))
+
