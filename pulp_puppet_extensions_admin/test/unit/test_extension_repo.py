@@ -334,39 +334,6 @@ class ListPuppetRepositoriesCommandTests(base_cli.ExtensionTests):
             repos[0]['distributors'][0].get('relative_path'), 'puppet/repo-1/')
 
 
-class SearchPuppetRepositoriesCommand(base_cli.ExtensionTests):
-
-    def setUp(self):
-        super(SearchPuppetRepositoriesCommand, self).setUp()
-        self.command = commands.SearchPuppetRepositoriesCommand(self.context)
-
-    def test_structure(self):
-        self.assertTrue(isinstance(self.command, CriteriaCommand))
-        self.assertEqual('search', self.command.name)
-        self.assertEqual(cudl.DESC_SEARCH, self.command.description)
-
-    def test_run(self):
-        # Setup
-        repos = []
-        for i in range(0, 4):
-            r = {
-                'repo_id' : 'repo_%s' % i,
-                'display_name' : 'Repo %s' % i,
-                'description' : 'Description',
-            }
-            repos.append(r)
-
-        self.server_mock.request.return_value = 200, repos
-
-        # Test
-        self.command.run()
-
-        # Verify
-        expected_tags = [TAG_TITLE]
-        expected_tags += map(lambda x : TAG_DOCUMENT, range(0, 12)) # 3 fields * 4 repos
-        self.assertEqual(expected_tags, self.prompt.get_write_tags())
-
-
 class RemovePuppetModulesCommand(base_cli.ExtensionTests):
     def setUp(self):
         super(RemovePuppetModulesCommand, self).setUp()

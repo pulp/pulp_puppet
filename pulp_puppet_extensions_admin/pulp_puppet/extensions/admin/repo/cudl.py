@@ -14,7 +14,6 @@ from gettext import gettext as _
 from pulp.client import arg_utils, parsers
 from pulp.client.commands import options
 from pulp.client.extensions.extensions import PulpCliOption
-from pulp.client.commands.criteria import CriteriaCommand
 from pulp.client.commands.repo.cudl import CreateRepositoryCommand, ListRepositoriesCommand, UpdateRepositoryCommand
 
 from pulp_puppet.common import constants
@@ -206,28 +205,3 @@ class ListPuppetRepositoriesCommand(ListRepositoriesCommand):
 
         return self.all_repos_cache
 
-
-class SearchPuppetRepositoriesCommand(CriteriaCommand):
-
-    def __init__(self, context):
-        super(SearchPuppetRepositoriesCommand, self).__init__(
-            self.run, name='search', description=DESC_SEARCH,
-            include_search=True)
-
-        self.context = context
-        self.prompt = context.prompt
-
-    def run(self, **kwargs):
-        self.prompt.render_title(_('Repositories'))
-
-        # Limit to only Puppet repositories
-        if kwargs.get('str-eq', None) is None:
-            kwargs['str-eq'] = []
-        kwargs['str-eq'].append(['notes.%s' % constants.REPO_NOTE_KEY, constants.REPO_NOTE_PUPPET])
-
-        # Server call
-        repo_list = self.context.server.repo_search.search(**kwargs)
-
-        # Display the results
-        order = ['id', 'display_name', 'description']
-        self.prompt.render_document_list(repo_list, order=order)
