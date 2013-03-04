@@ -75,6 +75,7 @@ popd
 
 # Directories
 mkdir -p %{buildroot}/%{_sysconfdir}/pulp/agent/conf.d
+mkdir -p %{buildroot}/%{_sysconfdir}/pulp/vhosts80
 mkdir -p %{buildroot}/%{_usr}/lib
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/plugins/types
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/admin/extensions
@@ -86,6 +87,7 @@ mkdir -p %{buildroot}/%{_var}/www/pulp_puppet/https
 # Configuration
 cp -R pulp_puppet_plugins/etc/httpd %{buildroot}/%{_sysconfdir}
 cp -R pulp_puppet_extensions_admin/etc/pulp %{buildroot}/%{_sysconfdir}
+cp pulp_puppet_plugins/etc/pulp/vhosts80/puppet.conf %{buildroot}/%{_sysconfdir}/pulp/vhosts80/
 
 # Agent Handlers
 cp pulp_puppet_handlers/etc/pulp/agent/conf.d/* %{buildroot}/%{_sysconfdir}/pulp/agent/conf.d/
@@ -150,6 +152,7 @@ to provide Puppet specific support.
 %files plugins
 
 %defattr(-,root,root,-)
+%{_sysconfdir}/pulp/vhosts80/puppet.conf
 %{python_sitelib}/pulp_puppet/forge/
 %{python_sitelib}/pulp_puppet/plugins/
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/puppet.conf
