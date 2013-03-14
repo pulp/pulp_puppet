@@ -83,11 +83,15 @@ mkdir -p %{buildroot}/%{_usr}/lib/pulp/agent/handlers
 mkdir -p %{buildroot}/%{_var}/www/pulp_puppet
 mkdir -p %{buildroot}/%{_var}/www/pulp_puppet/http
 mkdir -p %{buildroot}/%{_var}/www/pulp_puppet/https
+mkdir -p %{buildroot}/srv/pulp
 
 # Configuration
 cp -R pulp_puppet_plugins/etc/httpd %{buildroot}/%{_sysconfdir}
 cp -R pulp_puppet_extensions_admin/etc/pulp %{buildroot}/%{_sysconfdir}
 cp pulp_puppet_plugins/etc/pulp/vhosts80/puppet.conf %{buildroot}/%{_sysconfdir}/pulp/vhosts80/
+
+# WSGI app
+cp -R pulp_puppet_plugins/srv/pulp/puppet_forge_api.wsgi %{buildroot}/srv/pulp/
 
 # Agent Handlers
 cp pulp_puppet_handlers/etc/pulp/agent/conf.d/* %{buildroot}/%{_sysconfdir}/pulp/agent/conf.d/
@@ -158,6 +162,7 @@ to provide Puppet specific support.
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/puppet.conf
 %{_usr}/lib/pulp/plugins/types/puppet.json
 %{python_sitelib}/pulp_puppet_plugins*.egg-info
+/srv/pulp/puppet_forge_api.wsgi
 
 %defattr(-,apache,apache,-)
 %{_var}/www/pulp_puppet/
