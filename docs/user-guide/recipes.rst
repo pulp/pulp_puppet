@@ -124,3 +124,122 @@ documentation for details.
           At this time, Puppet Labs is working on a new version of their API that
           will include public documentation, and we believe that new API will be
           much easier to integrate with.
+
+
+Puppet Consumers
+----------------
+
+Puppet modules installed on puppet masters can be managed with Pulp's consumer
+features. Start by registering the system as a consumer. This process only
+needs to happen once, after which the consumer can bind to repositories of any
+content type (puppet modules, RPMs, or any other content supported by Pulp).
+Note that the following command requires root privileges.
+
+::
+
+    $ sudo pulp-consumer -u admin register --consumer-id=fred
+    Enter password:
+    Consumer [fred] successfully registered
+
+Next the consumer should be bound to a repository. This can be done with the
+``pulp-consumer`` command from a shell on the consumer machine.
+
+::
+
+    $ pulp-consumer puppet bind --repo-id=forge
+    Bind tasks successfully created:
+
+    Task Id: 9531a15f-d19d-4c77-9a61-ac67e1223c93
+
+    Task Id: 9f06e091-e54c-47d4-8b17-cebfc4451215
+
+The same could be accomplished using the pulp-admin command, which interacts with
+the Pulp server. The server then notifies the consumer of the binding.
+
+::
+
+    $ pulp-admin puppet consumer bind --repo-id=forge --consumer-id=fred
+    Bind tasks successfully created:
+
+    Task Id: 88a49289-2dc8-49f3-9050-92bcd8ddc8de
+
+    Task Id: 8e8f3cd7-420e-447c-8feb-8cf5703a2324
+
+Either way, we can now see from pulp-admin that the consumer is bound to the
+repository with ID "forge".
+
+::
+
+    $ pulp-admin consumer list
+    +----------------------------------------------------------------------+
+                                   Consumers
+    +----------------------------------------------------------------------+
+
+    Id:            fred
+    Display Name:  fred
+    Description:   None
+    Bindings:
+      Confirmed:   forge
+      Unconfirmed:
+    Notes:
+
+
+Install
+^^^^^^^
+
+For install requests, Pulp will search all repositories to which the consumer is
+bound to find the requested module. If no version is specified, it will find the
+newest version available. Once the module has been found in a repository,
+dependency resolution will occur only within that repository. The install
+command will automatically install any dependencies.
+
+This example installs a specific version of the ``puppetlabs/stdlib`` module.
+
+::
+
+    $ pulp-admin puppet consumer install run --consumer-id=fred -u puppetlabs/stdlib/3.1.1
+    This command may be exited via ctrl+c without affecting the request.
+
+    [\]
+    1 change was made
+
+    Install Succeeded
+
+
+Update
+^^^^^^
+
+Updates follow the same repository matching process as installs. This example
+updates the ``puppetlabs/stdlib`` module. Since a version is not specified, the
+newest available version will be installed.
+
+::
+
+    $ pulp-admin puppet consumer update run --consumer-id=fred -u puppetlabs/stdlib
+    Update task created with id [ 672d34e9-e0c3-40ea-942f-76da2d7dbad1 ]
+
+    This command may be exited via ctrl+c without affecting the request.
+
+    [|]
+    1 change was made
+
+    Update Succeeded
+
+
+Uninstall
+^^^^^^^^^
+
+Uninstall requests merely uninstall the specified module.
+
+::
+
+    $ pulp-admin puppet consumer uninstall run --consumer-id=fred -u puppetlabs/stdlib
+    Uninstall task created with id [ 0f040d05-d37d-4a4d-a1aa-1c882aeea771 ]
+
+    This command may be exited via ctrl+c without affecting the request.
+
+    [-]
+    Waiting to begin
+    1 change was made
+
+    Uninstall Succeeded
