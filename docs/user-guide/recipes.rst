@@ -130,9 +130,10 @@ Puppet Consumers
 ----------------
 
 Puppet modules installed on puppet masters can be managed with Pulp's consumer
-features. Start by registering the puppet master as a consumer. This process only
+features. Start by registering the system as a consumer. This process only
 needs to happen once, after which the consumer can bind to repositories of any
-content type. Note that the following command requires root privileges.
+content type (puppet modules, RPMs, or any other content supported by Pulp).
+Note that the following command requires root privileges.
 
 ::
 
@@ -141,7 +142,7 @@ content type. Note that the following command requires root privileges.
     Consumer [fred] successfully registered
 
 Next the consumer should be bound to a repository. This can be done with the
-``pulp-consumer`` command.
+``pulp-consumer`` command from a shell on the consumer machine.
 
 ::
 
@@ -152,7 +153,8 @@ Next the consumer should be bound to a repository. This can be done with the
 
     Task Id: 9f06e091-e54c-47d4-8b17-cebfc4451215
 
-The same could be accomplished using the pulp-admin command.
+The same could be accomplished using the pulp-admin command, which interacts with
+the Pulp server. The server then notifies the consumer of the binding.
 
 ::
 
@@ -188,7 +190,8 @@ Install
 For install requests, Pulp will search all repositories to which the consumer is
 bound to find the requested module. If no version is specified, it will find the
 newest version available. Once the module has been found in a repository,
-dependency resolution will occur only within that repository.
+dependency resolution will occur only within that repository. The install
+command will automatically install any dependencies.
 
 This example installs a specific version of the ``puppetlabs/stdlib`` module.
 
