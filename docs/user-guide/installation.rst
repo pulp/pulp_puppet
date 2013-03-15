@@ -22,6 +22,12 @@ directly from `Puppet Labs <http://puppetlabs.com>`_.
 Please see the `Pulp User Guide`_ for other prerequisites including repository
 setup.
 
+.. note::
+    Consumer install and update operations against a repository published over
+    HTTPS will do SSL certificate verification. Thus, you must ensure that the
+    ``puppet module`` tool is able to verify the server's certificate against a
+    trusted CA in order to publish puppet repositories over HTTPS.
+
 Server
 ------
 
