@@ -30,8 +30,8 @@ Metadata
  List of dictionaries describing modules on which this module depends. Each
  dictionary has a key ``name`` which includes the full ``author/name`` notation,
  and a key ``version_requirement`` which describes what versions are acceptable
- to satisfy this dependency. The format for this value is described in detail in
- Puppet Labs' own
+ to satisfy this dependency. This is an empty list if there are no dependencies.
+ The format for this value is described in detail in Puppet Labs' own
  `documentation <http://docs.puppetlabs.com/puppet/2.7/reference/modules_publishing.html>`_.
 
 ``description``
@@ -50,5 +50,6 @@ Metadata
  Short description of the module, 1 line only.
 
 ``tag_list``
- List of tags assigned to this module on Puppet Forge.
+ List of tags assigned to this module on Puppet Forge. This is an empty list if
+ there are no tags.
 

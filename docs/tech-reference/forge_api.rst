@@ -38,8 +38,6 @@ repositories to which it is bound are searched for the specified module. If a
 verison was not specified, the repository with the newest version is then
 queried for dependency information.
 
-When specifying a repository ID or a consumer ID, use a single "." in place of the other value.
-
 This is an example request with a consumer ID:
 
 ::
@@ -51,6 +49,10 @@ This is an example with a repository ID and a version:
 ::
 
   http://.:repo1@localhost/api/v1/releases.json?module=puppetlabs/java&version=0.2.0
+
+When specifying a repository ID or a consumer ID, use a single "." in place of
+the other value.
+
 
 Under the Hood
 ^^^^^^^^^^^^^^

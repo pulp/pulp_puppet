@@ -14,14 +14,16 @@ Importer
 
 ``remove_missing``
  Boolean indicating whether or not previously-synced modules should be removed
- locally if they were removed in the upstream repository. Defaults to ``False``.
+ from the local repository if they were removed in the upstream repository.
+ Defaults to ``False``.
 
 
 Distributor
 -----------
 
 ``absolute_path``
- Base absolute path where all Puppet repositories are published. Defaults to ``/pulp/puppet``.
+ Base absolute URL path where all Puppet repositories are published. Defaults
+ to ``/pulp/puppet``.
 
 ``http_dir``
  Full path to the directory where HTTP-published repositories should be created.
