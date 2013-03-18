@@ -44,7 +44,7 @@ class TestParseUnits(unittest.TestCase):
         unit_key = unit.get('unit_key', {})
         self.assertEqual(unit_key.get('author'), 'foo')
         self.assertEqual(unit_key.get('name'), 'bar')
-        self.assertTrue('version') not in unit_key
+        self.assertTrue('version' not in unit_key)
 
     def test_single_unit_with_version(self):
         result = content.parse_units(['foo/bar/1.2.3'])
@@ -66,7 +66,7 @@ class TestParseUnits(unittest.TestCase):
             unit_key = unit.get('unit_key', {})
             self.assertTrue(unit_key.get('author') in ['foo', 'abc'])
             self.assertTrue(unit_key.get('name') in ['bar', 'xyz'])
-            self.assertTrue('version') not in unit_key
+            self.assertTrue('version' not in unit_key)
 
 
 class TestContentMixin(base_cli.ExtensionTests):
