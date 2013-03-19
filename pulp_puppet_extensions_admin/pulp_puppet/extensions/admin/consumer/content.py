@@ -120,7 +120,7 @@ class ContentMixin(PulpCliCommand):
             if num_changes == 1:
                 message = _('1 change was made')
             else:
-                message = _('%(c)d changes were made' % {'c': num_changes})
+                message = _('%(c)d changes were made') % {'c': num_changes}
             self.context.prompt.render_success_message(message, tag=TAG_CHANGE_MADE)
             super(ContentMixin, self).succeeded(consumer_id, task)
 
@@ -140,7 +140,7 @@ class ContentMixin(PulpCliCommand):
             if count >= 5:
                 self.context.prompt.render_failure_message(_('(additional errors truncated)'), tag=TAG_TRUNCATED)
                 break
-            unknown_message = _('unknown error with module %(m)s' % {'m':module_name})
+            unknown_message = _('unknown error with module %(m)s') % {'m':module_name}
             message = errors[module_name].get('error', {}).get('oneline') or unknown_message
             self.context.prompt.render_failure_message(message, tag=TAG_ERROR)
             count += 1
