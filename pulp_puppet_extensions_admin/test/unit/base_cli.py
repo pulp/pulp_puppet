@@ -11,6 +11,7 @@
 
 import copy
 import logging
+import os.path
 import unittest
 
 import mock
@@ -52,7 +53,8 @@ class ExtensionTests(unittest.TestCase):
     def setUp(self):
         super(ExtensionTests, self).setUp()
 
-        self.config = Config()
+        config_filename = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'test-override-admin.conf')
+        self.config = Config(config_filename)
 
         self.server_mock = mock.Mock()
         self.pulp_connection = PulpConnection('', server_wrapper=self.server_mock)

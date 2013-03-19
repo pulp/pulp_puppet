@@ -122,7 +122,7 @@ class ContentMixin(PulpCliCommand):
             else:
                 message = _('%(c)d changes were made' % {'c': num_changes})
             self.context.prompt.render_success_message(message, tag=TAG_CHANGE_MADE)
-            super(ContentMixin, self).succeeded(consumer_id, task)
+            super(ContentMixin, self).succeeded(task)
 
     def _render_error_messages(self, result):
         """
