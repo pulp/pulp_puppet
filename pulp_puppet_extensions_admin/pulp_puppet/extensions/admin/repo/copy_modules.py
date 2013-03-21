@@ -12,9 +12,7 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 from gettext import gettext as _
-import sys
 
-from pulp.bindings.exceptions import BadRequestException
 from pulp.client.commands.unit import UnitCopyCommand
 
 from pulp_puppet.common import constants
@@ -33,36 +31,3 @@ class PuppetModuleCopyCommand(UnitCopyCommand):
                                                       description=description,
                                                       method=self.run,
                                                       type_id=constants.TYPE_PUPPET_MODULE)
-
-        self.context = context
-        self.prompt = context.prompt
-
-    def __run(self, **kwargs):
-        from_repo = kwargs['from-repo-id']
-        to_repo = kwargs['to-repo-id']
-        kwargs['type_ids'] = [constants.TYPE_PUPPET_MODULE]
-
-        # If rejected an exception will bubble up and be handled by middleware.
-        # The only caveat is if the source repo ID is invalid, it will come back
-        # from the server as source_repo_id. The client-side name for this value
-        # is from-repo-id, so do a quick substitution in the exception and then
-        # reraise it for the middleware to handle like normal.
-        try:
-            response = self.context.server.repo_unit.copy(from_repo, to_repo, **kwargs)
-        except BadRequestException, e:
-            if 'source_repo_id' in e.extra_data.get('property_names', []):
-                e.extra_data['property_names'].remove('source_repo_id')
-                e.extra_data['property_names'].append('from-repo-id')
-            raise e, None, sys.exc_info()[2]
-
-        progress_msg = _('Progress on this task can be viewed using the '
-                         'commands under "repo tasks".')
-
-        if response.response_body.is_postponed():
-            d = _('Unit copy postponed due to another operation on the destination '
-                  'repository. ')
-            d += progress_msg
-            self.context.prompt.render_paragraph(d, tag='postponed')
-            self.context.prompt.render_reasons(response.response_body.reasons)
-        else:
-            self.context.prompt.render_paragraph(progress_msg, tag='progress')
