@@ -11,10 +11,11 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
+import mock
+
 from pulp.bindings.exceptions import BadRequestException
 from pulp.common.compat import json
 from pulp.client.commands.unit import UnitCopyCommand
-from pulp.client.extensions.core import TAG_REASONS
 
 import base_cli
 from pulp_puppet.common import constants
@@ -41,6 +42,9 @@ class CopyCommandTests(base_cli.ExtensionTests):
 
         self.server_mock.request.return_value = 202, self.task()
 
+        mock_poll = mock.MagicMock().poll
+        self.command.poll = mock_poll
+
         # Test
         self.command.run(**data)
 
@@ -53,25 +57,7 @@ class CopyCommandTests(base_cli.ExtensionTests):
         self.assertEqual(body['source_repo_id'], 'from')
         self.assertEqual(body['criteria']['type_ids'], [constants.TYPE_PUPPET_MODULE])
 
-        self.assertEqual(['progress'], self.prompt.get_write_tags())
-
-    def test_run_postponed(self):
-        # Setup
-        data = {
-            'from-repo-id' : 'from',
-            'to-repo-id' : 'to'
-        }
-
-        task = self.task()
-        task['response'] = 'postponed'
-        task['state'] = 'waiting'
-        self.server_mock.request.return_value = 202, task
-
-        # Test
-        self.command.run(**data)
-
-        # Verify
-        self.assertEqual(['postponed', TAG_REASONS], self.prompt.get_write_tags())
+        self.assertEqual(1, mock_poll.call_count)
 
     def test_run_invalid_source_repo(self):
         # Setup

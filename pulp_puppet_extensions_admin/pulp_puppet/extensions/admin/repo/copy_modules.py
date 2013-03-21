@@ -27,18 +27,17 @@ DESC_COPY = _('copies modules from one repository into another')
 
 class PuppetModuleCopyCommand(UnitCopyCommand):
 
-    def __init__(self, context, name='copy', description=DESC_COPY, method=None):
-
-        if method is None:
-            method = self.run
-
-        super(PuppetModuleCopyCommand, self).__init__(method, name=name,
-                                                      description=description)
+    def __init__(self, context, name='copy', description=DESC_COPY):
+        super(PuppetModuleCopyCommand, self).__init__(context,
+                                                      name=name,
+                                                      description=description,
+                                                      method=self.run,
+                                                      type_id=constants.TYPE_PUPPET_MODULE)
 
         self.context = context
         self.prompt = context.prompt
 
-    def run(self, **kwargs):
+    def __run(self, **kwargs):
         from_repo = kwargs['from-repo-id']
         to_repo = kwargs['to-repo-id']
         kwargs['type_ids'] = [constants.TYPE_PUPPET_MODULE]
