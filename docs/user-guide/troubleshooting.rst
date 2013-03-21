@@ -1,6 +1,14 @@
 Troubleshooting
 ===============
 
+.. note::
+    "unknown error" during a consumer install operation can be caused by several
+    underlying problems. The unknown aspect is unfortunately the result of a
+    limitation of Puppet's own tool. It will occasionally produce output that is
+    not in the expected JSON format, particularly when reporting errors, and then
+    Pulp cannot parse the output. This is a known bug in Puppet that is being
+    worked on.
+
 SSL Certificate Verification Fails for Consumer Install
 -------------------------------------------------------
 
@@ -33,9 +41,9 @@ will pass the error message through instead of reporting "unknown error".
 Verification
 ^^^^^^^^^^^^
 
-You can verify by running the following command on the consumer machine and
-looking for a similar error message about SSL. Adjust the "consumer_id" and
-"hostname" as appropriate.
+You can verify that this is the source of the problem by running the following
+command on the consumer machine and looking for a similar error message about
+SSL. Adjust the "consumer_id" and "hostname" as appropriate.
 
 ::
 
