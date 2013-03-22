@@ -26,8 +26,5 @@ DESC_COPY = _('copies modules from one repository into another')
 class PuppetModuleCopyCommand(UnitCopyCommand):
 
     def __init__(self, context, name='copy', description=DESC_COPY):
-        super(PuppetModuleCopyCommand, self).__init__(context,
-                                                      name=name,
-                                                      description=description,
-                                                      method=self.run,
-                                                      type_id=constants.TYPE_PUPPET_MODULE)
+        UnitCopyCommand.__init__(self, context, name=name, description=description,
+                                 method=self.run, type_id=constants.TYPE_PUPPET_MODULE)
