@@ -15,14 +15,15 @@ from pulp.client.commands.criteria import CriteriaCommand
 from pulp.client.commands import options
 from pulp.client.commands.repo import cudl as pulp_cudl
 import pulp.client.commands.unit
-from pulp.client.extensions.core import TAG_SUCCESS, TAG_REASONS, TAG_DOCUMENT, TAG_TITLE
+from pulp.client.extensions.core import TAG_SUCCESS, TAG_REASONS
 from pulp.common.compat import json
 
 import base_cli
 from pulp_puppet.common import constants
 from pulp_puppet.extensions.admin import pulp_cli as commands
 from pulp_puppet.extensions.admin.repo import cudl
-from pulp_puppet.extensions.admin.repo.remove import RemoveCommand
+from pulp_puppet.extensions.admin.repo.remove import RemoveCommand, DESC_REMOVE
+
 
 class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
 
@@ -342,7 +343,7 @@ class RemovePuppetModulesCommand(base_cli.ExtensionTests):
     def test_defaults(self):
         self.assertTrue(isinstance(self.command, pulp.client.commands.unit.UnitRemoveCommand))
         self.assertEqual('remove', self.command.name)
-        self.assertEqual(RemoveCommand.DESC, self.command.description)
+        self.assertEqual(DESC_REMOVE, self.command.description)
         # uses default remove method
-        self.assertEqual(self.command.method, self.command.remove)
+        self.assertEqual(self.command.method, self.command.run)
 

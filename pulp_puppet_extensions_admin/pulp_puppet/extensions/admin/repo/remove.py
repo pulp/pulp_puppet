@@ -16,13 +16,16 @@ from gettext import gettext as _
 from pulp.client.commands.unit import UnitRemoveCommand
 from pulp_puppet.common import constants
 
-class RemoveCommand(UnitRemoveCommand):
-    DESC = _('remove copied or uploaded modules from a repository')
 
-    def __init__(self, context):
+DESC_REMOVE = _('remove copied or uploaded modules from a repository')
+
+
+class RemoveCommand(UnitRemoveCommand):
+
+    def __init__(self, context, name='remove', description=DESC_REMOVE):
         super(RemoveCommand, self).__init__(
             context,
-            name='remove',
-            description=self.DESC,
+            name=name,
+            description=description,
             type_id=constants.TYPE_PUPPET_MODULE,
         )
