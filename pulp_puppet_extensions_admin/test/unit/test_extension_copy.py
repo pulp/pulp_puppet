@@ -89,3 +89,18 @@ class CopyCommandTests(base_cli.ExtensionTests):
             # client-side flag took place
             self.assertEqual(['from-repo-id'], e.extra_data['property_names'])
             self.assertTrue('source_repo_id' not in e.extra_data['property_names'])
+
+    @mock.patch('pulp_puppet.extensions.admin.repo.units_display.display_modules')
+    def test_succeeded(self, mock_display):
+        # Setup
+        fake_modules = 'm'
+        fake_task = mock.MagicMock()
+        fake_task.result = fake_modules
+
+        # Test
+        self.command.succeeded(fake_task)
+
+        # Verify
+        mock_display.assert_called_once_with(self.prompt, fake_modules, self.command.module_count_threshold)
+
+

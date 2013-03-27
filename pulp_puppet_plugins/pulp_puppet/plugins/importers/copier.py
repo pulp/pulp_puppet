@@ -30,3 +30,5 @@ def copy_units(import_conduit, units):
     # Associate to the new repository
     for u in units:
         import_conduit.associate_unit(u)
+
+    return units

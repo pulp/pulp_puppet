@@ -57,7 +57,7 @@ class PuppetModuleImporter(Importer):
 
     def import_units(self, source_repo, dest_repo, import_conduit, config,
                      units=None):
-        copier.copy_units(import_conduit, units)
+        return copier.copy_units(import_conduit, units)
 
     def upload_unit(self, repo, type_id, unit_key, metadata, file_path, conduit,
                     config):

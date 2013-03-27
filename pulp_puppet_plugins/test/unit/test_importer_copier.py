@@ -28,9 +28,10 @@ class CopierTests(unittest.TestCase):
         conduit.get_source_units.return_value = all_source_units
 
         # Test
-        copier.copy_units(conduit, None)
+        returned = copier.copy_units(conduit, None)
 
         # Verify
+        self.assertEqual(returned, all_source_units)
         self.assertEqual(1, conduit.get_source_units.call_count)
         call_args = conduit.get_source_units.call_args
         self.assertTrue('criteria' in call_args[1])
