@@ -11,11 +11,11 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-import base_cli
+import consumer_base_cli
 from pulp_puppet.extensions.consumer import bind, pulp_cli, structure
 
 
-class TestStructure(base_cli.ExtensionTests):
+class TestStructure(consumer_base_cli.ConsumerExtensionTests):
     def test_ensure_puppet_root(self):
         # Test
         returned_root_section = structure.ensure_puppet_root(self.cli)
@@ -40,7 +40,7 @@ class TestStructure(base_cli.ExtensionTests):
         self.assertEqual(puppet_root_section.name, structure.SECTION_ROOT)
 
 
-class TestInit(base_cli.ExtensionTests):
+class TestInit(consumer_base_cli.ConsumerExtensionTests):
     def test_init(self):
         pulp_cli.initialize(self.context)
 

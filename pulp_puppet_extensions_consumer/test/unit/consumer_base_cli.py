@@ -11,6 +11,7 @@
 
 import copy
 import logging
+import os
 import unittest
 
 import mock
@@ -44,15 +45,17 @@ TASK_TEMPLATE = {
 }
 
 
-class ExtensionTests(unittest.TestCase):
+class ConsumerExtensionTests(unittest.TestCase):
     """
     Base unit test class for all extension unit tests.
     """
 
     def setUp(self):
-        super(ExtensionTests, self).setUp()
+        super(ConsumerExtensionTests, self).setUp()
 
-        self.config = Config()
+        config_filename = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data',
+                                       'test-override-consumer.conf')
+        self.config = Config(config_filename)
 
         self.server_mock = mock.Mock()
         self.pulp_connection = PulpConnection('', server_wrapper=self.server_mock)
