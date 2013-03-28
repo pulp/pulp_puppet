@@ -56,7 +56,7 @@ class UnitsDisplayTests(unittest.TestCase):
         # Verify
         expected_tags = ['just-enough', 'module', 'module']  # header + one line for each module
         self.assertEqual(expected_tags, self.prompt.get_write_tags())
-        self.assertTrue('Copied Modules' in self.recorder.lines[0])
+        self.assertTrue('Modules' in self.recorder.lines[0])
 
         # Verify the sorting was done
         self.assertTrue('0' in self.recorder.lines[1])

@@ -14,7 +14,9 @@
 from gettext import gettext as _
 
 from pulp.client.commands.unit import UnitRemoveCommand
+
 from pulp_puppet.common import constants
+from pulp_puppet.extensions.admin.repo import units_display
 
 
 DESC_REMOVE = _('remove copied or uploaded modules from a repository')
@@ -22,10 +24,13 @@ DESC_REMOVE = _('remove copied or uploaded modules from a repository')
 
 class RemoveCommand(UnitRemoveCommand):
 
-    def __init__(self, context, name='remove', description=DESC_REMOVE):
-        super(RemoveCommand, self).__init__(
-            context,
-            name=name,
-            description=description,
-            type_id=constants.TYPE_PUPPET_MODULE,
-        )
+    def __init__(self, context, name='remove', description=DESC_REMOVE,
+                 module_count_threshold=constants.DISPLAY_MODULES_THRESHOLD):
+        UnitRemoveCommand.__init__(self, context, name=name, description=description,
+                                   type_id=constants.TYPE_PUPPET_MODULE)
+
+        self.module_count_threshold = module_count_threshold
+
+    def succeeded(self, task):
+        removed_modules = task.result  # list of dict containing unit_key and type_id
+        units_display.display_modules(self.prompt, removed_modules, self.module_count_threshold)

@@ -11,10 +11,8 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-from pulp.client.commands.criteria import CriteriaCommand
 from pulp.client.commands import options
 from pulp.client.commands.repo import cudl as pulp_cudl
-import pulp.client.commands.unit
 from pulp.client.extensions.core import TAG_SUCCESS, TAG_REASONS
 from pulp.common.compat import json
 
@@ -22,7 +20,6 @@ import base_cli
 from pulp_puppet.common import constants
 from pulp_puppet.extensions.admin import pulp_cli as commands
 from pulp_puppet.extensions.admin.repo import cudl
-from pulp_puppet.extensions.admin.repo.remove import RemoveCommand, DESC_REMOVE
 
 
 class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
@@ -333,17 +330,3 @@ class ListPuppetRepositoriesCommandTests(base_cli.ExtensionTests):
         # to the distributor
         self.assertEqual(
             repos[0]['distributors'][0].get('relative_path'), 'puppet/repo-1/')
-
-
-class RemovePuppetModulesCommand(base_cli.ExtensionTests):
-    def setUp(self):
-        super(RemovePuppetModulesCommand, self).setUp()
-        self.command = RemoveCommand(self.context)
-
-    def test_defaults(self):
-        self.assertTrue(isinstance(self.command, pulp.client.commands.unit.UnitRemoveCommand))
-        self.assertEqual('remove', self.command.name)
-        self.assertEqual(DESC_REMOVE, self.command.description)
-        # uses default remove method
-        self.assertEqual(self.command.method, self.command.run)
-
