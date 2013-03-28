@@ -102,5 +102,3 @@ class CopyCommandTests(base_cli.ExtensionTests):
 
         # Verify
         mock_display.assert_called_once_with(self.prompt, fake_modules, self.command.module_count_threshold)
-
-

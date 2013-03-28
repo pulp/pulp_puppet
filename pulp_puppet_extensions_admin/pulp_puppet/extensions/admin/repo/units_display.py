@@ -17,19 +17,20 @@ or remove units commands.
 
 from gettext import gettext as _
 
+
 MODULE_ID_TEMPLATE = '%(author)s-%(name)s-%(version)s'
 
 
-def display_modules(prompt, copied_modules, module_count_threshold):
-    if len(copied_modules) == 0:
+def display_modules(prompt, modules, module_count_threshold):
+    if len(modules) == 0:
         prompt.write(_('No modules matched the given criteria.'), tag='too-few')
 
-    elif len(copied_modules) >= module_count_threshold:
-        prompt.write(_('%s modules were copied.') % len(copied_modules), tag='too-many')
+    elif len(modules) >= module_count_threshold:
+        prompt.write(_('%s modules were affected.') % len(modules), tag='too-many')
 
     else:
-        prompt.write(_('Copied Modules:'), tag='just-enough')
-        copied_modules.sort(key=lambda x : x['unit_key']['author'])
-        for m in copied_modules:
+        prompt.write(_('Modules:'), tag='just-enough')
+        modules.sort(key=lambda x : x['unit_key']['author'])
+        for m in modules:
             module_id = MODULE_ID_TEMPLATE % m['unit_key']
             prompt.write('  %s' % module_id, tag='module')

@@ -21,14 +21,11 @@ from pulp_puppet.extensions.admin.repo import units_display
 
 DESC_COPY = _('copies modules from one repository into another')
 
-# Number of modules after which this command won't bother printing them all to the screen
-DEFAULT_MODULES_THRESHOLD = 100
-
 
 class PuppetModuleCopyCommand(UnitCopyCommand):
 
     def __init__(self, context, name='copy', description=DESC_COPY,
-                 module_count_threshold=DEFAULT_MODULES_THRESHOLD):
+                 module_count_threshold=constants.DISPLAY_MODULES_THRESHOLD):
         UnitCopyCommand.__init__(self, context, name=name, description=description,
                                  method=self.run, type_id=constants.TYPE_PUPPET_MODULE)
 

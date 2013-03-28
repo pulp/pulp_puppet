@@ -126,3 +126,9 @@ REPO_ID_OPTION = 'repo_id'
 # Option key passed to an "install" consumer request with a repository ID
 # as its value that should have its entire contents installed
 WHOLE_REPO_OPTION = 'whole_repo'
+
+# -- extensions --------------------------------------------------------------
+
+# Number of modules to display by name for operations that return a list of
+# modules that were acted on, such as copy and remove
+DISPLAY_MODULES_THRESHOLD = 100
