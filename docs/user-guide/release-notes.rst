@@ -9,6 +9,7 @@ New Features
 ------------
 
 #. Pulp 2.1 now supports Fedora 18 and Apache 2.4.
+#. We now support the Puppet Forge API.
 
 Upgrade Instructions
 --------------------
