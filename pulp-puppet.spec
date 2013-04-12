@@ -17,8 +17,8 @@
 # ---- Pulp (puppet) -----------------------------------------------------------
 
 Name: pulp-puppet
-Version: 2.1.0
-Release: 0.19.alpha
+Version: 2.2.0
+Release: 0.1.alpha%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -235,6 +235,10 @@ uninstall, bind, and unbind.
 
 
 %changelog
+* Fri Apr 12 2013 Jeff Ortel <jortel@redhat.com> 2.2.0-0.1.alpha
+- 950740 - add support {?dist} in the Release: in .spec files.
+  (jortel@redhat.com)
+
 * Mon Mar 04 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.19.alpha
 - 902514 - Removed the <VirtualHost> block, which apache was ignoring anyway,
   in favor of using the platform's authoritative one. (mhrivnak@redhat.com)
