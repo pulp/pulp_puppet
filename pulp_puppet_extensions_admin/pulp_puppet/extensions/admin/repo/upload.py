@@ -42,7 +42,7 @@ class UploadModuleCommand(upload_commands.UploadCommand):
     def generate_unit_key(self, filename, **kwargs):
         root_filename = os.path.basename(filename)
         root_filename = root_filename[:-len('.tar.gz')]
-        author, name, version = root_filename.split('-')
+        author, name, version = root_filename.split('-', 2)
         unit_key = Module.generate_unit_key(name, version, author)
         return unit_key
 

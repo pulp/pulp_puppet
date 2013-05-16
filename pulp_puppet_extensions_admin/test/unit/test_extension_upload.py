@@ -43,6 +43,16 @@ class UploadModuleCommandTests(base_cli.ExtensionTests):
         expected_key = Module.generate_unit_key('valid', '1.0.0', 'jdob')
         self.assertEqual(key, expected_key)
 
+    def test_generate_unit_key_complex_version(self):
+        filename = os.path.join(MODULES_DIR, 'jdob-valid-1.0.0-rc1.tar.gz')
+
+        # Test
+        key = self.command.generate_unit_key(filename)
+
+        # Verify
+        expected_key = Module.generate_unit_key('valid', '1.0.0-rc1', 'jdob')
+        self.assertEqual(key, expected_key)
+
     def test_determine_type_id(self):
         type_id = self.command.determine_type_id(self.filename)
         self.assertEqual(type_id, constants.TYPE_PUPPET_MODULE)
@@ -77,6 +87,9 @@ class TestValidateFileName(unittest.TestCase):
     def test_multiple(self):
         upload.UploadModuleCommand.validate_file_name(
             ['/author-foo-1.0.0.tar.gz', '/tmp/author-bar-0.2.0.tar.gz'])
+
+    def test_complex_version(self):
+        upload.UploadModuleCommand.validate_file_name(['/path/to/author-foo-1.0.0-rc1.tar.gz'])
 
     def test_require_author(self):
         self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['/-foo-1.0.0.tar.gz'])
