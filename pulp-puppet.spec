@@ -18,7 +18,7 @@
 
 Name: pulp-puppet
 Version: 2.2.0
-Release: 0.5.alpha%{?dist}
+Release: 0.8.alpha%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -235,6 +235,10 @@ uninstall, bind, and unbind.
 
 
 %changelog
+* Fri May 17 2013 Jeff Ortel <jortel@redhat.com> 2.2.0-0.8.alpha
+- 946966 - an uploaded module can now have a version that includes the '-'
+  character. (mhrivnak@redhat.com)
+
 * Mon May 13 2013 Jeff Ortel <jortel@redhat.com> 2.2.0-0.5.alpha
 - 
 
