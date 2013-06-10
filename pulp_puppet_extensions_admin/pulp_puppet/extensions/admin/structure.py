@@ -43,9 +43,9 @@ DESC_ROOT = _('manage Puppet-related content and features')
 DESC_CONSUMER = _('consumer commands')
 DESC_REPO = _('repository lifecycle commands')
 
-DESC_INSTALL = _('run or schedule a module install')
-DESC_UPDATE = _('run or schedule a module update')
-DESC_UNINSTALL = _('run or schedule a module uninstall')
+DESC_INSTALL = _('run a module install')
+DESC_UPDATE = _('run a module update')
+DESC_UNINSTALL = _('run a module uninstall')
 
 DESC_UPLOADS = _('upload modules into a repository')
 
