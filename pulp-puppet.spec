@@ -233,38 +233,38 @@ uninstall, bind, and unbind.
 - 968543 - remove conditional in pulp_version macro. (jortel@redhat.com)
 
 * Thu May 30 2013 Jeff Ortel <jortel@redhat.com> 2.2.0-0.15.alpha
-- 
+- Pulp rebuild
 
 * Fri May 24 2013 Jeff Ortel <jortel@redhat.com> 2.2.0-0.14.alpha
-- 
+- Pulp rebuild
 
 * Thu May 23 2013 Jeff Ortel <jortel@redhat.com> 2.2.0-0.13.alpha
-- 
+- Pulp rebuild
 
 * Thu May 23 2013 Jeff Ortel <jortel@redhat.com> 2.2.0-0.12.alpha
-- 
+- Pulp rebuild
 
 * Tue May 21 2013 Jeff Ortel <jortel@redhat.com> 2.2.0-0.11.alpha
-- 
+- Pulp rebuild
 
 * Mon May 20 2013 Jeff Ortel <jortel@redhat.com> 2.2.0-0.10.alpha
-- 
+- Pulp rebuild
 
 * Mon May 20 2013 Jeff Ortel <jortel@redhat.com> 2.2.0-0.9.alpha
-- 
+- Pulp rebuild
 
 * Fri May 17 2013 Jeff Ortel <jortel@redhat.com> 2.2.0-0.8.alpha
 - 946966 - an uploaded module can now have a version that includes the '-'
   character. (mhrivnak@redhat.com)
 
 * Mon May 13 2013 Jeff Ortel <jortel@redhat.com> 2.2.0-0.5.alpha
-- 
+- Pulp rebuild
 
 * Mon May 13 2013 Jeff Ortel <jortel@redhat.com> 2.2.0-0.3.alpha
-- 
+- Pulp rebuild
 
 * Fri Apr 19 2013 Jeff Ortel <jortel@redhat.com> 2.2.0-0.2.alpha
-- 
+- Pulp rebuild
 
 * Fri Apr 12 2013 Jeff Ortel <jortel@redhat.com> 2.2.0-0.1.alpha
 - 950740 - add support {?dist} in the Release: in .spec files.
@@ -275,46 +275,46 @@ uninstall, bind, and unbind.
   in favor of using the platform's authoritative one. (mhrivnak@redhat.com)
 
 * Tue Feb 26 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.18.alpha
-- 
+- Pulp rebuild
 
 * Tue Feb 26 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.17.alpha
-- 
+- Pulp rebuild
 
 * Mon Feb 25 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.16.alpha
-- 
+- Pulp rebuild
 
 * Fri Feb 22 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.14.alpha
-- 
+- Pulp rebuild
 
 * Thu Feb 21 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.13.alpha
-- 
+- Pulp rebuild
 
 * Tue Feb 19 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.12.alpha
-- 
+- Pulp rebuild
 
 * Thu Feb 14 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.10.alpha
-- 
+- Pulp rebuild
 
 * Thu Feb 14 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.9.alpha
-- 
+- Pulp rebuild
 
 * Wed Feb 13 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.8.alpha
-- 
+- Pulp rebuild
 
 * Wed Feb 13 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.7.alpha
-- 
+- Pulp rebuild
 
 * Tue Feb 12 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.5.alpha
-- 
+- Pulp rebuild
 
 * Tue Feb 12 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.4.alpha
-- 
+- Pulp rebuild
 
 * Tue Feb 05 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.3.alpha
-- 
+- Pulp rebuild
 
 * Tue Feb 05 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.2.alpha
-- 
+- Pulp rebuild
 
 * Sat Jan 19 2013 Jeff Ortel <jortel@redhat.com> 2.1.0-0.1.alpha
 - 887372 - importer now gracefully fails when a feed URL is not present in the
@@ -346,10 +346,10 @@ uninstall, bind, and unbind.
   (jason.dobies@redhat.com)
 
 * Thu Dec 20 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.19.rc
-- 
+- Pulp rebuild
 
 * Wed Dec 19 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.19.beta
-- 
+- Pulp rebuild
 
 * Tue Dec 18 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.18.beta
 - 887959 - renaming pulp_puppet.conf to puppet.conf (skarmark@redhat.com)
@@ -360,7 +360,7 @@ uninstall, bind, and unbind.
   adding it only at one place in main pulp.conf (skarmark@redhat.com)
 
 * Thu Dec 13 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.17.beta
-- 
+- Pulp rebuild
 
 * Thu Dec 13 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.15.beta
 - 886689 - puppet distributor output from the CLI now includes a relative path
@@ -373,17 +373,17 @@ uninstall, bind, and unbind.
   module (mhrivnak@redhat.com)
 
 * Mon Dec 10 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.14.beta
-- 
+- Pulp rebuild
 
 * Fri Dec 07 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.13.beta
-- 
+- Pulp rebuild
 
 * Thu Dec 06 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.12.beta
 - 882419 - adding publish commands to the CLI (mhrivnak@redhat.com)
 - 882421 - added unit remove command. (mhrivnak@redhat.com)
 
 * Thu Nov 29 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.11.beta
-- 
+- Pulp rebuild
 
 * Thu Nov 29 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.10.beta
 - 866491 - Added translation from server-side property name to client-side flag
@@ -394,64 +394,19 @@ uninstall, bind, and unbind.
   (jason.dobies@redhat.com)
 
 * Mon Nov 26 2012 Jay Dobies <jason.dobies@redhat.com> 2.0.6-0.9.beta
-- 
+- Pulp rebuild
 
 * Wed Nov 21 2012 Jay Dobies <jason.dobies@redhat.com> 2.0.6-0.8.beta
-- 
+- Pulp rebuild
 
 * Wed Nov 21 2012 Jay Dobies <jason.dobies@redhat.com> 2.0.6-0.7.beta
-- 
+- Pulp rebuild
 
 * Tue Nov 20 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.3.beta
-- 
+- Pulp rebuild
 
 * Mon Nov 12 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.2.beta
-- 
+- Pulp rebuild
 
 * Mon Nov 12 2012 Jeff Ortel <jortel@redhat.com> 2.0.6-0.1.beta
-- 
-
-* Mon Nov 12 2012 Jeff Ortel <jortel@redhat.com> 0.0.338-1
-- 
-
-* Mon Nov 12 2012 Jeff Ortel <jortel@redhat.com> 0.0.337-1
-- 873739 - using the new entry point name that specifies these as admin
-  extensions. (mhrivnak@redhat.com)
-
-* Mon Nov 05 2012 Jeff Ortel <jortel@redhat.com> 0.0.336-1
-- 868022 - updating CLI section descriptions (mhrivnak@redhat.com)
-
-* Tue Oct 30 2012 Jeff Ortel <jortel@redhat.com> 0.0.335-1
-- 871151 - Updated repo create for new API (jason.dobies@redhat.com)
-
-* Mon Oct 29 2012 Jeff Ortel <jortel@redhat.com> 0.0.334-1
-- version alignemnt
-
-* Mon Oct 22 2012 Jeff Ortel <jortel@redhat.com> 0.0.333-1
-- version alignment
-
-* Wed Oct 17 2012 Jeff Ortel <jortel@redhat.com> 0.0.332-1
-- Version alignment
-
-* Tue Oct 16 2012 Jeff Ortel <jortel@redhat.com> 0.0.331-1
-- new package built with tito
-
-* Fri Oct 05 2012 Jeff Ortel <jortel@redhat.com> 0.0.331-1
-- 860408 - repo group member adding and removing now honors the --repo-id
-  option, includes a new --all flag, and fails if no matching options are
-  passed. (mhrivnak@redhat.com)
-
-* Tue Oct 02 2012 Jeff Ortel <jortel@redhat.com> 0.0.330-1
-- Version alignment.
-
-* Sun Sep 30 2012 Jeff Ortel <jortel@redhat.com> 0.0.329-1
-- Version alignment.
-
-* Fri Sep 21 2012 Jeff Ortel <jortel@redhat.com> 0.0.328-1
-- Version alignment.
-
-* Thu Sep 20 2012 Jeff Ortel <jortel@redhat.com> 0.0.327-2
-- Fix build errors.
-
-* Thu Sep 20 2012 Jeff Ortel <jortel@redhat.com> 0.0.327-1
-- new package built with tito
+- Pulp rebuild
