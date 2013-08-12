@@ -31,6 +31,12 @@ DISTRIBUTOR_TYPE_ID = 'puppet_distributor'
 # ID used to refer to the puppet distributor instance on a repository
 DISTRIBUTOR_ID = 'puppet_distributor'
 
+# ID used to refer to the puppet distributor
+INSTALL_DISTRIBUTOR_TYPE_ID = 'puppet_install_distributor'
+
+# ID used to refer to the puppet distributor instance on a repository
+INSTALL_DISTRIBUTOR_ID = 'puppet_install_distributor'
+
 # ID used to refer to the whole repo profiler
 WHOLE_REPO_PROFILER_ID = 'puppet_whole_repo_profiler'
 
@@ -110,6 +116,8 @@ DEFAULT_HTTPS_DIR = '/var/www/pulp_puppet/https/repos'
 # Default absolute path component of URL where repos are stored
 CONFIG_ABSOLUTE_PATH = 'absolute_path'
 DEFAULT_ABSOLUTE_PATH = '/pulp/puppet/'
+
+CONFIG_INSTALL_PATH = 'install_path'
 
 # -- forge API ---------------------------------------------------------------
 
