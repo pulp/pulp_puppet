@@ -53,6 +53,7 @@ class TestValidateConfig(unittest.TestCase):
         result, message = self.distributor.validate_config(self.repo, config, [])
 
         self.assertFalse(result)
+        self.assertTrue(len(message) > 0)
 
     def test_path_does_not_exist(self):
         config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: '/a/b/c'})
@@ -60,6 +61,7 @@ class TestValidateConfig(unittest.TestCase):
         result, message = self.distributor.validate_config(self.repo, config, [])
 
         self.assertFalse(result)
+        self.assertTrue(len(message) > 0)
 
     def test_path_is_not_dir(self):
         config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: __file__})
@@ -67,6 +69,7 @@ class TestValidateConfig(unittest.TestCase):
         result, message = self.distributor.validate_config(self.repo, config, [])
 
         self.assertFalse(result)
+        self.assertTrue(len(message) > 0)
 
     def test_without_permission(self):
         # you're not running your tests as root, RIGHT?
@@ -75,6 +78,7 @@ class TestValidateConfig(unittest.TestCase):
         result, message = self.distributor.validate_config(self.repo, config, [])
 
         self.assertFalse(result)
+        self.assertTrue(len(message) > 0)
 
     def test_with_permission(self):
         config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: '/tmp'})
