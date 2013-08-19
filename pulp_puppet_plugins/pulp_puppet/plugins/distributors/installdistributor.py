@@ -126,10 +126,11 @@ class PuppetModuleInstallDistributor(Distributor):
                 archive = tarfile.open(unit.storage_path)
                 try:
                     archive.extractall(destination)
+                    self._rename_directory(unit, destination, archive.getnames())
                 finally:
                     archive.close()
                 self.detail_report.success(unit.unit_key)
-            except (OSError, IOError), e:
+            except (OSError, IOError, ValueError), e:
                 self.detail_report.error(unit.unit_key, str(e))
 
         # return some kind of report
@@ -137,6 +138,36 @@ class PuppetModuleInstallDistributor(Distributor):
             return publish_conduit.build_failure_report('failed', self.detail_report.report)
         else:
             return publish_conduit.build_success_report('success', self.detail_report.report)
+
+    @staticmethod
+    def _rename_directory(unit, destination, names):
+        """
+        Given a list of names from a unit's tarball and the destination, figure
+        out the name of the directory that was extracted, and then move it to
+        the name that puppet expects.
+
+        :param unit:        unit whose tarball was extracted at the destination
+        :type  unit:        pulp.plugins.model.AssociatedUnit
+        :param destination: absolute path to the destination where modules should
+                            be installed
+        :type  destination: str
+        :param names:       list of paths (relative or absolute) to files that
+                            are contained in the archive that was just extracted.
+        :type  names:       list
+
+        :raise:     IOError, ValueError
+        """
+        if not destination.endswith('/'):
+            destination += '/'
+        dest_length = len(destination)
+
+        dir_names = set([os.path.join(destination, name)[dest_length:].split('/')[0] for name in names])
+        if len(dir_names) != 1:
+            raise ValueError('too many directories extracted')
+
+        before = os.path.join(destination, dir_names.pop())
+        after = os.path.join(destination, unit.unit_key['name'])
+        shutil.move(before, after)
 
     def _check_for_unsafe_archive_paths(self, units, destination):
         """

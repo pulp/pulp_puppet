@@ -77,7 +77,6 @@ class TestValidateConfig(unittest.TestCase):
         self.assertFalse(result)
 
     def test_with_permission(self):
-        # you're not running your tests as root, RIGHT?
         config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: '/tmp'})
 
         result, message = self.distributor.validate_config(self.repo, config, [])
@@ -98,6 +97,7 @@ class TestPublishRepo(unittest.TestCase):
         ]
         self.conduit.get_units = mock.MagicMock(return_value=self.units, spec_set=self.conduit.get_units)
 
+    @mock.patch('shutil.move', autospec=True)
     @mock.patch('tarfile.open', autospec=True)
     @mock.patch.object(installdistributor.PuppetModuleInstallDistributor,
                        '_clear_destination_directory',
@@ -105,8 +105,9 @@ class TestPublishRepo(unittest.TestCase):
     @mock.patch.object(installdistributor.PuppetModuleInstallDistributor,
                        '_check_for_unsafe_archive_paths',
                        return_value=None)
-    def test_workflow(self, mock_check_paths, mock_clear, mock_open):
+    def test_workflow(self, mock_check_paths, mock_clear, mock_open, mock_move):
         config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: '/tmp'})
+        mock_open.return_value.getnames.return_value = ['a/b', 'a/c']
 
         report = self.distributor.publish_repo(self.repo, self.conduit, config)
 
@@ -125,6 +126,9 @@ class TestPublishRepo(unittest.TestCase):
 
         mock_check_paths.assert_called_once_with(self.units, '/tmp')
 
+        self.assertEqual(mock_move.call_count, 2)
+        mock_move.assert_any_call('/tmp/a', '/tmp/%s' % self.uk1['name'])
+
     def test_no_destination(self):
         """this one should fail very early since the destination is missing"""
         config = PluginCallConfiguration({}, {})
@@ -132,6 +136,7 @@ class TestPublishRepo(unittest.TestCase):
         report = self.distributor.publish_repo(self.repo, self.conduit, config)
 
         self.assertFalse(report.success_flag)
+        self.assertTrue(isinstance(report.summary, basestring))
         self.assertEqual(len(report.details['errors']), 0)
         self.assertEqual(len(report.details['success_unit_keys']), 0)
 
@@ -145,6 +150,8 @@ class TestPublishRepo(unittest.TestCase):
         report = self.distributor.publish_repo(self.repo, self.conduit, config)
 
         self.assertFalse(report.success_flag)
+        self.assertTrue(isinstance(report.summary, basestring))
+        self.assertTrue(len(report.summary) > 0)
         self.assertEqual(len(report.details['errors']), 1)
         self.assertEqual(len(report.details['success_unit_keys']), 0)
 
@@ -160,6 +167,7 @@ class TestPublishRepo(unittest.TestCase):
         report = self.distributor.publish_repo(self.repo, self.conduit, config)
 
         self.assertFalse(report.success_flag)
+        self.assertTrue(isinstance(report.summary, basestring))
         self.assertEqual(len(report.details['errors']), 0)
         self.assertEqual(len(report.details['success_unit_keys']), 0)
 
@@ -179,6 +187,7 @@ class TestPublishRepo(unittest.TestCase):
         report = self.distributor.publish_repo(self.repo, self.conduit, config)
 
         self.assertFalse(report.success_flag)
+        self.assertTrue(isinstance(report.summary, basestring))
         self.assertEqual(len(report.details['errors']), 2)
         self.assertTrue(report.details['errors'][0][0] in [self.uk1, self.uk2])
         self.assertTrue(report.details['errors'][1][0] in [self.uk1, self.uk2])
@@ -198,6 +207,48 @@ class TestPublishRepo(unittest.TestCase):
         report = self.distributor.publish_repo(self.repo, self.conduit, config)
 
         self.assertFalse(report.success_flag)
+        self.assertTrue(isinstance(report.summary, basestring))
+        self.assertEqual(len(report.details['errors']), 2)
+        self.assertTrue(report.details['errors'][0][0] in [self.uk1, self.uk2])
+        self.assertTrue(report.details['errors'][1][0] in [self.uk1, self.uk2])
+        self.assertEqual(len(report.details['success_unit_keys']), 0)
+
+    @mock.patch('shutil.move', side_effect=IOError)
+    @mock.patch('tarfile.open', autospec=True)
+    @mock.patch.object(installdistributor.PuppetModuleInstallDistributor,
+                       '_check_for_unsafe_archive_paths',
+                       return_value=None)
+    @mock.patch.object(installdistributor.PuppetModuleInstallDistributor,
+                       '_clear_destination_directory',
+                       return_value=None)
+    def test_cannot_move(self, mock_clear, mock_check, mock_open, mock_move):
+        config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: '/tmp'})
+        mock_open.return_value.getnames.return_value = ['a/b', 'a/c']
+
+        report = self.distributor.publish_repo(self.repo, self.conduit, config)
+
+        self.assertFalse(report.success_flag)
+        self.assertTrue(isinstance(report.summary, basestring))
+        self.assertEqual(len(report.details['errors']), 2)
+        self.assertTrue(report.details['errors'][0][0] in [self.uk1, self.uk2])
+        self.assertTrue(report.details['errors'][1][0] in [self.uk1, self.uk2])
+        self.assertEqual(len(report.details['success_unit_keys']), 0)
+
+    @mock.patch('tarfile.open', autospec=True)
+    @mock.patch.object(installdistributor.PuppetModuleInstallDistributor,
+                       '_check_for_unsafe_archive_paths',
+                       return_value=None)
+    @mock.patch.object(installdistributor.PuppetModuleInstallDistributor,
+                       '_clear_destination_directory',
+                       return_value=None)
+    def test_multiple_extraction_dirs(self, mock_clear, mock_check, mock_open):
+        config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: '/tmp'})
+        mock_open.return_value.getnames.return_value = ['a/b', 'c/b']
+
+        report = self.distributor.publish_repo(self.repo, self.conduit, config)
+
+        self.assertFalse(report.success_flag)
+        self.assertTrue(isinstance(report.summary, basestring))
         self.assertEqual(len(report.details['errors']), 2)
         self.assertTrue(report.details['errors'][0][0] in [self.uk1, self.uk2])
         self.assertTrue(report.details['errors'][1][0] in [self.uk1, self.uk2])
@@ -226,6 +277,46 @@ class TestPublishRepo(unittest.TestCase):
         """
         if not self.distributor.detail_report.report['errors']:
             self.distributor.detail_report.error(self.uk1, 'failed')
+
+
+class TestRenameDirectory(unittest.TestCase):
+    def setUp(self):
+        uk = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.2.0'}
+        self.unit = AssociatedUnit(constants.TYPE_PUPPET_MODULE, uk, {}, '/a/b/x', '', '', '', '')
+        self.method = installdistributor.PuppetModuleInstallDistributor._rename_directory
+
+    @mock.patch('shutil.move', autospec=True)
+    def test_trailing_slash(self, mock_move):
+        self.method(self.unit, '/tmp/', ['a/b', 'a/c'])
+
+        mock_move.assert_called_once_with('/tmp/a', '/tmp/stdlib')
+
+    @mock.patch('shutil.move', autospec=True)
+    def test_no_trailing_slash(self, mock_move):
+        self.method(self.unit, '/tmp', ['a/b', 'a/c'])
+
+        mock_move.assert_called_once_with('/tmp/a', '/tmp/stdlib')
+
+    @mock.patch('shutil.move', autospec=True)
+    def test_too_many_dirs(self, mock_move):
+        self.assertRaises(ValueError, self.method, self.unit, '/tmp', ['a/b', 'c/b'])
+
+    @mock.patch('shutil.move', autospec=True)
+    def test_no_dirs(self, mock_move):
+        self.assertRaises(ValueError, self.method, self.unit, '/tmp', [])
+
+    @mock.patch('shutil.move', autospec=True)
+    def test_absolute_paths(self, mock_move):
+        self.method(self.unit, '/tmp', ['/tmp/a/b', '/tmp/a/c'])
+
+        mock_move.assert_called_once_with('/tmp/a', '/tmp/stdlib')
+
+    @mock.patch('shutil.move', autospec=True)
+    def test_empty_dir(self, mock_move):
+        """weird scenario, but you never know..."""
+        self.method(self.unit, '/tmp', ['a'])
+
+        mock_move.assert_called_once_with('/tmp/a', '/tmp/stdlib')
 
 
 class TestCheckForUnsafeArchivePaths(unittest.TestCase):
@@ -284,6 +375,7 @@ class TestArchivePathsAreSafe(unittest.TestCase):
             'a/b/c',
             'd/e/f',
             'g/h/../i',
+            '/foo/a/b/', # this is a terrible thing to have in a tarball, but just in case...
         ]
 
         ret = installdistributor.PuppetModuleInstallDistributor._archive_paths_are_safe(
