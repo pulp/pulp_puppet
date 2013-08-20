@@ -9,6 +9,7 @@ Contents:
    type
    handler_conf
    plugin_conf
+   plugin_report
    forge_api
 
 Indices and tables
