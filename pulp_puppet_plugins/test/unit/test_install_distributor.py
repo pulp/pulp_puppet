@@ -146,12 +146,16 @@ class TestPublishRepo(unittest.TestCase):
 
     def test_duplicate_unit_names(self):
         config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: '/tmp'})
+        uk3 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.3.1'}
+        unit3 = AssociatedUnit(constants.TYPE_PUPPET_MODULE, uk3, {}, '/a/b/z', '', '', '', '')
+        self.units.append(unit3)
 
         report = self.distributor.publish_repo(self.repo, self.conduit, config)
 
         self.assertFalse(report.success_flag)
         self.assertTrue(isinstance(report.summary, basestring))
         self.assertEqual(len(report.details['errors']), 2)
+        self.assertTrue(report.summary.find('duplicate') >= 0)
 
     @mock.patch.object(installdistributor.PuppetModuleInstallDistributor,
                        '_check_for_unsafe_archive_paths',
