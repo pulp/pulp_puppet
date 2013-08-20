@@ -107,6 +107,13 @@ class PuppetModuleInstallDistributor(Distributor):
 
         units = publish_conduit.get_units(UnitAssociationCriteria([constants.TYPE_PUPPET_MODULE]))
 
+        duplicate_units = self._find_duplicate_names(units)
+        if duplicate_units:
+            for unit in duplicate_units:
+                self.detail_report.error(unit.unit_key,
+                                         'another unit in this repo also has this name')
+            return publish_conduit.build_failure_report('duplicate unit names', self.detail_report.report)
+
         # check for unsafe paths in tarballs, and fail early if problems are found
         self._check_for_unsafe_archive_paths(units, destination)
         if self.detail_report.has_errors:
@@ -138,6 +145,35 @@ class PuppetModuleInstallDistributor(Distributor):
             return publish_conduit.build_failure_report('failed', self.detail_report.report)
         else:
             return publish_conduit.build_success_report('success', self.detail_report.report)
+
+    @staticmethod
+    def _find_duplicate_names(units):
+        """
+        Returns a list of units that have the same name as at least one other
+        unit in this repository. This is a problem because in order to "install"
+        these modules, they must be extracted into the destination directory
+        and renamed to just the "name" portion of their unit key. Multiple units
+        with the name name will conflict on the filesystem.
+
+        :param units:   iterable of all units being published
+        :type  units:   iterable
+
+        :return:    list of units that have conflicting names
+        :rtype:     list
+        """
+        names = {}
+        for unit in units:
+            name = unit.unit_key['name']
+            if name not in names:
+                names[name] = 1
+            else:
+                names[name] = names[name] + 1
+
+        duplicates = set()
+        for name, count in names.iteritems():
+            if count > 1:
+                duplicates.add(name)
+        return [unit for unit in units if unit.unit_key['name'] in duplicates]
 
     @staticmethod
     def _rename_directory(unit, destination, names):

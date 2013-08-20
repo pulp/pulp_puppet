@@ -94,7 +94,7 @@ class TestPublishRepo(unittest.TestCase):
         self.repo = Repository('repo1', '', {})
         self.conduit = RepoPublishConduit('repo1', self.distributor.metadata()['id'])
         self.uk1 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.2.0'}
-        self.uk2 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.2.1'}
+        self.uk2 = {'author': 'puppetlabs', 'name': 'java', 'version': '1.3.1'}
         self.units = [
             AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk1, {}, '/a/b/x', '', '', '', ''),
             AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk2, {}, '/a/b/y', '', '', '', ''),
@@ -143,6 +143,15 @@ class TestPublishRepo(unittest.TestCase):
         self.assertTrue(isinstance(report.summary, basestring))
         self.assertEqual(len(report.details['errors']), 0)
         self.assertEqual(len(report.details['success_unit_keys']), 0)
+
+    def test_duplicate_unit_names(self):
+        config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: '/tmp'})
+
+        report = self.distributor.publish_repo(self.repo, self.conduit, config)
+
+        self.assertFalse(report.success_flag)
+        self.assertTrue(isinstance(report.summary, basestring))
+        self.assertEqual(len(report.details['errors']), 2)
 
     @mock.patch.object(installdistributor.PuppetModuleInstallDistributor,
                        '_check_for_unsafe_archive_paths',
@@ -281,6 +290,30 @@ class TestPublishRepo(unittest.TestCase):
         """
         if not self.distributor.detail_report.report['errors']:
             self.distributor.detail_report.error(self.uk1, 'failed')
+
+
+class TestFindDuplicateNames(unittest.TestCase):
+    def setUp(self):
+        self.uk1 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.2.0'}
+        self.uk2 = {'author': 'puppetlabs', 'name': 'java', 'version': '1.3.1'}
+        self.uk3 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.3.1'}
+        self.unit3 = AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk3, {}, '/a/b/z', '', '', '', '')
+        self.units = [
+            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk1, {}, '/a/b/x', '', '', '', ''),
+            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk2, {}, '/a/b/y', '', '', '', ''),
+        ]
+        self.method = installdistributor.PuppetModuleInstallDistributor._find_duplicate_names
+
+    def test_no_dups(self):
+        ret = self.method(self.units)
+
+        self.assertEqual(ret, [])
+
+    def test_with_dups(self):
+        self.units.append(self.unit3)
+        ret = self.method(self.units)
+        self.assertTrue(self.units[0] in ret)
+        self.assertTrue(self.units[2] in ret)
 
 
 class TestRenameDirectory(unittest.TestCase):
