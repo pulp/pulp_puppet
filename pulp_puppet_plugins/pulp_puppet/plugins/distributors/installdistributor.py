@@ -50,7 +50,7 @@ class PuppetModuleInstallDistributor(Distributor):
             'types': [constants.TYPE_PUPPET_MODULE]
         }
 
-    def validate_config(self, repo, config, related_repos):
+    def validate_config(self, repo, config, config_conduit):
         """
         :param repo:            metadata describing the repository to which the
                                 configuration applies
@@ -59,12 +59,8 @@ class PuppetModuleInstallDistributor(Distributor):
         :param config:          plugin configuration instance; the proposed repo
                                 configuration is found within
         :type  config:          pulp.plugins.config.PluginCallConfiguration
-
-        :param related_repos:   list of other repositories using this distributor
-                                type; empty list if there are none; entries are
-                                of type pulp.plugins.model.RelatedRepository
-        :type  related_repos: list
-
+        :param config_conduit:  Configuration Conduit;
+        :type  config_conduit:  pulp.plugins.conduits.repo_config.RepoConfigConduit
         :return: tuple of (bool, str) to describe the result
         :rtype:  tuple
         """

@@ -42,7 +42,7 @@ class PuppetModuleDistributor(Distributor):
             'types' : [constants.TYPE_PUPPET_MODULE]
         }
 
-    def validate_config(self, repo, config, related_repos):
+    def validate_config(self, repo, config, config_conduit):
         config.default_config = configuration.DEFAULT_CONFIG
         return configuration.validate(config)
 
