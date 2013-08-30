@@ -46,7 +46,7 @@ class PuppetModuleImporter(Importer):
             'types' : [constants.TYPE_PUPPET_MODULE]
         }
 
-    def validate_config(self, repo, config, related_repos):
+    def validate_config(self, repo, config):
         return configuration.validate(config)
 
     def sync_repo(self, repo, sync_conduit, config):
