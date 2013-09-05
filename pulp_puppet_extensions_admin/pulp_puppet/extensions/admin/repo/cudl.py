@@ -61,7 +61,6 @@ class CreatePuppetRepositoryCommand(CreateRepositoryCommand, ImporterConfigMixin
         CreateRepositoryCommand.__init__(self, context)
         ImporterConfigMixin.__init__(self, include_unit_policy=False)
 
-        #self.add_option(OPTION_FEED)
         self.add_option(OPTION_QUERIES)
         self.add_option(OPTION_QUERY)
         self.add_option(OPTION_HTTP)
@@ -82,10 +81,8 @@ class CreatePuppetRepositoryCommand(CreateRepositoryCommand, ImporterConfigMixin
             name = kwargs[options.OPTION_NAME.keyword]
 
         # -- importer metadata --
-        importer_config = {
-            constants.CONFIG_FEED : kwargs[OPTION_FEED.keyword],
-            constants.CONFIG_QUERIES : kwargs[OPTION_QUERIES.keyword] or kwargs[OPTION_QUERY.keyword],
-            }
+        importer_config = self.parse_user_input(kwargs)
+        importer_config.update({constants.CONFIG_QUERIES: kwargs[OPTION_QUERIES.keyword] or kwargs[OPTION_QUERY.keyword]})
         arg_utils.convert_removed_options(importer_config)
 
         # -- distributor metadata --
@@ -115,7 +112,6 @@ class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand, ImporterConfigMixin
         UpdateRepositoryCommand.__init__(self, context)
         ImporterConfigMixin.__init__(self, include_unit_policy=False)
 
-        #self.add_option(OPTION_FEED)
         self.add_option(OPTION_QUERIES_UPDATE)
         self.add_option(OPTION_QUERY)
         self.add_option(OPTION_HTTP)
@@ -132,10 +128,8 @@ class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand, ImporterConfigMixin
         queries = kwargs.pop(OPTION_QUERIES.keyword, None)
         if queries is None:
             queries = kwargs.pop(OPTION_QUERY.keyword, None)
-        importer_config = {
-            constants.CONFIG_FEED : kwargs.pop(OPTION_FEED.keyword, None),
-            constants.CONFIG_QUERIES : queries
-            }
+        importer_config = self.parse_user_input(kwargs)
+        importer_config.update({constants.CONFIG_QUERIES: queries})
         arg_utils.convert_removed_options(importer_config)
 
         # -- distributor metadata --
