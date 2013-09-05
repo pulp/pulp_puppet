@@ -17,7 +17,7 @@ import os
 from StringIO import StringIO
 
 from nectar.downloaders.threaded import HTTPThreadedDownloader
-from nectar.listener import DownloadEventListener
+from nectar.listener import AggregatingEventListener
 from nectar.request import DownloadRequest
 
 from pulp.plugins.util.nectar_config import importer_config_to_nectar_config
@@ -47,9 +47,8 @@ class HttpDownloader(BaseDownloader):
         progress_report.metadata_query_finished_count = 0
         progress_report.metadata_query_total_count = len(urls)
 
-        config = importer_config_to_nectar_config(self.config.flatten())
         listener = HTTPMetadataDownloadEventListener(progress_report)
-        self.downloader = HTTPThreadedDownloader(config, listener)
+        self.downloader = self._create_and_configure_downloader(listener)
 
         request_list = [DownloadRequest(url, StringIO()) for url in urls]
 
@@ -61,17 +60,18 @@ class HttpDownloader(BaseDownloader):
         finally:
             self.downloader = None
 
+        for report in listener.failed_reports:
+            raise exceptions.FileRetrievalException(report.error_msg)
+
         return [r.destination.getvalue() for r in request_list]
 
     def retrieve_module(self, progress_report, module):
-        return self.retrieve_modules(progress_report, [module])
+        return self.retrieve_modules(progress_report, [module])[0]
 
     def retrieve_modules(self, progress_report, module_list):
 
-        if self.downloader is None:
-            config = importer_config_to_nectar_config(self.config.flatten())
-            listener = None
-            self.downloader = HTTPThreadedDownloader(config, listener)
+        listener = HTTPModuleDownloadEventListener(progress_report)
+        self.downloader = self._create_and_configure_downloader(listener)
 
         request_list = []
 
@@ -82,7 +82,14 @@ class HttpDownloader(BaseDownloader):
             request = DownloadRequest(url, module_tmp_filename)
             request_list.append(request)
 
-        self.downloader.download(request_list)
+        try:
+            self.downloader.download(request_list)
+
+        finally:
+            self.downloader = None
+
+        for report in listener.failed_reports:
+            raise exceptions.FileRetrievalException(report.error_msg)
 
         return [r.destination for r in request_list]
 
@@ -156,11 +163,16 @@ class HttpDownloader(BaseDownloader):
         url += module.filename()
         return url
 
+    def _create_and_configure_downloader(self, listener):
+        config = importer_config_to_nectar_config(self.config.flatten())
+        return HTTPThreadedDownloader(config, listener)
+
 # -- private classes ----------------------------------------------------------
 
-class HTTPMetadataDownloadEventListener(DownloadEventListener):
+class HTTPMetadataDownloadEventListener(AggregatingEventListener):
 
     def __init__(self, progress_report):
+        super(HTTPMetadataDownloadEventListener, self).__init__()
         self.progress_report = progress_report
 
     def download_started(self, report):
@@ -168,26 +180,16 @@ class HTTPMetadataDownloadEventListener(DownloadEventListener):
         self.progress_report.update_progress()
 
     def download_succeeded(self, report):
+        super(HTTPMetadataDownloadEventListener, self).download_succeeded(report)
         self.progress_report.metadata_query_finished_count += 1
         self.progress_report.update_progress()
 
-    def download_failed(self, report):
-        raise exceptions.FileRetrievalException(report.error_msg)
 
-
-class HTTPModuleDownloadEventListener(DownloadEventListener):
+class HTTPModuleDownloadEventListener(AggregatingEventListener):
 
     def __init__(self, progress_report):
+        super(HTTPModuleDownloadEventListener, self).__init__()
         self.progress_report = progress_report
-
-    def download_started(self, report):
-        pass
-
-    def download_succeeded(self, report):
-        pass
-
-    def download_failed(self, report):
-        raise exceptions.FileRetrievalException(report.error_msg)
 
 # -- utilities ----------------------------------------------------------------
 

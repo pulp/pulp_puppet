@@ -15,7 +15,7 @@ import os
 from StringIO import StringIO
 
 from nectar.downloaders.local import LocalFileDownloader
-from nectar.listener import DownloadEventListener
+from nectar.listener import AggregatingEventListener
 from nectar.request import DownloadRequest
 
 from pulp.plugins.util.nectar_config import importer_config_to_nectar_config
@@ -54,6 +54,9 @@ class LocalDownloader(BaseDownloader):
 
         self.downloader = None
 
+        for report in listener.failed_reports:
+            raise FileRetrievalException(report.error_msg)
+
         return [destination.getvalue()]
 
     def retrieve_module(self, progress_report, module):
@@ -87,16 +90,14 @@ class LocalDownloader(BaseDownloader):
         pass
 
 
-class LocalMetadataDownloadEventListener(DownloadEventListener):
+class LocalMetadataDownloadEventListener(AggregatingEventListener):
 
     def __init__(self, progress_report):
+        super(LocalMetadataDownloadEventListener, self).__init__()
         self.progress_report = progress_report
 
     def download_succeeded(self, report):
+        super(LocalMetadataDownloadEventListener, self).download_succeeded(report)
         self.progress_report.metadata_query_finished_count += 1
         self.progress_report.update_progress()
-
-    def download_failed(self, report):
-        raise FileRetrievalException(report.error_msg)
-
 
