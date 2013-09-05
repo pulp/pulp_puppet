@@ -38,13 +38,13 @@ class PuppetModuleSyncRun(object):
     maintain state relevant to the run and should not be reused across runs.
     """
 
-    def __init__(self, repo, sync_conduit, config, is_cancelled_call):
+    def __init__(self, repo, sync_conduit, config):
         self.repo = repo
         self.sync_conduit = sync_conduit
         self.config = config
-        self.is_cancelled_call = is_cancelled_call
 
         self.progress_report = SyncProgressReport(sync_conduit)
+        self.downloader = None
 
     def perform_sync(self):
         """
@@ -84,6 +84,12 @@ class PuppetModuleSyncRun(object):
             report = self.progress_report.build_final_report()
             return report
 
+    def cancel_sync(self):
+        downloader = self.downloader
+        if downloader is None:
+            return
+        downloader.cancel()
+
     def _parse_metadata(self):
         """
         Takes the necessary actions (according to the run configuration) to
@@ -105,9 +111,12 @@ class PuppetModuleSyncRun(object):
         start_time = datetime.now()
 
         # Retrieve the metadata from the source
+        downloader = self._create_downloader()
+        self.downloader = downloader
+
         try:
-            downloader = self._create_downloader()
             metadata_json_docs = downloader.retrieve_metadata(self.progress_report)
+
         except Exception, e:
             _LOG.exception('Exception while retrieving metadata for repository <%s>' % self.repo.id)
             self.progress_report.metadata_state = STATE_FAILED
@@ -122,6 +131,9 @@ class PuppetModuleSyncRun(object):
             self.progress_report.update_progress()
 
             return None
+
+        finally:
+            self.downloader = None
 
         # Parse the retrieved metadata documents
         try:
@@ -223,6 +235,7 @@ class PuppetModuleSyncRun(object):
                                encode_unicode(unit_key_dict['author']))
 
         downloader = self._create_downloader()
+        self.downloader = downloader
 
         # Ease lookup of modules
         modules_by_key = dict([(unit_key_str(m.unit_key()), m) for m in metadata.modules])
@@ -265,6 +278,8 @@ class PuppetModuleSyncRun(object):
             for key in remove_unit_keys:
                 doomed = existing_units_by_key[key]
                 self.sync_conduit.remove_unit(doomed)
+
+        self.downloader = None
 
     def _add_new_module(self, downloader, module):
         """
@@ -343,8 +358,7 @@ class PuppetModuleSyncRun(object):
         """
 
         feed = self.config.get(constants.CONFIG_FEED)
-        downloader = downloader_factory.get_downloader(feed, self.repo, self.sync_conduit,
-                                                       self.config, self.is_cancelled_call)
+        downloader = downloader_factory.get_downloader(feed, self.repo, self.sync_conduit, self.config)
         return downloader
 
     def _should_remove_missing(self):
