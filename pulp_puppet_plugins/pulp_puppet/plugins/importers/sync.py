@@ -111,10 +111,9 @@ class PuppetModuleSyncRun(object):
         start_time = datetime.now()
 
         # Retrieve the metadata from the source
-        downloader = self._create_downloader()
-        self.downloader = downloader
-
         try:
+            downloader = self._create_downloader()
+            self.downloader = downloader
             metadata_json_docs = downloader.retrieve_metadata(self.progress_report)
 
         except Exception, e:
