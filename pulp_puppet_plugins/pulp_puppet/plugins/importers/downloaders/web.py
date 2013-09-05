@@ -14,7 +14,7 @@
 import copy
 import logging
 import os
-from StringIO import StringIO
+from cStringIO import StringIO
 
 from nectar.downloaders.threaded import HTTPThreadedDownloader
 from nectar.listener import AggregatingEventListener
