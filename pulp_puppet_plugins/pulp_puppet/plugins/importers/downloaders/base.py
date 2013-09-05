@@ -24,6 +24,7 @@ class BaseDownloader(object):
         self.conduit = conduit
         self.config = config
         self.is_cancelled_call = is_cancelled_call
+        self.downloader = None
 
     def retrieve_metadata(self, progress_report):
         """
@@ -56,6 +57,32 @@ class BaseDownloader(object):
 
         :return: full path to the temporary location where the module file is
         :rtype:  str
+        """
+        raise NotImplementedError()
+
+    def retrieve_modules(self, progress_report, module_list):
+        """
+        Batch version of the retrieve_module method
+
+        :param progress_report: used if any updates need to be made as the
+               download runs
+        :type  progress_report: pulp_puppet.importer.sync_progress.ProgressReport
+
+        :param module_list: list of modules to be downloaded
+        :type  module_list: iterable
+
+        :return: list of full paths to the temporary locations where the modules are
+        :rtype:  list
+        """
+        raise NotImplementedError()
+
+    def cancel(self, progress_report):
+        """
+        Cancel the current operation.
+
+        :param progress_report: used if any updates need to be made as the
+               download runs
+        :type  progress_report: pulp_puppet.importer.sync_progress.ProgressReport
         """
         raise NotImplementedError()
 

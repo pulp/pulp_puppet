@@ -14,9 +14,13 @@
 import copy
 import logging
 import os
+from StringIO import StringIO
 
-import pycurl
-from pulp.common.util import encode_unicode
+from nectar.downloaders.threaded import HTTPThreadedDownloader
+from nectar.listener import DownloadEventListener
+from nectar.request import DownloadRequest
+
+from pulp.plugins.util.nectar_config import importer_config_to_nectar_config
 
 from pulp_puppet.plugins.importers.downloaders.base import BaseDownloader
 from pulp_puppet.common import constants
@@ -36,84 +40,63 @@ class HttpDownloader(BaseDownloader):
     """
 
     def retrieve_metadata(self, progress_report):
-        """
-        Retrieves all metadata documents needed to fulfill the configuration
-        set for the repository. The progress report will be updated as the
-        downloads take place.
 
-        :param progress_report: used to communicate the progress of this operation
-        :type  progress_report: pulp_puppet.importer.sync_progress.ProgressReport
-
-        :return: list of JSON documents describing all modules to import
-        :rtype:  list
-        """
         urls = self._create_metadata_download_urls()
 
         # Update the progress report to reflect the number of queries it will take
         progress_report.metadata_query_finished_count = 0
         progress_report.metadata_query_total_count = len(urls)
 
-        all_metadata_documents = []
-        for url in urls:
-            _LOG.info('Retrieving URL <%s>' % url)
-            progress_report.metadata_current_query = url
-            progress_report.update_progress()
+        config = importer_config_to_nectar_config(self.config.flatten())
+        listener = HTTPMetadataDownloadEventListener(progress_report)
+        self.downloader = HTTPThreadedDownloader(config, listener)
 
-            # Let any exceptions from this bubble up, the caller will update
-            # the progress report as necessary
-            content = InMemoryDownloadedContent()
-            self._download_file(url, content)
-            all_metadata_documents.append(content.content)
+        request_list = [DownloadRequest(url, StringIO()) for url in urls]
 
-            progress_report.metadata_query_finished_count += 1
+        # Let any exceptions from this bubble up, the caller will update
+        # the progress report as necessary
+        try:
+            self.downloader.download(request_list)
 
-        progress_report.update_progress() # to get the final finished count out there
-        return all_metadata_documents
+        finally:
+            self.downloader = None
+
+        return [r.destination.getvalue() for r in request_list]
 
     def retrieve_module(self, progress_report, module):
-        """
-        Retrieves the given module and returns where on disk it can be
-        found. It is the caller's job to relocate this file to where Pulp
-        wants it to live as its final resting place.
+        return self.retrieve_modules(progress_report, [module])
 
-        :param progress_report: used if any updates need to be made as the
-               download runs
-        :type  progress_report: pulp_puppet.importer.sync_progress.ProgressReport
+    def retrieve_modules(self, progress_report, module_list):
 
-        :param module: module to download
-        :type  module: pulp_puppet.common.model.Module
+        if self.downloader is None:
+            config = importer_config_to_nectar_config(self.config.flatten())
+            listener = None
+            self.downloader = HTTPThreadedDownloader(config, listener)
 
-        :return: full path to the temporary location where the module file is
-        :rtype:  str
-        """
-        url = self._create_module_url(module)
+        request_list = []
 
-        module_tmp_dir = _create_download_tmp_dir(self.repo.working_dir)
-        module_tmp_filename = os.path.join(module_tmp_dir, module.filename())
+        for module in module_list:
+            url = self._create_module_url(module)
+            module_tmp_dir = _create_download_tmp_dir(self.repo.working_dir)
+            module_tmp_filename = os.path.join(module_tmp_dir, module.filename())
+            request = DownloadRequest(url, module_tmp_filename)
+            request_list.append(request)
 
-        content = StoredDownloadedContent(module_tmp_filename)
-        content.open()
-        try:
-            self._download_file(url, content)
-            content.close()
-        except Exception, e:
-            content.close()
-            content.delete()
-            raise
+        self.downloader.download(request_list)
 
-        return module_tmp_filename
+        return [r.destination for r in request_list]
+
+    def cancel(self, progress_report):
+        downloader = self.downloader
+        if downloader is None:
+            return
+        downloader.cancel()
 
     def cleanup_module(self, module):
-        """
-        Called once the unit has been copied into Pulp's storage location to
-        let the downloader do any post-processing it needs (for instance,
-        deleting any temporary copies of the file).
 
-        :param module: module to clean up
-        :type  module: pulp_puppet.common.model.Module
-        """
         module_tmp_dir = _create_download_tmp_dir(self.repo.working_dir)
         module_tmp_filename = os.path.join(module_tmp_dir, module.filename())
+
         if os.path.exists(module_tmp_filename):
             os.remove(module_tmp_filename)
 
@@ -173,118 +156,38 @@ class HttpDownloader(BaseDownloader):
         url += module.filename()
         return url
 
-    def _download_file(self, url, destination):
-        """
-        Downloads the content at the given URL into the given destination.
-        The object passed into destination must have a method called "update"
-        that accepts a single parameter (the buffer that was read).
-
-        :param url: location to download
-        :type  url: str
-
-        :param destination: object
-        @return:
-        """
-        curl = self._create_and_configure_curl()
-        url = encode_unicode(url) # because of how the config is stored in pulp
-
-        curl.setopt(pycurl.URL, url)
-        curl.setopt(pycurl.WRITEFUNCTION, destination.update)
-        curl.perform()
-        status = curl.getinfo(curl.HTTP_CODE)
-        curl.close()
-
-        if status == 401:
-            raise exceptions.UnauthorizedException(url)
-        elif status == 404:
-            raise exceptions.FileNotFoundException(url)
-        elif status != 200:
-            raise exceptions.FileRetrievalException(url)
-
-    def _create_and_configure_curl(self):
-        """
-        Instantiates and configures the curl instance. This will drive the
-        bulk of the behavior of how the download progresses. The values in
-        this call should be tweaked or pulled out as repository-level
-        configuration as the download process is enhanced.
-
-        :return: curl instance to use for the download
-        :rtype:  pycurl.Curl
-        """
-
-        curl = pycurl.Curl()
-
-        # Eventually, add here support for:
-        # - callback on bytes downloaded
-        # - bandwidth limitations
-        # - SSL verification for hosts on SSL
-        # - client SSL certificate
-        # - proxy support
-        # - callback support for resuming partial downloads
-
-        curl.setopt(pycurl.VERBOSE, 0)
-
-        # TODO: Add in reference to is cancelled hook to be able to abort the download
-
-        # Close out the connection on our end in the event the remote host
-        # stops responding. This is interpretted as "If less than 1000 bytes are
-        # sent in a 5 minute interval, abort the connection."
-        curl.setopt(pycurl.LOW_SPEED_LIMIT, 1000)
-        curl.setopt(pycurl.LOW_SPEED_TIME, 5 * 60)
-
-        return curl
-
 # -- private classes ----------------------------------------------------------
 
-class InMemoryDownloadedContent(object):
-    """
-    In memory storage that content will be written to by PyCurl.
-    """
-    def __init__(self):
-        self.content = ''
+class HTTPMetadataDownloadEventListener(DownloadEventListener):
 
-    def update(self, buffer):
-        self.content += buffer
+    def __init__(self, progress_report):
+        self.progress_report = progress_report
 
-class StoredDownloadedContent(object):
-    """
-    Stores content on disk as it is retrieved by PyCurl. This currently does
-    not support resuming a download and will need to be revisited to add
-    that support.
-    """
-    def __init__(self, filename):
-        self.filename = filename
+    def download_started(self, report):
+        self.progress_report.metadata_current_query = report.url
+        self.progress_report.update_progress()
 
-        self.offset = 0
-        self.file = None
+    def download_succeeded(self, report):
+        self.progress_report.metadata_query_finished_count += 1
+        self.progress_report.update_progress()
 
-    def open(self):
-        """
-        Sets the content object to be able to accept and store data sent to
-        its update method.
-        """
-        self.file = open(self.filename, 'a+')
+    def download_failed(self, report):
+        raise exceptions.FileRetrievalException(report.error_msg)
 
-    def update(self, buffer):
-        """
-        Callback passed to PyCurl to use to write content as it is read.
-        """
-        self.file.seek(self.offset)
-        self.file.write(buffer)
-        self.offset += len(buffer)
 
-    def close(self):
-        """
-        Closes the underlying file backing this content unit.
-        """
-        self.file.close()
+class HTTPModuleDownloadEventListener(DownloadEventListener):
 
-    def delete(self):
-        """
-        Deletes the stored file.
-        """
-        if os.path.exists(self.filename):
-            os.remove(self.filename)
+    def __init__(self, progress_report):
+        self.progress_report = progress_report
+
+    def download_started(self, report):
+        pass
+
+    def download_succeeded(self, report):
+        pass
+
+    def download_failed(self, report):
+        raise exceptions.FileRetrievalException(report.error_msg)
 
 # -- utilities ----------------------------------------------------------------
 

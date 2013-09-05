@@ -12,9 +12,16 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 import os
+from StringIO import StringIO
+
+from nectar.downloaders.local import LocalFileDownloader
+from nectar.listener import DownloadEventListener
+from nectar.request import DownloadRequest
+
+from pulp.plugins.util.nectar_config import importer_config_to_nectar_config
 
 from pulp_puppet.plugins.importers.downloaders.base import BaseDownloader
-from pulp_puppet.plugins.importers.downloaders.exceptions import FileNotFoundException
+from pulp_puppet.plugins.importers.downloaders.exceptions import FileNotFoundException, FileRetrievalException
 from pulp_puppet.common import constants
 
 
@@ -25,7 +32,8 @@ class LocalDownloader(BaseDownloader):
     """
 
     def retrieve_metadata(self, progress_report):
-        source_dir = self.config.get(constants.CONFIG_FEED)[len('file://'):]
+        feed = self.config.get(constants.CONFIG_FEED)
+        source_dir = feed[len('file://'):]
         metadata_filename = os.path.join(source_dir, constants.REPO_METADATA_FILENAME)
 
         # Only do one query for this implementation
@@ -34,19 +42,19 @@ class LocalDownloader(BaseDownloader):
         progress_report.metadata_current_query = metadata_filename
         progress_report.update_progress()
 
-        if not os.path.exists(metadata_filename):
-            # The caller will take care of stuffing this error into the
-            # progress report
-            raise FileNotFoundException(metadata_filename)
+        config = importer_config_to_nectar_config(self.config.flatten())
+        listener = LocalMetadataDownloadEventListener(progress_report)
+        self.downloader = LocalFileDownloader(config, listener)
 
-        f = open(metadata_filename, 'r')
-        contents = f.read()
-        f.close()
+        url = os.path.join(feed, constants.REPO_METADATA_FILENAME)
+        destination = StringIO()
+        request = DownloadRequest(url, destination)
 
-        progress_report.metadata_query_finished_count += 1
-        progress_report.update_progress()
+        self.downloader.download([request])
 
-        return [contents]
+        self.downloader = None
+
+        return [destination.getvalue()]
 
     def retrieve_module(self, progress_report, module):
 
@@ -54,7 +62,8 @@ class LocalDownloader(BaseDownloader):
         # a structure where the modules are located in the same directory as
         # specified in the feed.
 
-        source_dir = self.config.get(constants.CONFIG_FEED)[len('file://'):]
+        feed = self.config.get(constants.CONFIG_FEED)
+        source_dir = feed[len('file://'):]
         module_filename = module.filename()
         full_filename = os.path.join(source_dir, module_filename)
 
@@ -63,8 +72,31 @@ class LocalDownloader(BaseDownloader):
 
         return full_filename
 
+    def retrieve_modules(self, progress_report, module_list):
+        return [self.retrieve_module(progress_report, module) for module in module_list]
+
+    def cancel(self, progress_report):
+        downloader = self.downloader
+        if downloader is None:
+            return
+        downloader.cancel()
+
     def cleanup_module(self, module):
         # We don't want to delete the original location on disk, so do
         # nothing here.
         pass
+
+
+class LocalMetadataDownloadEventListener(DownloadEventListener):
+
+    def __init__(self, progress_report):
+        self.progress_report = progress_report
+
+    def download_succeeded(self, report):
+        self.progress_report.metadata_query_finished_count += 1
+        self.progress_report.update_progress()
+
+    def download_failed(self, report):
+        raise FileRetrievalException(report.error_msg)
+
 
