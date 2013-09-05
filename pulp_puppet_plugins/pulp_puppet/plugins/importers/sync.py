@@ -85,6 +85,9 @@ class PuppetModuleSyncRun(object):
             return report
 
     def cancel_sync(self):
+        """
+        Cancel an in-progress sync, if there is one.
+        """
         downloader = self.downloader
         if downloader is None:
             return

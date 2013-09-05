@@ -40,6 +40,17 @@ class HttpDownloader(BaseDownloader):
     """
 
     def retrieve_metadata(self, progress_report):
+        """
+        Retrieves all metadata documents needed to fulfill the configuration
+        set for the repository. The progress report will be updated as the
+        downloads take place.
+
+        :param progress_report: used to communicate the progress of this operation
+        :type  progress_report: pulp_puppet.importer.sync_progress.ProgressReport
+
+        :return: list of JSON documents describing all modules to import
+        :rtype:  list
+        """
 
         urls = self._create_metadata_download_urls()
 
@@ -66,9 +77,39 @@ class HttpDownloader(BaseDownloader):
         return [r.destination.getvalue() for r in request_list]
 
     def retrieve_module(self, progress_report, module):
+        """
+        Retrieves the given module and returns where on disk it can be
+        found. It is the caller's job to copy this file to where Pulp
+        wants it to live as its final resting place. This downloader will
+        then be allowed to clean up the downloaded file in the
+        cleanup_module call.
+
+        :param progress_report: used if any updates need to be made as the
+               download runs
+        :type  progress_report: pulp_puppet.importer.sync_progress.ProgressReport
+
+        :param module: module to download
+        :type  module: pulp_puppet.common.model.Module
+
+        :return: full path to the temporary location where the module file is
+        :rtype:  str
+        """
         return self.retrieve_modules(progress_report, [module])[0]
 
     def retrieve_modules(self, progress_report, module_list):
+        """
+        Batch version of the retrieve_module method
+
+        :param progress_report: used if any updates need to be made as the
+               download runs
+        :type  progress_report: pulp_puppet.importer.sync_progress.ProgressReport
+
+        :param module_list: list of modules to be downloaded
+        :type  module_list: iterable
+
+        :return: list of full paths to the temporary locations where the modules are
+        :rtype:  list
+        """
 
         listener = HTTPModuleDownloadEventListener(progress_report)
         self.downloader = self._create_and_configure_downloader(listener)
@@ -94,12 +135,27 @@ class HttpDownloader(BaseDownloader):
         return [r.destination for r in request_list]
 
     def cancel(self, progress_report):
+        """
+        Cancel the current operation.
+
+        :param progress_report: used if any updates need to be made as the
+               download runs
+        :type  progress_report: pulp_puppet.importer.sync_progress.ProgressReport
+        """
         downloader = self.downloader
         if downloader is None:
             return
         downloader.cancel()
 
     def cleanup_module(self, module):
+        """
+        Called once the unit has been copied into Pulp's storage location to
+        let the downloader do any post-processing it needs (for instance,
+        deleting any temporary copies of the file).
+
+        :param module: module to clean up
+        :type  module: pulp_puppet.common.model.Module
+        """
 
         module_tmp_dir = _create_download_tmp_dir(self.repo.working_dir)
         module_tmp_filename = os.path.join(module_tmp_dir, module.filename())
@@ -170,24 +226,50 @@ class HttpDownloader(BaseDownloader):
 # -- private classes ----------------------------------------------------------
 
 class HTTPMetadataDownloadEventListener(AggregatingEventListener):
+    """
+    Nectar event listener that updates the progress report when downloading
+    metadata from the web.
+    """
 
     def __init__(self, progress_report):
+        """
+        :param progress_report: used if any updates need to be made as the
+               download runs
+        :type  progress_report: pulp_puppet.importer.sync_progress.ProgressReport
+        """
         super(HTTPMetadataDownloadEventListener, self).__init__()
         self.progress_report = progress_report
 
     def download_started(self, report):
+        """
+        :param report: download report for a specific download
+        :type  report: nectar.report.DownloadReport
+        """
         self.progress_report.metadata_current_query = report.url
         self.progress_report.update_progress()
 
     def download_succeeded(self, report):
+        """
+        :param report: download report for a specific download
+        :type  report: nectar.report.DownloadReport
+        """
         super(HTTPMetadataDownloadEventListener, self).download_succeeded(report)
         self.progress_report.metadata_query_finished_count += 1
         self.progress_report.update_progress()
 
 
 class HTTPModuleDownloadEventListener(AggregatingEventListener):
+    """
+    Nectar event listener that updates the progress report when downloading
+    modules from the web.
+    """
 
     def __init__(self, progress_report):
+        """
+        :param progress_report: used if any updates need to be made as the
+               download runs
+        :type  progress_report: pulp_puppet.importer.sync_progress.ProgressReport
+        """
         super(HTTPModuleDownloadEventListener, self).__init__()
         self.progress_report = progress_report
 
