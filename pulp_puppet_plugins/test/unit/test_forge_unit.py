@@ -156,12 +156,38 @@ class TestToDict(unittest.TestCase):
 
 
 class TestCmp(unittest.TestCase):
-    @mock.patch('__builtin__.cmp', return_value=1)
-    def test_convert_version(self, mock_cmp):
-        self.assertTrue(unit_generator(version='1.2.0') > unit_generator(version='1.1.3'))
-        mock_cmp.assert_called_once_with([1, 2, 0], [1, 1, 3])
+    """
+    The 'semantic_version' library is being used under the hood, which is a good
+    thing. Thus these tests will do good spot-checking, but not an exhaustive
+    exercise of every semver possibility.
+    """
+    @mock.patch('semantic_version.Version.__cmp__', autospec=True)
+    def test_uses_semver(self, mock_version):
+        """
+        If we ever stop using python-semantic_version, we should revisit the
+        suite of tests below.
+        """
+        unit_generator(version='1.2.0') > unit_generator(version='1.1.3')
 
-    @mock.patch('__builtin__.cmp', return_value=-1)
-    def test_different_lengths(self, mock_cmp):
-        self.assertTrue(unit_generator(version='1.0.3') < unit_generator(version='1.1'))
-        mock_cmp.assert_called_once_with([1, 0, 3], [1, 1])
+        self.assertEqual(mock_version.call_count, 1)
+
+    def test_plain_gt(self):
+        self.assertTrue(unit_generator(version='1.2.0') > unit_generator(version='1.1.3'))
+
+    def test_plain_lt(self):
+        self.assertTrue(unit_generator(version='1.2.0') < unit_generator(version='2.1.3'))
+
+    def test_double_digit_lt(self):
+        self.assertTrue(unit_generator(version='1.2.0') < unit_generator(version='1.12.3'))
+
+    def test_plain_eq(self):
+        self.assertEqual(unit_generator(version='1.2.0'), unit_generator(version='1.2.0'))
+
+    def test_alpha_gt(self):
+        self.assertTrue(unit_generator(version='1.2.3') > unit_generator(version='1.1.0-alpha'))
+
+    def test_alpha_lt(self):
+        self.assertTrue(unit_generator(version='1.0.3') < unit_generator(version='1.1.0-alpha'))
+
+    def test_alpha_eq(self):
+        self.assertEqual(unit_generator(version='1.2.0-alpha'), unit_generator(version='1.2.0-alpha'))

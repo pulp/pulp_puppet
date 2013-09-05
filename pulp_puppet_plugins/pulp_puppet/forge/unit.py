@@ -15,6 +15,8 @@ import json
 import logging
 import urlparse
 
+import semantic_version
+
 _LOGGER = logging.getLogger(__name__)
 
 class Unit(object):
@@ -259,6 +261,6 @@ class Unit(object):
 
         :return:        whatever "cmp" returns
         """
-        my_version = map(int, self.version.split('.'))
-        other_version = map(int, other.version.split('.'))
-        return cmp(my_version, other_version)
+        my_semver = semantic_version.Version(self.version)
+        other_semver = semantic_version.Version(other.version)
+        return cmp(my_semver, other_semver)
