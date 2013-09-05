@@ -21,7 +21,9 @@ class BaseDownloaderTests(unittest.TestCase):
         # Ensures the base class properly raises NotImplementedError for
         # appropriate APIs
 
-        b = base.BaseDownloader(None, None, None, None)
+        b = base.BaseDownloader(None, None, None)
         self.assertRaises(NotImplementedError, b.retrieve_metadata, None)
         self.assertRaises(NotImplementedError, b.retrieve_module, None, None)
+        self.assertRaises(NotImplementedError, b.retrieve_modules, None, None)
+        self.assertRaises(NotImplementedError, b.cancel, None)
         self.assertRaises(NotImplementedError, b.cleanup_module, None)
