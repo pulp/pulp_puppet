@@ -32,8 +32,8 @@ class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         # Ensure the required options
         expected_options = set([options.OPTION_REPO_ID, options.OPTION_DESCRIPTION,
                                 options.OPTION_NAME, options.OPTION_NOTES,
-                                cudl.OPTION_FEED, cudl.OPTION_HTTP,
-                                cudl.OPTION_HTTPS, cudl.OPTION_QUERY, cudl.OPTION_QUERIES])
+                                cudl.OPTION_HTTP, cudl.OPTION_HTTPS, cudl.OPTION_QUERY,
+                                cudl.OPTION_QUERIES])
         found_options = set(self.command.options)
         self.assertEqual(expected_options, found_options)
 
@@ -136,8 +136,8 @@ class UpdatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         # Ensure the required options
         expected_options = set([options.OPTION_REPO_ID, options.OPTION_DESCRIPTION,
                                 options.OPTION_NAME, options.OPTION_NOTES,
-                                cudl.OPTION_FEED, cudl.OPTION_HTTP,
-                                cudl.OPTION_HTTPS, cudl.OPTION_QUERY, cudl.OPTION_QUERIES_UPDATE])
+                                cudl.OPTION_HTTP, cudl.OPTION_HTTPS, cudl.OPTION_QUERY,
+                                cudl.OPTION_QUERIES_UPDATE])
         found_options = set(self.command.options)
         self.assertEqual(expected_options, found_options)
 

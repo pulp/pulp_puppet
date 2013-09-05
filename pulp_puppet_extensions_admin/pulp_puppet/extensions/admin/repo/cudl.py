@@ -13,6 +13,7 @@ from gettext import gettext as _
 
 from pulp.client import arg_utils, parsers
 from pulp.client.commands import options
+from pulp.client.commands.repo.importer_config import ImporterConfigMixin
 from pulp.client.extensions.extensions import PulpCliOption
 from pulp.client.commands.repo.cudl import CreateRepositoryCommand, ListRepositoriesCommand, UpdateRepositoryCommand
 
@@ -55,11 +56,11 @@ OPTION_HTTPS = PulpCliOption('--serve-https', DESC_HTTPS, required=False)
 DESC_SEARCH = _('searches for Puppet repositories on the server')
 
 
-class CreatePuppetRepositoryCommand(CreateRepositoryCommand):
+class CreatePuppetRepositoryCommand(CreateRepositoryCommand, ImporterConfigMixin):
     def __init__(self, context):
-        super(CreatePuppetRepositoryCommand, self).__init__(context)
+        CreateRepositoryCommand.__init__(self, context)
+        ImporterConfigMixin.__init__(self, include_unit_policy=False)
 
-        self.add_option(OPTION_FEED)
         self.add_option(OPTION_QUERIES)
         self.add_option(OPTION_QUERY)
         self.add_option(OPTION_HTTP)
@@ -80,10 +81,8 @@ class CreatePuppetRepositoryCommand(CreateRepositoryCommand):
             name = kwargs[options.OPTION_NAME.keyword]
 
         # -- importer metadata --
-        importer_config = {
-            constants.CONFIG_FEED : kwargs[OPTION_FEED.keyword],
-            constants.CONFIG_QUERIES : kwargs[OPTION_QUERIES.keyword] or kwargs[OPTION_QUERY.keyword],
-            }
+        importer_config = self.parse_user_input(kwargs)
+        importer_config.update({constants.CONFIG_QUERIES: kwargs[OPTION_QUERIES.keyword] or kwargs[OPTION_QUERY.keyword]})
         arg_utils.convert_removed_options(importer_config)
 
         # -- distributor metadata --
@@ -107,12 +106,12 @@ class CreatePuppetRepositoryCommand(CreateRepositoryCommand):
         self.context.prompt.render_success_message(msg % {'r' : repo_id})
 
 
-class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand):
+class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand, ImporterConfigMixin):
 
     def __init__(self, context):
-        super(UpdatePuppetRepositoryCommand, self).__init__(context)
+        UpdateRepositoryCommand.__init__(self, context)
+        ImporterConfigMixin.__init__(self, include_unit_policy=False)
 
-        self.add_option(OPTION_FEED)
         self.add_option(OPTION_QUERIES_UPDATE)
         self.add_option(OPTION_QUERY)
         self.add_option(OPTION_HTTP)
@@ -129,10 +128,8 @@ class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand):
         queries = kwargs.pop(OPTION_QUERIES.keyword, None)
         if queries is None:
             queries = kwargs.pop(OPTION_QUERY.keyword, None)
-        importer_config = {
-            constants.CONFIG_FEED : kwargs.pop(OPTION_FEED.keyword, None),
-            constants.CONFIG_QUERIES : queries
-            }
+        importer_config = self.parse_user_input(kwargs)
+        importer_config.update({constants.CONFIG_QUERIES: queries})
         arg_utils.convert_removed_options(importer_config)
 
         # -- distributor metadata --

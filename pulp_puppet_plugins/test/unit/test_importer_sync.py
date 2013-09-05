@@ -65,10 +65,8 @@ class PuppetModuleSyncRunTests(unittest.TestCase):
         self.config = PluginCallConfiguration({}, {
             constants.CONFIG_FEED : FEED,
         })
-        self.is_cancelled_call = mock.MagicMock().is_cancelled_call
 
-        self.run = PuppetModuleSyncRun(self.repo, self.conduit, self.config,
-                                       self.is_cancelled_call)
+        self.run = PuppetModuleSyncRun(self.repo, self.conduit, self.config)
 
     def tearDown(self):
         shutil.rmtree(self.working_dir)

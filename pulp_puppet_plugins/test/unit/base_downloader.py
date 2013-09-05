@@ -32,9 +32,6 @@ class BaseDownloaderTests(unittest.TestCase):
 
         self.config = PluginCallConfiguration({}, {})
 
-        self.mock_cancelled_callback = mock.MagicMock().is_cancelled
-        self.mock_cancelled_callback.return_value = False
-
         self.mock_progress_report = mock.MagicMock()
 
         self.author = 'jdob'

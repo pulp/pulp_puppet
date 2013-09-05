@@ -36,6 +36,7 @@ class PuppetModuleImporter(Importer):
 
     def __init__(self):
         super(PuppetModuleImporter, self).__init__()
+        self.sync_runner = None
         self.sync_cancelled = False
 
     @classmethod
@@ -51,8 +52,9 @@ class PuppetModuleImporter(Importer):
 
     def sync_repo(self, repo, sync_conduit, config):
         self.sync_cancelled = False
-        sync_runner = sync.PuppetModuleSyncRun(repo, sync_conduit, config, self.is_sync_cancelled)
-        report = sync_runner.perform_sync()
+        self.sync_runner = sync.PuppetModuleSyncRun(repo, sync_conduit, config)
+        report = self.sync_runner.perform_sync()
+        self.sync_runner = None
         return report
 
     def import_units(self, source_repo, dest_repo, import_conduit, config,
@@ -65,6 +67,10 @@ class PuppetModuleImporter(Importer):
 
     def cancel_sync_repo(self, call_request, call_report):
         self.sync_cancelled = True
+        sync_runner = self.sync_runner
+        if sync_runner is None:
+            return
+        sync_runner.cancel_sync()
 
     def is_sync_cancelled(self):
         """

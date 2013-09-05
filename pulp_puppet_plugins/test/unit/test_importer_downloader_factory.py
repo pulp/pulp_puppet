@@ -21,7 +21,7 @@ class DownloadersFactoryTests(unittest.TestCase):
 
     def test_get_downloader(self):
         # Test
-        downloader = factory.get_downloader('file://localhost', None, None, None, None)
+        downloader = factory.get_downloader('file://localhost', None, None, None)
 
         # Verify
         self.assertTrue(downloader is not None)
@@ -29,14 +29,14 @@ class DownloadersFactoryTests(unittest.TestCase):
 
     def test_get_downloader_invalid_feed(self):
         try:
-            factory.get_downloader(None, None, None, None, None)
+            factory.get_downloader(None, None, None, None)
             self.fail()
         except InvalidFeed, e:
             self.assertEqual(e.feed, None)
 
     def test_get_downloader_unsupported_feed_type(self):
         try:
-            factory.get_downloader('jdob://localhost', None, None, None, None)
+            factory.get_downloader('jdob://localhost', None, None, None)
             self.fail()
         except UnsupportedFeedType, e:
             self.assertEqual(e.feed_type, 'jdob')

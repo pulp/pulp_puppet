@@ -16,7 +16,7 @@ import os
 
 import base_downloader
 from pulp_puppet.common import constants, model
-from pulp_puppet.plugins.importers.downloaders.exceptions import FileNotFoundException
+from pulp_puppet.plugins.importers.downloaders.exceptions import FileRetrievalException
 from pulp_puppet.plugins.importers.downloaders.local import LocalDownloader
 
 VALID_REPO_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'data', 'repos', 'valid')
@@ -27,7 +27,7 @@ class LocalDownloaderTests(base_downloader.BaseDownloaderTests):
     def setUp(self):
         super(LocalDownloaderTests, self).setUp()
         self.config.repo_plugin_config[constants.CONFIG_FEED] = 'file://' + VALID_REPO_DIR
-        self.downloader = LocalDownloader(self.repo, None, self.config, self.mock_cancelled_callback)
+        self.downloader = LocalDownloader(self.repo, None, self.config)
 
     def test_retrieve_metadata(self):
         # Test
@@ -53,9 +53,8 @@ class LocalDownloaderTests(base_downloader.BaseDownloaderTests):
         try:
             self.downloader.retrieve_metadata(self.mock_progress_report)
             self.fail()
-        except FileNotFoundException, e:
-            expected = os.path.join(INVALID_REPO_DIR, constants.REPO_METADATA_FILENAME)
-            self.assertEqual(expected, e.location)
+        except FileRetrievalException:
+            pass
 
     def test_retrieve_module(self):
         # Test
@@ -73,9 +72,8 @@ class LocalDownloaderTests(base_downloader.BaseDownloaderTests):
         try:
             self.downloader.retrieve_module(self.mock_progress_report, self.module)
             self.fail()
-        except FileNotFoundException, e:
-            expected = os.path.join(VALID_REPO_DIR, self.module.filename())
-            self.assertEqual(expected, e.location)
+        except FileRetrievalException:
+            pass
 
     def test_cleanup_module(self):
         # Test
