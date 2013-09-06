@@ -8,6 +8,15 @@ Pulp 2.2.0
 New Features
 ------------
 
+For Puppet functionality, this is mostly a bug-fix release.
+
+Many of the commands in the command line interface have improved. In particular,
+many commands that used to display a task ID will now automatically poll the
+server and display progress until it is complete.
+
+A technical reference has been added for Puppet support, which is available at
+`<http://www.pulpproject.org/docs/>`_
+
 Upgrade Instructions
 --------------------
 
