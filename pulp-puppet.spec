@@ -140,6 +140,7 @@ Group: Development/Languages
 Requires: python-pulp-common = %{pulp_version}
 Requires: python-pulp-puppet-common = %{pulp_version}
 Requires: pulp-server = %{pulp_version}
+Requires: python-semantic_version >= 2.2.0
 Requires: python-setuptools
 Requires: python-pycurl
 
