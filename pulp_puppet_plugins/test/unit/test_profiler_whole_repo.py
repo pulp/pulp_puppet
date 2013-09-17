@@ -36,6 +36,7 @@ class TestAccessories(unittest.TestCase):
 
 
 class TestInstallUnits(unittest.TestCase):
+
     def setUp(self):
         self.profiler = wholerepo.WholeRepoProfiler()
         self.consumer = Consumer('consumer1', {})
@@ -55,12 +56,14 @@ class TestInstallUnits(unittest.TestCase):
         ]
 
     def test_option_not_present(self):
-        result = self.profiler.install_units(self.consumer, self.units, {}, {}, self.conduit)
+        options = {}
+        result = self.profiler.install_units(self.consumer, self.units, options, {}, self.conduit)
 
         # make sure the units are unchanged
         self.assertEqual(result, self.units)
         # make sure the repo wasn't queried
         self.assertEqual(self.conduit.get_units.call_count, 0)
+        self.assertTrue(constants.FORGE_HOST in options)
 
     def test_with_option(self):
         special_unit = {'type_id': constants.TYPE_PUPPET_MODULE, 'unit_key': None}
@@ -77,6 +80,7 @@ class TestInstallUnits(unittest.TestCase):
             self.assertEqual(unit['unit_key']['author'], 'puppetlabs')
             self.assertTrue('name' in unit['unit_key'])
             self.assertEqual(unit['type_id'], constants.TYPE_PUPPET_MODULE)
+        self.assertTrue(constants.FORGE_HOST in options)
 
     def test_with_repo_but_not_option(self):
         options = {constants.REPO_ID_OPTION: 'repo1'}
@@ -86,3 +90,15 @@ class TestInstallUnits(unittest.TestCase):
         self.assertEqual(result, self.units)
         # make sure the repo wasn't queried
         self.assertEqual(self.conduit.get_units.call_count, 0)
+        self.assertTrue(constants.FORGE_HOST in options)
+
+
+class TestUpdateUnits(unittest.TestCase):
+
+    def test_update(self):
+        options = {}
+        units = [1, 2, 3]
+        profiler = wholerepo.WholeRepoProfiler()
+        _units = profiler.update_units(None, units, options, None, None)
+        self.assertEqual(units, _units)
+        self.assertTrue(constants.FORGE_HOST in options)
