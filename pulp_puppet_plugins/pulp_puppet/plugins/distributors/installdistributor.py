@@ -16,6 +16,7 @@ import logging
 import os
 import shutil
 import tarfile
+import errno
 
 from pulp.plugins.distributor import Distributor
 from pulp.server.db.model.criteria import UnitAssociationCriteria
@@ -70,13 +71,13 @@ class PuppetModuleInstallDistributor(Distributor):
             return True, None
         if not os.path.isabs(path):
             return False, _('install path is not absolute')
-        if not os.path.isdir(path):
-            return False, _('install path is not an existing directory')
-        # we need X to get directory listings
-        if not os.access(path, os.R_OK|os.W_OK|os.X_OK):
-            return False, _('the current user does not have permission to read '
-                            'and write files in the destination directory')
-
+        if os.path.exists(path):
+            if not os.path.isdir(path):
+                return False, _('install path exists but is not a directory')
+            # we need X to get directory listings
+            if not os.access(path, os.R_OK|os.W_OK|os.X_OK):
+                return False, _('the current user does not have permission to read '
+                                'and write files in the destination directory')
         return True, None
 
     def publish_repo(self, repo, publish_conduit, config):
@@ -114,6 +115,14 @@ class PuppetModuleInstallDistributor(Distributor):
         self._check_for_unsafe_archive_paths(units, destination)
         if self.detail_report.has_errors:
             return publish_conduit.build_failure_report('failed', self.detail_report.report)
+
+        # create the destination directory
+        try:
+            self._create_destination_directory(destination)
+        except OSError, e:
+            return publish_conduit.build_failure_report(
+                'failed to create destination directory: %s' % str(e),
+                self.detail_report.report)
 
         # clear out pre-existing contents
         try:
@@ -262,6 +271,24 @@ class PuppetModuleInstallDistributor(Distributor):
             path = os.path.join(destination, directory)
             if os.path.isdir(path):
                 shutil.rmtree(path)
+
+    @staticmethod
+    def _create_destination_directory(destination, mode=0755):
+        """
+        create the destination directory when it does not exist.
+
+        :param destination: absolute path to the destination where modules should
+                            be installed
+        :type  destination: str
+        :param mode: the directory permissions
+        :type  mode: int
+        """
+        try:
+            os.makedirs(destination, mode)
+        except OSError, e:
+            if e.errno == errno.EEXIST and os.path.isdir(destination):
+                return
+            raise e
 
 
 class DetailReport(object):
