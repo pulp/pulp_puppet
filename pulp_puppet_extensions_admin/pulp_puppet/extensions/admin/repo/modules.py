@@ -48,7 +48,9 @@ class ModulesCommand(DisplayUnitAssociationsCommand):
         order = []
 
         if not kwargs.get(self.ASSOCIATION_FLAG.keyword):
-            # Only display the module metadata, not the association
+            # Remove types from the metadata as it can be very long by default
+            # and only display the module metadata, not the association
+            map(lambda x : x['metadata'].pop('types', None), modules)
             modules = [m['metadata'] for m in modules]
             # Make sure the key info is at the top; the rest can be alpha
             order = ['name', 'version', 'author']
