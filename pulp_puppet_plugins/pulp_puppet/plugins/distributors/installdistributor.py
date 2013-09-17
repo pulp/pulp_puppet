@@ -116,7 +116,7 @@ class PuppetModuleInstallDistributor(Distributor):
         if self.detail_report.has_errors:
             return publish_conduit.build_failure_report('failed', self.detail_report.report)
 
-        # create the destination directory
+        # ensure the destination directory exists
         try:
             self._create_destination_directory(destination)
         except OSError, e:
