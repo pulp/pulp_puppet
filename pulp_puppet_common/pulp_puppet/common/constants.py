@@ -121,7 +121,7 @@ CONFIG_INSTALL_PATH = 'install_path'
 
 # -- forge API ---------------------------------------------------------------
 
-# the puppet force hostname/IP.
+# The puppet forge hostname/IP.
 FORGE_HOST = 'host'
 
 # value passed as either username or password in basic auth to signify that the
