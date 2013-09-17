@@ -128,7 +128,7 @@ class WholeRepoProfiler(Profiler):
 
     def _inject_forge_settings(self, options):
         """
-        Inject the puppet force settings into the options.
+        Inject the puppet forge settings into the options.
         Add the pulp server host and port information to the options.
         Used by the agent handler.
         :param options: An options dictionary.
