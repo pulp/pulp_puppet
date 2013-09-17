@@ -287,8 +287,9 @@ class PuppetModuleInstallDistributor(Distributor):
             os.makedirs(destination, mode)
         except OSError, e:
             if e.errno == errno.EEXIST and os.path.isdir(destination):
-                return
-            raise e
+                pass  # ignored
+            else:
+                raise e
 
 
 class DetailReport(object):
