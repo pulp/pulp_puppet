@@ -15,6 +15,9 @@ from cStringIO import StringIO
 import os
 import tarfile
 import unittest
+import tempfile
+import shutil
+import errno
 
 import mock
 from pulp.plugins.conduits.repo_publish import RepoPublishConduit
@@ -49,14 +52,6 @@ class TestValidateConfig(unittest.TestCase):
 
     def test_relative_path(self):
         config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: 'a/b/c'})
-
-        result, message = self.distributor.validate_config(self.repo, config, [])
-
-        self.assertFalse(result)
-        self.assertTrue(len(message) > 0)
-
-    def test_path_does_not_exist(self):
-        config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: '/a/b/c'})
 
         result, message = self.distributor.validate_config(self.repo, config, [])
 
@@ -107,9 +102,12 @@ class TestPublishRepo(unittest.TestCase):
                        '_clear_destination_directory',
                        return_value=None)
     @mock.patch.object(installdistributor.PuppetModuleInstallDistributor,
+                       '_create_destination_directory',
+                       return_value=None)
+    @mock.patch.object(installdistributor.PuppetModuleInstallDistributor,
                        '_check_for_unsafe_archive_paths',
                        return_value=None)
-    def test_workflow(self, mock_check_paths, mock_clear, mock_open, mock_move):
+    def test_workflow(self, mock_check_paths, mock_mkdir, mock_clear, mock_open, mock_move):
         config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: '/tmp'})
         mock_open.return_value.getnames.return_value = ['a/b', 'a/c']
 
@@ -126,6 +124,7 @@ class TestPublishRepo(unittest.TestCase):
         mock_open.assert_any_call(self.units[0].storage_path)
         mock_open.assert_any_call(self.units[1].storage_path)
 
+        mock_mkdir.assert_called_once_with('/tmp')
         mock_clear.assert_called_once_with('/tmp')
 
         mock_check_paths.assert_called_once_with(self.units, '/tmp')
@@ -468,6 +467,34 @@ class TestClearDestinationDirectory(unittest.TestCase):
         mock_rmtree.assert_any_call(os.path.join(destination, 'data'))
         mock_rmtree.assert_any_call(os.path.join(destination, 'integration'))
         mock_rmtree.assert_any_call(os.path.join(destination, 'unit'))
+
+
+class TestCreateDestinationDirectory(unittest.TestCase):
+
+    def setUp(self):
+        self.tmp_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp_dir)
+
+    def test_no_dir(self):
+        destination = os.path.join(self.tmp_dir, 'puppet')
+        distributor = installdistributor.PuppetModuleInstallDistributor()
+        distributor._create_destination_directory(destination)
+        self.assertTrue(os.path.isdir(destination))
+
+    def test_dir_already_exists(self):
+        destination = os.path.join(self.tmp_dir, 'puppet')
+        os.makedirs(destination)
+        distributor = installdistributor.PuppetModuleInstallDistributor()
+        distributor._create_destination_directory(destination)
+        self.assertTrue(os.path.isdir(destination))
+
+    @mock.patch('os.makedirs', side_effect=OSError(errno.EPERM))
+    def test_dir_permission_denied(self, *unused):
+        destination = os.path.join(self.tmp_dir, 'puppet')
+        distributor = installdistributor.PuppetModuleInstallDistributor()
+        self.assertRaises(OSError, distributor._create_destination_directory, destination)
 
 
 class TestDetailReport(unittest.TestCase):
