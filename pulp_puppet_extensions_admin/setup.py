@@ -13,7 +13,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pulp_puppet_extensions_admin',
-    version='2.2.0',
+    version='2.3.0',
     license='GPLv2+',
     packages=find_packages(exclude=['test', 'test.*']),
     author='Pulp Team',
