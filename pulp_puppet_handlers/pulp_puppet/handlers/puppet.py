@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 class ModuleHandler(handler.ContentHandler):
     @staticmethod
-    def _generate_forge_url(conduit, repo_id=None):
+    def _generate_forge_url(conduit, host, repo_id=None):
         """
         Generate a URL for the forge to use, and encode consumer ID or repo ID
         as appropriate with basic auth credentials.
@@ -43,7 +43,6 @@ class ModuleHandler(handler.ContentHandler):
         else:
             username = conduit.consumer_id
         password = repo_id or constants.FORGE_NULL_AUTH_VALUE
-        host = conduit.get_consumer_config()['server']['host']
 
         # the "puppet module" tool does not seem to support HTTPS, unfortunately
         return 'http://%s:%s@%s' % (username, password, host)
@@ -67,9 +66,10 @@ class ModuleHandler(handler.ContentHandler):
                     tool indicated an error. Everything else is in "successes".
         :rtype:     pulp.agent.lib.report.ContentReport
         """
+        host = options[constants.FORGE_HOST]
         repo_id = options.get(constants.REPO_ID_OPTION)
         successes, errors, num_changes = cls._perform_operation(
-            'install', units, cls._generate_forge_url(conduit, repo_id))
+            'install', units, cls._generate_forge_url(conduit, host, repo_id))
         report = ContentReport()
         report.set_succeeded({'successes': successes, 'errors': errors}, num_changes)
         return report
@@ -92,9 +92,10 @@ class ModuleHandler(handler.ContentHandler):
                     tool indicated an error. Everything else is in "successes".
         :rtype:     pulp.agent.lib.report.ContentReport
         """
+        host = options[constants.FORGE_HOST]
         repo_id = options.get(constants.REPO_ID_OPTION)
         successes, errors, num_changes = cls._perform_operation(
-            'upgrade', units, cls._generate_forge_url(conduit, repo_id))
+            'upgrade', units, cls._generate_forge_url(conduit, host, repo_id))
         report = ContentReport()
         report.set_succeeded({'successes': successes, 'errors': errors}, num_changes)
         return report

@@ -32,14 +32,16 @@ class ModuleHandlerTest(unittest.TestCase):
 
 class TestGenerateForgeURL(ModuleHandlerTest):
     def test_with_repo_id(self):
-        result = self.handler._generate_forge_url(self.conduit, 'repo1')
+        host = 'localhost'
+        result = self.handler._generate_forge_url(self.conduit, host, 'repo1')
 
-        self.assertEqual(result, 'http://.:repo1@localhost')
+        self.assertEqual(result, 'http://.:repo1@%s' % host)
 
     def test_without_repo_id(self):
-        result = self.handler._generate_forge_url(self.conduit)
+        host = 'localhost'
+        result = self.handler._generate_forge_url(self.conduit, host)
 
-        self.assertEqual(result, 'http://consumer1:.@localhost')
+        self.assertEqual(result, 'http://consumer1:.@%s' % host)
 
 
 class TestInstall(ModuleHandlerTest):
@@ -64,7 +66,8 @@ notice: Installing -- do not interrupt ...
 """
 
     def test_no_units(self):
-        report = self.handler.install(self.conduit, [], {})
+        options = {constants.FORGE_HOST: 'localhost'}
+        report = self.handler.install(self.conduit, [], options)
 
         self.assertTrue(isinstance(report, ContentReport))
         self.assertEqual(report.num_changes, 0)
@@ -74,7 +77,8 @@ notice: Installing -- do not interrupt ...
         mock_popen.return_value.communicate.side_effect = self.POPEN_OUTPUT
         mock_popen.return_value.returncode = 0
 
-        report = self.handler.install(self.conduit, self.UNITS, {})
+        options = {constants.FORGE_HOST: 'localhost'}
+        report = self.handler.install(self.conduit, self.UNITS, options)
         successes = report.details['successes']
         errors = report.details['errors']
 
@@ -104,7 +108,10 @@ notice: Installing -- do not interrupt ...
     def test_with_units_and_repo_id(self, mock_popen):
         mock_popen.return_value.communicate.side_effect = self.POPEN_OUTPUT
         mock_popen.return_value.returncode = 0
-        options = {constants.REPO_ID_OPTION: 'repo1'}
+        options = {
+            constants.FORGE_HOST: 'localhost',
+            constants.REPO_ID_OPTION: 'repo1'
+        }
 
         report = self.handler.install(self.conduit, self.UNITS, options)
 
@@ -121,7 +128,8 @@ notice: Installing -- do not interrupt ...
         mock_popen.return_value.communicate.return_value = (self.POPEN_STDOUT_ERROR, '')
         mock_popen.return_value.returncode = 1
 
-        report = self.handler.install(self.conduit, self.UNITS[:1], {})
+        options = {constants.FORGE_HOST: 'localhost'}
+        report = self.handler.install(self.conduit, self.UNITS[:1], options)
         successes = report.details['successes']
         errors = report.details['errors']
 
@@ -158,7 +166,8 @@ notice: Upgrading -- do not interrupt ...
 """
 
     def test_no_units(self):
-        report = self.handler.update(self.conduit, [], {})
+        options = {constants.FORGE_HOST: 'localhost'}
+        report = self.handler.update(self.conduit, [], options)
 
         self.assertTrue(isinstance(report, ContentReport))
         self.assertEqual(report.num_changes, 0)
@@ -168,7 +177,8 @@ notice: Upgrading -- do not interrupt ...
         mock_popen.return_value.communicate.return_value = (self.POPEN_STDOUT, '')
         mock_popen.return_value.returncode = 0
 
-        report = self.handler.update(self.conduit, self.UNITS, {})
+        options = {constants.FORGE_HOST: 'localhost'}
+        report = self.handler.update(self.conduit, self.UNITS, options)
         successes = report.details['successes']
         errors = report.details['errors']
 
@@ -192,7 +202,10 @@ notice: Upgrading -- do not interrupt ...
     def test_with_unit_and_repo_id(self, mock_popen):
         mock_popen.return_value.communicate.return_value = (self.POPEN_STDOUT, '')
         mock_popen.return_value.returncode = 0
-        options = {constants.REPO_ID_OPTION: 'repo1'}
+        options = {
+            constants.FORGE_HOST: 'localhost',
+            constants.REPO_ID_OPTION: 'repo1'
+        }
 
         report = self.handler.update(self.conduit, self.UNITS, options)
 
@@ -210,7 +223,8 @@ notice: Upgrading -- do not interrupt ...
         mock_popen.return_value.communicate.return_value = (self.POPEN_STDOUT_ERROR, '')
         mock_popen.return_value.returncode = 1
 
-        report = self.handler.update(self.conduit, self.UNITS, {})
+        options = {constants.FORGE_HOST: 'localhost'}
+        report = self.handler.update(self.conduit, self.UNITS, options)
         successes = report.details['successes']
         errors = report.details['errors']
 

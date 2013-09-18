@@ -15,6 +15,7 @@ from gettext import gettext as _
 import logging
 
 from pulp.plugins.profiler import Profiler
+from pulp.server.config import config as pulp_conf
 
 from pulp_puppet.common import constants
 
@@ -78,6 +79,7 @@ class WholeRepoProfiler(Profiler):
         :rtype: list of: { type_id:<str>, unit_key:<dict> }
         """
         repo_id = options.get(constants.REPO_ID_OPTION)
+        self._inject_forge_settings(options)
         if options.get(constants.WHOLE_REPO_OPTION) and repo_id:
             _LOGGER.debug('installing whole repo %s on %s' % (repo_id, consumer.id))
             unit_keys = [unit.unit_key for unit in conduit.get_units(repo_id)]
@@ -98,3 +100,38 @@ class WholeRepoProfiler(Profiler):
 
         else:
             return units
+
+    def update_units(self, consumer, units, options, config, conduit):
+        """
+        Translate the units to be updated.
+
+        :param consumer: A consumer.
+        :type consumer: pulp.plugins.model.Consumer
+
+        :param units: A list of content units to be updated.
+        :type units: list of: { type_id:<str>, unit_key:<dict> }
+
+        :param options: Update options; based on unit type.
+        :type options: dict
+
+        :param config: plugin configuration
+        :type config: pulp.plugins.config.PluginCallConfiguration
+
+        :param conduit: provides access to relevant Pulp functionality
+        :type conduit: pulp.plugins.conduits.profiler.ProfilerConduit
+
+        :return: The translated units
+        :rtype: list of: { type_id:<str>, unit_key:<dict> }
+        """
+        self._inject_forge_settings(options)
+        return units
+
+    def _inject_forge_settings(self, options):
+        """
+        Inject the puppet forge settings into the options.
+        Add the pulp server host and port information to the options.
+        Used by the agent handler.
+        :param options: An options dictionary.
+        :type options: dict
+        """
+        options[constants.FORGE_HOST] = pulp_conf.get('server', 'server_name')
