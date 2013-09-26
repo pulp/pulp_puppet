@@ -15,9 +15,17 @@ from gettext import gettext as _
 import logging
 
 from pulp.plugins.importer import Importer
+from pulp.common.config import read_json_config
 
 from pulp_puppet.common import constants
 from pulp_puppet.plugins.importers import configuration, sync, upload, copier
+
+# The platform currently doesn't support automatic loading of conf files when the plugin
+# uses entry points. The current thinking is that the conf files will be named the same as
+# the plugin and put in a conf.d type of location. For now, this implementation will assume
+# that's the final solution and the plugin will attempt to load the file itself in the
+# entry_point method.
+CONF_FILENAME = 'server/plugins.conf.d/%s.json' % constants.IMPORTER_TYPE_ID
 
 _LOG = logging.getLogger(__name__)
 
@@ -29,7 +37,8 @@ def entry_point():
     :return: importer class and its config
     :rtype:  Importer, {}
     """
-    return PuppetModuleImporter, {}
+    plugin_config = read_json_config(CONF_FILENAME)
+    return PuppetModuleImporter, plugin_config
 
 
 class PuppetModuleImporter(Importer):
