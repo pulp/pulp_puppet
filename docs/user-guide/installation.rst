@@ -16,8 +16,9 @@ in order to implement an API compatible with Puppet Forge. We don't like
 taking that namespace, but it was the only way to support the use of Puppet
 Labs' command line tool against a Pulp server.
 
-Consumers must have Puppet 2.7.14+ installed, and we recommend getting packages
-directly from `Puppet Labs <http://puppetlabs.com>`_.
+Consumers must have Puppet 2.7.14 to 3.2.4 installed, and we recommend getting packages
+directly from `Puppet Labs <http://puppetlabs.com>`_.  Pulp is not compatible with Puppet
+3.3.x.
 
 Please see the `Pulp User Guide`_ for other prerequisites including repository
 setup.
