@@ -71,3 +71,18 @@ directory.
 ``install_path``
  Full path to the directory where modules should be installed. It is the user's
  responsibility to ensure that Pulp can write to this directory.
+
+Files Distributor
+-------------------
+
+Type ID: ``puppet_files_distributor``
+
+This distributor publishes modules by making them available in a flattened format in
+a single directory on the file system and served via HTTPS.  The files are published
+to the ``https_files_dir`` specified in the plugin configuration.  A repository is
+placed in a subdirectory of the ```https_files_dir`` with the same name as the repository
+id.  The base URL path where all Puppet repositories are published is ``/pulp/puppet/files``.
+
+``https_files_dir``
+ Full path to the directory where HTTPS published file repositories will be created.
+ Defaults to ``/var/www/pulp_puppet/files``.

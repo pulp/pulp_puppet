@@ -28,6 +28,9 @@ IMPORTER_ID = IMPORTER_TYPE_ID
 # ID used to refer to the puppet distributor
 DISTRIBUTOR_TYPE_ID = 'puppet_distributor'
 
+# ID used to refer to the puppet files distributor (flat directory of files)
+DISTRIBUTOR_FILES_TYPE_ID = 'puppet_files_distributor'
+
 # ID used to refer to the puppet distributor instance on a repository
 DISTRIBUTOR_ID = 'puppet_distributor'
 
@@ -112,6 +115,10 @@ DEFAULT_HTTP_DIR = '/var/www/pulp_puppet/http/repos'
 # Local directory the web server will serve for HTTPS repositories
 CONFIG_HTTPS_DIR = 'https_dir'
 DEFAULT_HTTPS_DIR = '/var/www/pulp_puppet/https/repos'
+
+# Local directory the web server will serve flat directory representations of repositories
+CONFIG_FILES_HTTPS_DIR = 'https_files_dir'
+DEFAULT_FILES_HTTPS_DIR = '/var/www/pulp_puppet/files'
 
 # Default absolute path component of URL where repos are stored
 CONFIG_ABSOLUTE_PATH = 'absolute_path'

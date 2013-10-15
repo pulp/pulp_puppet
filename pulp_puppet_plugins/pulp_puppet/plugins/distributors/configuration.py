@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2012 Red Hat, Inc.
+# Copyright © 2013 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -19,13 +19,12 @@ from pulp_puppet.common import constants
 # call in the distributor where one is specified. This will prevent the need
 # for the rest of the codebase to explicitly apply default concepts.
 DEFAULT_CONFIG = {
-    constants.CONFIG_SERVE_HTTP : constants.DEFAULT_SERVE_HTTP,
-    constants.CONFIG_SERVE_HTTPS : constants.DEFAULT_SERVE_HTTPS,
-
-    constants.CONFIG_HTTP_DIR : constants.DEFAULT_HTTP_DIR,
-    constants.CONFIG_HTTPS_DIR : constants.DEFAULT_HTTPS_DIR,
-
-    constants.CONFIG_ABSOLUTE_PATH : constants.DEFAULT_ABSOLUTE_PATH,
+    constants.CONFIG_SERVE_HTTP: constants.DEFAULT_SERVE_HTTP,
+    constants.CONFIG_SERVE_HTTPS: constants.DEFAULT_SERVE_HTTPS,
+    constants.CONFIG_HTTP_DIR: constants.DEFAULT_HTTP_DIR,
+    constants.CONFIG_HTTPS_DIR: constants.DEFAULT_HTTPS_DIR,
+    constants.CONFIG_ABSOLUTE_PATH: constants.DEFAULT_ABSOLUTE_PATH,
+    constants.CONFIG_FILES_HTTPS_DIR: constants.DEFAULT_FILES_HTTPS_DIR
 }
 
 
@@ -42,7 +41,7 @@ def validate(config):
 
     validations = (
         _validate_http,
-        _validate_https,
+        _validate_https
     )
 
     for v in validations:
@@ -73,3 +72,4 @@ def _validate_https(config):
         return False, _('The value for <%(k)s> must be either "true" or "false"') % {'k' : constants.CONFIG_SERVE_HTTPS}
 
     return True, None
+

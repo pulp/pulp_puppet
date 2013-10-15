@@ -22,6 +22,7 @@ setup(
         'pulp.distributors': [
             'distributor = pulp_puppet.plugins.distributors.distributor:entry_point',
             'installdistributor = pulp_puppet.plugins.distributors.installdistributor:entry_point',
+            'fielsdistributor = pulp_puppet.plugins.distributors.filesdistributor:entry_point',
         ],
         'pulp.importers': [
             'importer = pulp_puppet.plugins.importers.importer:entry_point',
