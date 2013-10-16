@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Migration script for existing rpm units to include repodata
 #
-# Copyright © 2010-2012 Red Hat, Inc.
+# Copyright © 2010-2013 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
