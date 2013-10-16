@@ -104,6 +104,12 @@ class SuccessfulMetadataTests(unittest.TestCase):
         }
         self.assertEqual(self.module.checksums, expected_checksums)
 
+    def test_checksum_calculation(self):
+        sample_module = os.path.join(self.module_dir, "jdob-valid-1.1.0.tar.gz")
+        sample_checksum = metadata.calculate_checksum(sample_module)
+        self.assertEquals(sample_checksum,
+                          "108e8d1d9bb42c869344fc2d327c80e7f079d2ba0119da446a6a1c6659e0f0aa")
+
 
 class NegativeMetadataTests(unittest.TestCase):
 

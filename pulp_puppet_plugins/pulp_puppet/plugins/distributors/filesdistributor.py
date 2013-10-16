@@ -22,9 +22,9 @@ from pulp_puppet.plugins.distributors import configuration
 
 def entry_point():
     """
-    Advertise the Puppet CDN distributor to Pulp.
+    Advertise the Puppet Files distributor to Pulp.
 
-    :return: Puppet CDN and its empty config
+    :return: Puppet Files and its empty config
     :rtype:  tuple
     """
     return PuppetFilesDistributor, {}
@@ -32,14 +32,14 @@ def entry_point():
 
 class PuppetFilesDistributor(FileDistributor):
     """
-    Distribute ISOs like a boss.
+    Distribute Puppet Module Files
     """
     @classmethod
     def metadata(cls):
         """
-        Advertise the capabilities of the mighty ISODistributor.
+        Advertise the capabilities of the mighty PuppetFilesDistributor.
 
-        :return: The description of the impressive ISODistributor's capabilities.
+        :return: The description of the impressive PuppetFilesDistributor's capabilities.
         :rtype:  dict
         """
         return {
@@ -66,7 +66,9 @@ class PuppetFilesDistributor(FileDistributor):
         :param unit: the unit for which metadata needs to be generated
         :type unit: pulp.plugins.model.AssociatedUnit
         """
-        self.metadata_csv_writer.writerow([os.path.basename(unit.storage_path)])
+        self.metadata_csv_writer.writerow([os.path.basename(unit.storage_path),
+                                           unit.metadata['checksum'],
+                                           unit.metadata['checksum_type']])
 
     def get_hosting_locations(self, repo, config):
         """

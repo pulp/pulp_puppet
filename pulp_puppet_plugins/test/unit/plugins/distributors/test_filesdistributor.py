@@ -11,7 +11,7 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 """
-Tests for pulp_rpm.plugins.distributors.iso_distributor.distributor
+Tests for pulp_puppet.plugins.distributors.filesdistributor
 """
 import os
 import shutil
@@ -49,7 +49,8 @@ class TestPuppetFilesDistributor(unittest.TestCase):
         os.makedirs(self.files_path)
         self.unit = MagicMock()
         self.unit.storage_path = os.path.join(self.temp_dir, 'source', "foo.tgz")
-        self.config = PluginCallConfiguration({constants.CONFIG_FILES_HTTPS_DIR: self.files_path}, {})
+        self.config = PluginCallConfiguration({constants.CONFIG_FILES_HTTPS_DIR: self.files_path},
+                                              {})
         self.repo = self._get_default_repo()
 
     def tearDown(self):
@@ -102,9 +103,14 @@ class TestPuppetFilesDistributor(unittest.TestCase):
         self.assertEquals('foo.tgz', paths[0])
 
     def test_publish_metadata_for_unit(self):
-        unit = Unit(constants.TYPE_PUPPET_MODULE, {'name': 'foo'}, {},
+        unit = Unit(constants.TYPE_PUPPET_MODULE,
+                    {'name': 'foo'},
+                    {'checksum': 'alpha', 'checksum_type': 'beta'},
                     os.path.join(self.temp_dir, 'foo.tgz'))
+
         metadata_distributor = filesdistributor.PuppetFilesDistributor()
         metadata_distributor.metadata_csv_writer = MagicMock()
         metadata_distributor.publish_metadata_for_unit(unit)
-        metadata_distributor.metadata_csv_writer.writerow.assert_called_with(['foo.tgz'])
+        metadata_distributor.metadata_csv_writer.writerow.assert_called_with(['foo.tgz',
+                                                                              'alpha',
+                                                                              'beta'])
