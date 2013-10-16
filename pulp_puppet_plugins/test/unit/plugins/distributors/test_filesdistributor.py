@@ -71,7 +71,7 @@ class TestPuppetFilesDistributor(unittest.TestCase):
         config = PluginCallConfiguration({}, {})
         return_val, error_message = self.distributor.validate_config(self.repo, config, None)
         self.assertTrue(return_val)
-        self.assertIsNone(error_message)
+        self.assertEquals(error_message, None)
 
     def test_validate_config_none_files_dir_specified(self):
         config = PluginCallConfiguration({constants.CONFIG_FILES_HTTPS_DIR: None}, {})
