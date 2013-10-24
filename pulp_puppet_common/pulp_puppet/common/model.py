@@ -135,9 +135,11 @@ class Module(object):
         self.summary = None
         self.description = None
         self.project_page = None
-        self.types = None # list of something I don't know yet :)
-        self.dependencies = None # list of dicts of name to version_requirement
-        self.checksums = None # dict of file name (with relative path) to checksum
+        self.types = None  # list of something I don't know yet :)
+        self.dependencies = None  # list of dicts of name to version_requirement
+        self.checksums = None  # dict of file name (with relative path) to checksum
+        self.checksum = None  # checksum for the .tgz of the unit itself
+        self.checksum_type = constants.DEFAULT_HASHLIB
 
     def to_dict(self):
         """
@@ -180,6 +182,8 @@ class Module(object):
         self.types = module_dict.get('types', [])
         self.dependencies = module_dict.get('dependencies', [])
         self.checksums = module_dict.get('checksums', {})
+        self.checksum = module_dict.get('checksum', None)
+        self.checksum_type = module_dict.get('checksum_type', constants.DEFAULT_HASHLIB)
 
         # Special handling of the DB-safe checksum to rebuild it
         if isinstance(self.checksums, list):
@@ -198,14 +202,16 @@ class Module(object):
         for this module. This is how the module will be inventoried in Pulp.
         """
         metadata = {
-            'description'  : self.description,
-            'tag_list'     : self.tag_list,
-            'source'       : self.source,
-            'license'     : self.license,
-            'summary'      : self.summary,
-            'project_page' : self.project_page,
-            'types'        : self.types,
-            'dependencies' : self.dependencies,
+            'description': self.description,
+            'tag_list': self.tag_list,
+            'source': self.source,
+            'license': self.license,
+            'summary': self.summary,
+            'project_page': self.project_page,
+            'types': self.types,
+            'dependencies': self.dependencies,
+            'checksum': self.checksum,
+            'checksum_type': self.checksum_type
         }
 
         # Checksums is expressed as a dict of file to checksum. This causes

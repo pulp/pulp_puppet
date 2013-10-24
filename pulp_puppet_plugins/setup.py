@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Red Hat, Inc.
+# Copyright (c) 2013 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -22,6 +22,7 @@ setup(
         'pulp.distributors': [
             'distributor = pulp_puppet.plugins.distributors.distributor:entry_point',
             'installdistributor = pulp_puppet.plugins.distributors.installdistributor:entry_point',
+            'filedistributor = pulp_puppet.plugins.distributors.filedistributor:entry_point',
         ],
         'pulp.importers': [
             'importer = pulp_puppet.plugins.importers.importer:entry_point',

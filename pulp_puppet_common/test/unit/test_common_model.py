@@ -27,7 +27,9 @@ VALID_REPO_METADATA_JSON = """[
  "releases":[{"version":"0.0.1"},{"version":"0.0.2"}],
  "desc":"Test Postfix module.",
  "version":"0.0.2",
- "full_name":"lab42/postfix"},
+ "full_name":"lab42/postfix",
+ "checksum":"foo",
+ "checksum_type":"foo_type"},
 {"tag_list":[],
  "project_url":"http://www.example42.com",
  "name":"common",
@@ -35,7 +37,9 @@ VALID_REPO_METADATA_JSON = """[
  "releases":[{"version":"0.0.1"}],
  "desc":"Example42 common resources module.",
  "version":"0.0.1",
- "full_name":"lab42/common"}
+ "full_name":"lab42/common",
+ "checksum":"bar",
+ "checksum_type":"bar_type"}
 ]
 """
 
@@ -65,7 +69,9 @@ VALID_MODULE_METADATA_JSON = """{
     "manifests/init.pp": "1d1fb26825825b4d64d37d377016869e",
     "spec/spec_helper.rb": "a55d1e6483344f8ec6963fcb2c220372",
     "tests/init.pp": "7043c7ef0c4b0ac52b4ec6bb76008ebd"
-  }
+  },
+  "checksum": "anvil",
+  "checksum_type": "acme_checksum"
 }
 """
 
@@ -91,6 +97,8 @@ class RepositoryMetadataTests(unittest.TestCase):
         self.assertEqual(sorted_modules[0].tag_list, [])
         self.assertEqual(sorted_modules[0].description, None)
         self.assertEqual(sorted_modules[0].project_page, None)
+        self.assertEqual(sorted_modules[0].checksum, 'bar')
+        self.assertEqual(sorted_modules[0].checksum_type, 'bar_type')
 
         self.assertEqual(sorted_modules[1].name, 'postfix')
         self.assertEqual(sorted_modules[1].author, 'lab42')
@@ -98,6 +106,8 @@ class RepositoryMetadataTests(unittest.TestCase):
         self.assertEqual(sorted_modules[1].tag_list, ['postfix', 'applications'])
         self.assertEqual(sorted_modules[1].description, None)
         self.assertEqual(sorted_modules[1].project_page, None)
+        self.assertEqual(sorted_modules[1].checksum, 'foo')
+        self.assertEqual(sorted_modules[1].checksum_type, 'foo_type')
 
     def test_to_json(self):
         # Setup
@@ -162,6 +172,8 @@ class ModuleTests(unittest.TestCase):
         self.assertEqual(module.summary, 'Valid Module Summary')
         self.assertEqual(module.description, 'Valid Module Description')
         self.assertEqual(module.project_page, 'http://example.org/jdob-valid')
+        self.assertEqual(module.checksum, 'anvil')
+        self.assertEqual(module.checksum_type, 'acme_checksum')
 
         self.assertEqual(2, len(module.dependencies))
         sorted_deps = sorted(module.dependencies, key=lambda x : x['name'])

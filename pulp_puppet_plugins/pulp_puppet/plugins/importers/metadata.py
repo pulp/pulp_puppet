@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2012 Red Hat, Inc.
+# Copyright © 2013 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -19,6 +19,7 @@ import os
 import shutil
 import sys
 import tarfile
+import hashlib
 
 from pulp.server.exceptions import InvalidValue
 
@@ -51,6 +52,9 @@ class InvalidTarball(ExtractionException):
 
 # -- public -------------------------------------------------------------------
 
+CHECKSUM_READ_BUFFER_SIZE = 65536
+
+
 def extract_metadata(module, filename, temp_dir):
     """
     Pulls the module's metadata file out of the module's tarball and updates the
@@ -82,7 +86,30 @@ def extract_metadata(module, filename, temp_dir):
 
     module.update_from_json(metadata_json)
 
+    # calculate the checksum for the overall module
+    module.checksum = calculate_checksum(filename)
+
+
+def calculate_checksum(filename):
+    """
+    Calculate the checksum for a given file using the default hashlib
+
+    :param filename: the filename including path of the file to calculate a checksum for
+    :type filename: str
+    :return: The checksum for the file
+    :rtype: str
+    """
+    m = hashlib.new(constants.DEFAULT_HASHLIB)
+    with open(filename, 'r') as f:
+        while 1:
+            file_buffer = f.read(CHECKSUM_READ_BUFFER_SIZE)
+            if not file_buffer:
+                break
+            m.update(file_buffer)
+    return m.hexdigest()
+
 # -- private ------------------------------------------------------------------
+
 
 def _extract_json(module, filename, temp_dir):
     """
