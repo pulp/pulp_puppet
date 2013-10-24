@@ -91,16 +91,21 @@ def extract_metadata(module, filename, temp_dir):
 
 
 def calculate_checksum(filename):
+    """
+    Calculate the checksum for a given file using the default hashlib
+
+    :param filename: the filename including path of the file to calculate a checksum for
+    :type filename: str
+    :return: The checksum for the file
+    :rtype: str
+    """
     m = hashlib.new(constants.DEFAULT_HASHLIB)
-    f = open(filename, 'r')
-    try:
+    with open(filename, 'r') as f:
         while 1:
             file_buffer = f.read(CHECKSUM_READ_BUFFER_SIZE)
             if not file_buffer:
                 break
             m.update(file_buffer)
-    finally:
-        f.close()
     return m.hexdigest()
 
 # -- private ------------------------------------------------------------------

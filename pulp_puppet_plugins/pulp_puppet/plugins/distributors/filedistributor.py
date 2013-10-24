@@ -22,40 +22,58 @@ from pulp_puppet.plugins.distributors import configuration
 
 def entry_point():
     """
-    Advertise the Puppet Files distributor to Pulp.
+    Advertise the Puppet File distributor to Pulp.
 
-    :return: Puppet Files and its empty config
+    :return: Puppet File and its empty config
     :rtype:  tuple
     """
-    return PuppetFilesDistributor, {}
+    return PuppetFileDistributor, {}
 
 
-class PuppetFilesDistributor(FileDistributor):
+class PuppetFileDistributor(FileDistributor):
     """
-    Distribute Puppet Module Files
+    Distribute Puppet Module File
     """
     @classmethod
     def metadata(cls):
         """
-        Advertise the capabilities of the mighty PuppetFilesDistributor.
+        Advertise the capabilities of the mighty PuppetFileDistributor.
 
-        :return: The description of the impressive PuppetFilesDistributor's capabilities.
+        :return: The description of the impressive PuppetFileDistributor's capabilities.
         :rtype:  dict
         """
         return {
-            'id': constants.DISTRIBUTOR_FILES_TYPE_ID,
-            'display_name': 'Puppet Files Distributor',
+            'id': constants.DISTRIBUTOR_FILE_TYPE_ID,
+            'display_name': 'Puppet File Distributor',
             'types': [constants.TYPE_PUPPET_MODULE]
         }
 
     def validate_config(self, repo, config, config_conduit):
-        # currently no validation for the config value is the global 'https_files_dir'
+        """
+        Validate the configuration information for the puppet file distributor
+        Ensures that the https directory where the files are going to be served
+        from is valid.
+
+        :param repo: metadata describing the repository to which the
+                     configuration applies
+        :type  repo: pulp.plugins.model.Repository
+
+        :param config: plugin configuration instance; the proposed repo
+                       configuration is found within
+        :type  config: pulp.plugins.config.PluginCallConfiguration
+
+        :param config_conduit: Configuration Conduit;
+        :type  config_conduit: pulp.plugins.conduits.repo_config.RepoConfigConduit
+
+        :return: tuple of (bool, str) to describe the result
+        :rtype:  tuple (bool, str)
+        """
         config.default_config = configuration.DEFAULT_CONFIG
-        https_dir = config.get(constants.CONFIG_FILES_HTTPS_DIR)
+        https_dir = config.get(constants.CONFIG_FILE_HTTPS_DIR)
         if https_dir is not None and os.path.isdir(https_dir):
             return True, None
         return False, \
-            _("The directory specified for the puppet files distributor is invalid: %(https_dir)s" %
+            _("The directory specified for the puppet file distributor is invalid: %(https_dir)s" %
               {'https_dir': https_dir})
 
     def publish_metadata_for_unit(self, unit):
@@ -72,7 +90,7 @@ class PuppetFilesDistributor(FileDistributor):
 
     def get_hosting_locations(self, repo, config):
         """
-        Get the paths on the filesystem where the build directory should be copied
+        Get the paths on the filesystem where the build directory should be copied.
 
         :param repo: The repository that is going to be hosted
         :type repo: pulp.plugins.model.Repository
@@ -80,12 +98,12 @@ class PuppetFilesDistributor(FileDistributor):
         :type  config:    pulp.plugins.config.PluginConfiguration
         """
         config.default_config = configuration.DEFAULT_CONFIG
-        hosting_dir = os.path.join(config.get(constants.CONFIG_FILES_HTTPS_DIR), repo.id)
+        hosting_dir = os.path.join(config.get(constants.CONFIG_FILE_HTTPS_DIR), repo.id)
         return [hosting_dir]
 
     def get_paths_for_unit(self, unit):
         """
-        Get the paths within a target directory where this unit should be linked to
+        Get the paths within a target directory where this unit should be linked to.
 
         :param unit: The unit for which we want to return target paths
         :type unit: pulp.plugins.model.AssociatedUnit

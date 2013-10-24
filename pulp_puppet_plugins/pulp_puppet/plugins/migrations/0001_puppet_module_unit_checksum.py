@@ -20,6 +20,7 @@ from pulp_puppet.plugins.importers import metadata
 
 _log = logging.getLogger('pulp')
 
+
 def migrate(*args, **kwargs):
     """
     for each puppet module, calculate a checksum for the source file on the filesystem
