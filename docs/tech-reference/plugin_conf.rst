@@ -72,10 +72,10 @@ directory.
  Full path to the directory where modules should be installed. It is the user's
  responsibility to ensure that Pulp can write to this directory.
 
-Files Distributor
+File Distributor
 -------------------
 
-Type ID: ``puppet_files_distributor``
+Type ID: ``puppet_file_distributor``
 
 This distributor publishes modules by making them available in a flattened format in
 a single directory on the file system and served via HTTPS.  The files are published

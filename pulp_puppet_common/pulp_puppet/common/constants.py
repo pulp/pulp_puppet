@@ -29,7 +29,7 @@ IMPORTER_ID = IMPORTER_TYPE_ID
 DISTRIBUTOR_TYPE_ID = 'puppet_distributor'
 
 # ID used to refer to the puppet files distributor (flat directory of files)
-DISTRIBUTOR_FILE_TYPE_ID = 'puppet_files_distributor'
+DISTRIBUTOR_FILE_TYPE_ID = 'puppet_file_distributor'
 
 # ID used to refer to the puppet distributor instance on a repository
 DISTRIBUTOR_ID = 'puppet_distributor'
