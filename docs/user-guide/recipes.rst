@@ -112,7 +112,7 @@ basic auth credentials as part of the URL.
 
   $ puppet module install --module_repository http://.:forge@localhost
 
-The repository URL can be set in ``/etc/puppet/pulp_puppet.conf`` so that it
+The repository URL can be set in ``/etc/puppet/puppet.conf`` so that it
 does not need to be provided on the command line every time. See Puppet's own
 documentation for details.
 
