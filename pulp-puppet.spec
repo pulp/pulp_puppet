@@ -182,7 +182,7 @@ client capabilites with Puppet specific features.
 
 %files admin-extensions
 %defattr(-,root,root,-)
-%{_sysconfdir}/pulp/admin/conf.d/pulp_puppet.conf
+%{_sysconfdir}/pulp/admin/conf.d/puppet.conf
 %{python_sitelib}/pulp_puppet/extensions/admin/
 %{python_sitelib}/pulp_puppet_extensions_admin*.egg-info
 %doc
