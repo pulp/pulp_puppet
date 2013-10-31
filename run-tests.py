@@ -54,5 +54,4 @@ if arguments.with_xunit:
 if arguments.xunit_file:
     args.extend(['--xunit-file', '../test/' + arguments.xunit_file])
 
-print ' '.join(args)
 subprocess.call(args)

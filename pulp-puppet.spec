@@ -88,7 +88,7 @@ mkdir -p %{buildroot}/srv/pulp
 # Configuration
 cp -R pulp_puppet_plugins/etc/httpd %{buildroot}/%{_sysconfdir}
 cp -R pulp_puppet_extensions_admin/etc/pulp %{buildroot}/%{_sysconfdir}
-cp pulp_puppet_plugins/etc/pulp/vhosts80/pulp_puppet.conf %{buildroot}/%{_sysconfdir}/pulp/vhosts80/
+cp pulp_puppet_plugins/etc/pulp/vhosts80/puppet.conf %{buildroot}/%{_sysconfdir}/pulp/vhosts80/
 
 # WSGI app
 cp -R pulp_puppet_plugins/srv/pulp/puppet_forge_api.wsgi %{buildroot}/srv/pulp/
@@ -151,7 +151,7 @@ to provide Puppet specific support.
 %files plugins
 
 %defattr(-,root,root,-)
-%{_sysconfdir}/pulp/vhosts80/pulp_puppet.conf
+%{_sysconfdir}/pulp/vhosts80/puppet.conf
 %{python_sitelib}/pulp_puppet/forge/
 %{python_sitelib}/pulp_puppet/plugins/
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/pulp_puppet.conf
