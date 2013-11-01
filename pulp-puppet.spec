@@ -18,7 +18,7 @@
 
 Name: pulp-puppet
 Version: 2.3.0
-Release: 0.26.beta%{?dist}
+Release: 0.27.beta%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -230,6 +230,10 @@ uninstall, bind, and unbind.
 
 
 %changelog
+* Fri Nov 01 2013 Jeff Ortel <jortel@redhat.com> 2.3.0-0.27.beta
+- 1024739 - Rename /etc/pulp/vhosts80/pulp_puppet.conf to puppet.conf.
+  (rbarlow@redhat.com)
+
 * Tue Oct 29 2013 Jeff Ortel <jortel@redhat.com> 2.3.0-0.26.beta
 - Pulp rebuild
 
