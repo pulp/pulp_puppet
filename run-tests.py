@@ -29,15 +29,6 @@ TESTS = [
     'pulp_puppet_handlers/test/unit/',
 ]
 
-PLUGIN_TESTS = ['pulp_puppet_plugins/test/unit/']
-
-args = [
-    'nosetests',
-    '--with-coverage',
-    '--cover-html',
-    '--cover-erase',
-    '--cover-package',
-    ','.join(PACKAGES), ]
-
+PLUGIN_TESTS = ['pulp_puppet_plugins/test/unit/',]
 
 run_tests(PACKAGES, TESTS, PLUGIN_TESTS)
