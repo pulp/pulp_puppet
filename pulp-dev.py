@@ -23,6 +23,7 @@ WARNING_RESET = '\033[0m'
 DIRS = (
     '/var/www/pulp_puppet/http/repos',
     '/var/www/pulp_puppet/https/repos',
+    '/var/www/pulp_puppet/files',
 )
 
 #
