@@ -18,7 +18,7 @@
 
 Name: pulp-puppet
 Version: 2.3.0
-Release: 0.24.beta%{?dist}
+Release: 0.29.beta%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -153,7 +153,7 @@ to provide Puppet specific support.
 %{_sysconfdir}/pulp/vhosts80/puppet.conf
 %{python_sitelib}/pulp_puppet/forge/
 %{python_sitelib}/pulp_puppet/plugins/
-%config(noreplace) %{_sysconfdir}/httpd/conf.d/puppet.conf
+%config(noreplace) %{_sysconfdir}/httpd/conf.d/pulp_puppet.conf
 %{_usr}/lib/pulp/plugins/types/puppet.json
 %{python_sitelib}/pulp_puppet_plugins*.egg-info
 /srv/pulp/puppet_forge_api.wsgi
@@ -229,6 +229,22 @@ uninstall, bind, and unbind.
 
 
 %changelog
+* Wed Nov 06 2013 Jeff Ortel <jortel@redhat.com> 2.3.0-0.29.beta
+- Pulp rebuild
+
+* Wed Nov 06 2013 Jeff Ortel <jortel@redhat.com> 2.3.0-0.28.beta
+- Pulp rebuild
+
+* Fri Nov 01 2013 Jeff Ortel <jortel@redhat.com> 2.3.0-0.27.beta
+- 1024739 - Rename /etc/pulp/vhosts80/pulp_puppet.conf to puppet.conf.
+  (rbarlow@redhat.com)
+
+* Tue Oct 29 2013 Jeff Ortel <jortel@redhat.com> 2.3.0-0.26.beta
+- Pulp rebuild
+
+* Mon Oct 28 2013 Jeff Ortel <jortel@redhat.com> 2.3.0-0.25.beta
+- 1021099 - Rename puppet.conf -> pulp_puppet.conf (bcourt@redhat.com)
+
 * Wed Oct 23 2013 Jeff Ortel <jortel@redhat.com> 2.3.0-0.24.beta
 - Pulp rebuild
 
