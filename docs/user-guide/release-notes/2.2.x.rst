@@ -23,3 +23,12 @@ Upgrade Instructions
 Please see the
 `Pulp Platform upgrade instructions <https://pulp-user-guide.readthedocs.org/en/pulp-2.2/release-notes.html>`_
 to upgrade the Pulp and Puppet RPMs and database.
+
+
+Pulp 2.2.1
+==========
+
+No changes directly impact Pulp's Puppet features, but several bug fixes impact
+the Pulp Platform. See the full list of bug fixes below.
+
+`All Bug Fixes <https://bugzilla.redhat.com/buglist.cgi?bug_status=VERIFIED&classification=Community&product=Pulp&query_format=advanced&target_release=2.2.1>`_
