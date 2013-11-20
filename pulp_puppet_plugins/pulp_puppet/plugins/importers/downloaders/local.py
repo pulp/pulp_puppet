@@ -118,13 +118,9 @@ class LocalDownloader(BaseDownloader):
         """
         return [self.retrieve_module(progress_report, module) for module in module_list]
 
-    def cancel(self, progress_report):
+    def cancel(self):
         """
         Cancel the current operation.
-
-        :param progress_report: used if any updates need to be made as the
-               download runs
-        :type  progress_report: pulp_puppet.importer.sync_progress.ProgressReport
         """
         downloader = self.downloader
         if downloader is None:
