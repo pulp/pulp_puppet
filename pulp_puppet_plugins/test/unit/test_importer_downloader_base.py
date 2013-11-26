@@ -25,5 +25,5 @@ class BaseDownloaderTests(unittest.TestCase):
         self.assertRaises(NotImplementedError, b.retrieve_metadata, None)
         self.assertRaises(NotImplementedError, b.retrieve_module, None, None)
         self.assertRaises(NotImplementedError, b.retrieve_modules, None, None)
-        self.assertRaises(NotImplementedError, b.cancel, None)
+        self.assertRaises(NotImplementedError, b.cancel)
         self.assertRaises(NotImplementedError, b.cleanup_module, None)
