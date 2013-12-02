@@ -14,6 +14,8 @@
 
 import os
 
+import mock
+
 import base_downloader
 from pulp_puppet.common import constants, model
 from pulp_puppet.plugins.importers.downloaders.exceptions import FileRetrievalException
@@ -29,7 +31,8 @@ class LocalDownloaderTests(base_downloader.BaseDownloaderTests):
         self.config.repo_plugin_config[constants.CONFIG_FEED] = 'file://' + VALID_REPO_DIR
         self.downloader = LocalDownloader(self.repo, None, self.config)
 
-    def test_retrieve_metadata(self):
+    @mock.patch('nectar.config.DownloaderConfig.finalize')
+    def test_retrieve_metadata(self, mock_finalize):
         # Test
         docs = self.downloader.retrieve_metadata(self.mock_progress_report)
 
@@ -44,6 +47,8 @@ class LocalDownloaderTests(base_downloader.BaseDownloaderTests):
         expected_query = os.path.join(VALID_REPO_DIR, constants.REPO_METADATA_FILENAME)
         self.assertEqual(expected_query, self.mock_progress_report.metadata_current_query)
         self.assertEqual(2, self.mock_progress_report.update_progress.call_count)
+
+        mock_finalize.assert_called_once()
 
     def test_retrieve_metadata_no_metadata_found(self):
         # Setup
