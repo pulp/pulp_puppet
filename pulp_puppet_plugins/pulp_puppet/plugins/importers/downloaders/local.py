@@ -62,6 +62,7 @@ class LocalDownloader(BaseDownloader):
         request = DownloadRequest(url, destination)
 
         self.downloader.download([request])
+        config.finalize()
 
         self.downloader = None
 
@@ -126,6 +127,7 @@ class LocalDownloader(BaseDownloader):
         if downloader is None:
             return
         downloader.cancel()
+        downloader.config.finalize()
 
     def cleanup_module(self, module):
         """

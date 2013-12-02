@@ -12,10 +12,6 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 import os
-import pycurl
-import shutil
-import tempfile
-import unittest
 
 import mock
 
@@ -35,13 +31,15 @@ class HttpDownloaderTests(base_downloader.BaseDownloaderTests):
         self.config.repo_plugin_config[constants.CONFIG_FEED] = TEST_SOURCE
         self.downloader = HttpDownloader(self.repo, None, self.config)
 
+    @mock.patch('nectar.config.DownloaderConfig.finalize')
     @mock.patch('nectar.downloaders.threaded.HTTPThreadedDownloader.download')
-    def test_retrieve_metadata(self, mock_downloader_download):
+    def test_retrieve_metadata(self, mock_downloader_download, mock_finalize):
         docs = self.downloader.retrieve_metadata(self.mock_progress_report)
 
         self.assertEqual(len(docs), 1)
 
         self.assertEqual(mock_downloader_download.call_count, 1)
+        mock_finalize.assert_called_once()
 
     @mock.patch('nectar.downloaders.threaded.HTTPThreadedDownloader.download')
     def test_retrieve_metadata_multiple_queries(self, mock_downloader_download):
@@ -70,12 +68,16 @@ class HttpDownloaderTests(base_downloader.BaseDownloaderTests):
         except exceptions.FileRetrievalException:
             pass
 
+    @mock.patch('nectar.config.DownloaderConfig.finalize')
     @mock.patch('nectar.downloaders.threaded.HTTPThreadedDownloader.download')
-    def test_retrieve_module(self, mock_downloader_download):
+    def test_retrieve_module(self, mock_downloader_download, mock_finalize):
         try:
             stored_filename = self.downloader.retrieve_module(self.mock_progress_report, self.module)
         except:
             self.fail()
+
+        mock_downloader_download.assert_called_once()
+        mock_finalize.assert_called_once()
 
     @mock.patch('pulp_puppet.plugins.importers.downloaders.web.HTTPModuleDownloadEventListener')
     @mock.patch('nectar.downloaders.threaded.HTTPThreadedDownloader.download')

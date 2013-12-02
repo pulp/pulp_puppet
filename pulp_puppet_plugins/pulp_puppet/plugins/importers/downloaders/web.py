@@ -69,6 +69,7 @@ class HttpDownloader(BaseDownloader):
             self.downloader.download(request_list)
 
         finally:
+            self.downloader.config.finalize()
             self.downloader = None
 
         for report in listener.failed_reports:
@@ -127,6 +128,7 @@ class HttpDownloader(BaseDownloader):
             self.downloader.download(request_list)
 
         finally:
+            self.downloader.config.finalize()
             self.downloader = None
 
         for report in listener.failed_reports:
