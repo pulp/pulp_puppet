@@ -1,0 +1,32 @@
+======================
+Pulp 2.3 Release Notes
+======================
+
+Pulp 2.3.0
+==========
+
+New Features
+------------
+
+-  Syncs now support all of the networking settings that have been available for
+   yum repository syncs. This includes proxy config, bandwidth throttling, etc.
+
+-  A new "install distributor" is available through the REST API that will
+   install all modules in a repository to a specified path on the local
+   filesystem. See the developer guide for more details.
+
+
+Notable Bugs Fixed
+------------------
+
+-  Full `semantic versions <http://semver.org>`_ were
+   `not supported <https://bugzilla.redhat.com/show_bug.cgi?id=946966>`_
+   by the upload process, despite being supported by Puppet Forge and other
+   puppet tools.
+
+
+All Bugs
+--------
+
+You can see the complete list of over 100 bugs that were
+`fixed in Pulp 2.3.0 <https://bugzilla.redhat.com/buglist.cgi?bug_status=VERIFIED&classification=Community&list_id=1927252&product=Pulp&query_format=advanced&target_release=2.3.0>`_.
