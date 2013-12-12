@@ -17,8 +17,8 @@
 # ---- Pulp (puppet) -----------------------------------------------------------
 
 Name: pulp-puppet
-Version: 2.3.0
-Release: 0.29.beta%{?dist}
+Version: 2.4.0
+Release: 0.1.alpha%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -229,6 +229,15 @@ uninstall, bind, and unbind.
 
 
 %changelog
+* Thu Dec 12 2013 Jeff Ortel <jortel@redhat.com> 2.4.0-0.1.alpha
+- 995076 - make sure to call finalize on the nectar config object
+  (jason.connor@gmail.com)
+- 1032132 - removed unused progress_report positional argument
+  (jason.connor@gmail.com)
+- 1024739 - Rename /etc/pulp/vhosts80/pulp_puppet.conf to puppet.conf.
+  (rbarlow@redhat.com)
+- 1021099 - Rename puppet.conf -> pulp_puppet.conf (bcourt@redhat.com)
+
 * Wed Nov 06 2013 Jeff Ortel <jortel@redhat.com> 2.3.0-0.29.beta
 - Pulp rebuild
 
