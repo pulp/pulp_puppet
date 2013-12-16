@@ -94,7 +94,7 @@ class ContentMixin(PulpCliCommand):
         """
         return kwargs[OPTION_CONTENT_UNIT.keyword]
 
-    def succeeded(self, consumer_id, task):
+    def succeeded(self, task):
         """
         Display a success message. This method is called if the task succeeds,
         which only means that it executed on the consumer. There may still be
@@ -102,8 +102,6 @@ class ContentMixin(PulpCliCommand):
         errors (like specific modules that couldn't be upgraded) and display
         them to the user.
 
-        :param consumer_id: unique ID of the consumer where the task ran
-        :type  consumer_id: str
         :param task:    task object that executed successfully on a consumer
         :type  task:    pulp.bindings.responses.Task
 
@@ -138,9 +136,10 @@ class ContentMixin(PulpCliCommand):
         count = 0
         for module_name in errors:
             if count >= 5:
-                self.context.prompt.render_failure_message(_('(additional errors truncated)'), tag=TAG_TRUNCATED)
+                self.context.prompt.render_failure_message(_('(additional errors truncated)'),
+                                                           tag=TAG_TRUNCATED)
                 break
-            unknown_message = _('unknown error with module %(m)s') % {'m':module_name}
+            unknown_message = _('unknown error with module %(m)s') % {'m': module_name}
             message = errors[module_name].get('error', {}).get('oneline') or unknown_message
             self.context.prompt.render_failure_message(message, tag=TAG_ERROR)
             count += 1
@@ -195,7 +194,8 @@ class InstallCommand(ContentMixin, content.ConsumerContentInstallCommand):
         letting the real "run" command run.
         """
         if not (kwargs[OPTION_CONTENT_UNIT.keyword] or kwargs[OPTION_WHOLE_REPO.keyword]):
-            self.context.prompt.render_failure_message(_('no units specified'), tag=TAG_INVALID_INPUT)
+            self.context.prompt.render_failure_message(_('no units specified'),
+                                                       tag=TAG_INVALID_INPUT)
             return
         else:
             return super(InstallCommand, self).run(**kwargs)
