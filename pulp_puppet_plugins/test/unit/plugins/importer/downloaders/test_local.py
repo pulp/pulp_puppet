@@ -19,8 +19,9 @@ from pulp_puppet.common import constants, model
 from pulp_puppet.plugins.importers.downloaders.exceptions import FileRetrievalException
 from pulp_puppet.plugins.importers.downloaders.local import LocalDownloader
 
-VALID_REPO_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'data', 'repos', 'valid')
-INVALID_REPO_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'data', 'repos', 'invalid')
+DATA_DIR = os.path.abspath(os.path.dirname(__file__)) + '/../../../../data'
+VALID_REPO_DIR = os.path.join(DATA_DIR, 'repos', 'valid')
+INVALID_REPO_DIR = os.path.join(DATA_DIR, 'repos', 'invalid')
 
 class LocalDownloaderTests(base_downloader.BaseDownloaderTests):
 

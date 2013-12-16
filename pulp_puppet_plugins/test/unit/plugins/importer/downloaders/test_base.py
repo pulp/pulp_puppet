@@ -15,6 +15,7 @@ import unittest
 
 from pulp_puppet.plugins.importers.downloaders import base
 
+
 class BaseDownloaderTests(unittest.TestCase):
 
     def test_not_implemented(self):

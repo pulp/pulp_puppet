@@ -31,6 +31,7 @@ _LOG = logging.getLogger(__name__)
 
 # -- plugins ------------------------------------------------------------------
 
+
 def entry_point():
     """
     Entry point that pulp platform uses to load the importer
@@ -51,9 +52,9 @@ class PuppetModuleImporter(Importer):
     @classmethod
     def metadata(cls):
         return {
-            'id' : constants.IMPORTER_TYPE_ID,
-            'display_name' : _('Puppet Importer'),
-            'types' : [constants.TYPE_PUPPET_MODULE]
+            'id': constants.IMPORTER_TYPE_ID,
+            'display_name': _('Puppet Importer'),
+            'types': [constants.TYPE_PUPPET_MODULE]
         }
 
     def validate_config(self, repo, config):
@@ -72,7 +73,13 @@ class PuppetModuleImporter(Importer):
 
     def upload_unit(self, repo, type_id, unit_key, metadata, file_path, conduit,
                     config):
-        upload.handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path, conduit)
+        try:
+            report = upload.handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path,
+                                                 conduit)
+        except Exception, e:
+            _LOG.exception(e, exc_info=True)
+            report = {'success_flag': False, 'summary': e.message, 'details': {}}
+        return report
 
     def cancel_sync_repo(self, call_request, call_report):
         self.sync_cancelled = True

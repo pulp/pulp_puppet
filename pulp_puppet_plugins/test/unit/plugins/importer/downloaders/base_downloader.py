@@ -24,6 +24,7 @@ from pulp.plugins.model import Repository
 
 from pulp_puppet.common import model
 
+
 class BaseDownloaderTests(unittest.TestCase):
 
     def setUp(self):

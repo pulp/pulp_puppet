@@ -19,12 +19,13 @@ from pulp.plugins.conduits.mixins import UnitAssociationCriteria
 from pulp_puppet.common import constants
 from pulp_puppet.plugins.importers import copier
 
+
 class CopierTests(unittest.TestCase):
 
     def test_copy_units_all_units(self):
         # Setup
         conduit = mock.MagicMock()
-        all_source_units = ['a', 'b', 'c'] # content is irrelevant
+        all_source_units = ['a', 'b', 'c']  # content is irrelevant
         conduit.get_source_units.return_value = all_source_units
 
         # Test

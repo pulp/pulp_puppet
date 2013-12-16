@@ -28,6 +28,7 @@ from pulp_puppet.plugins.importers.downloaders.web import HttpDownloader
 
 TEST_SOURCE = 'http://forge.puppetlabs.com/'
 
+
 class HttpDownloaderTests(base_downloader.BaseDownloaderTests):
 
     def setUp(self):
