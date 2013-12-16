@@ -15,11 +15,13 @@ import unittest
 
 import mock
 from pulp.bindings.responses import Task, STATE_FINISHED
-from pulp.client.commands.consumer.content import ConsumerContentUpdateCommand, ConsumerContentUninstallCommand
+from pulp.client.commands.consumer.content import ConsumerContentUpdateCommand, \
+    ConsumerContentUninstallCommand
 
 import base_cli
 from pulp_puppet.common import constants
 from pulp_puppet.extensions.admin.consumer import content
+
 
 class TestParseUnits(unittest.TestCase):
     def test_empty_list(self):
@@ -118,7 +120,7 @@ class TestContentMixin(base_cli.ExtensionTests):
             'details': {constants.TYPE_PUPPET_MODULE: {'details': {}}},
             'num_changes': 0
         }
-        self.command.succeeded('', task)
+        self.command.succeeded(task)
 
         tags = self.prompt.get_write_tags()
         self.assertTrue(content.TAG_NO_CHANGES in tags)
@@ -129,7 +131,7 @@ class TestContentMixin(base_cli.ExtensionTests):
             'details': self._generate_details(),
             'num_changes': 1
         }
-        self.command.succeeded('', task)
+        self.command.succeeded(task)
 
         tags = self.prompt.get_write_tags()
         self.assertTrue(content.TAG_CHANGE_MADE in tags)
@@ -140,12 +142,12 @@ class TestContentMixin(base_cli.ExtensionTests):
             'details': self._generate_details(),
             'num_changes': 2
         }
-        self.command.succeeded('', task)
+        self.command.succeeded(task)
 
         tags = self.prompt.get_write_tags()
         self.assertTrue(content.TAG_CHANGE_MADE in tags)
         # make sure it's just 1 message even though there were 2 changes
-        self.assertEqual(len(filter(lambda x: x==content.TAG_CHANGE_MADE, tags)), 1)
+        self.assertEqual(len(filter(lambda x: x == content.TAG_CHANGE_MADE, tags)), 1)
 
     @mock.patch('pulp_puppet.extensions.admin.consumer.content.ContentMixin._render_error_messages')
     def test_succeeded_hands_off_errors(self, mock_render):
@@ -154,13 +156,13 @@ class TestContentMixin(base_cli.ExtensionTests):
             'details': self._generate_details({'errors': {'foo/bar': {}}}),
             'num_changes': 1
         }
-        self.command.succeeded('', task)
+        self.command.succeeded(task)
 
         mock_render.assert_called_once_with(task.result)
 
     def test_render_errors_empty(self):
         result = {
-            'details': self._generate_details({'errors':{}}),
+            'details': self._generate_details({'errors': {}}),
             'num_changes': 5
         }
 
@@ -192,7 +194,7 @@ class TestContentMixin(base_cli.ExtensionTests):
         tags = self.prompt.get_write_tags()
         # make sure there were two error tags
         self.assertEqual(len(tags), 2)
-        self.assertEqual(len(filter(lambda x: x==content.TAG_ERROR, tags)), 2)
+        self.assertEqual(len(filter(lambda x: x == content.TAG_ERROR, tags)), 2)
 
     def test_render_errors_ten(self):
         result = {
@@ -217,7 +219,7 @@ class TestContentMixin(base_cli.ExtensionTests):
         tags = self.prompt.get_write_tags()
         self.assertEqual(len(tags), 6)
         self.assertTrue(content.TAG_TRUNCATED in tags)
-        self.assertEqual(len(filter(lambda x: x==content.TAG_ERROR, tags)), 5)
+        self.assertEqual(len(filter(lambda x: x == content.TAG_ERROR, tags)), 5)
 
 
 class TestInstallCommand(base_cli.ExtensionTests):
@@ -228,7 +230,8 @@ class TestInstallCommand(base_cli.ExtensionTests):
 
     def test_add_content_options(self):
         # make sure it adds our content unit option
-        options = [opt for opt in self.command.options if opt.keyword == content.OPTION_CONTENT_UNIT.keyword]
+        options = [opt for opt in self.command.options
+                   if opt.keyword == content.OPTION_CONTENT_UNIT.keyword]
         self.assertEqual(len(options), 1)
 
         option = options[0]
@@ -237,7 +240,8 @@ class TestInstallCommand(base_cli.ExtensionTests):
 
     def test_add_install_options(self):
         # make sure it adds our content unit option
-        options = [opt for opt in self.command.options if opt.keyword == content.OPTION_WHOLE_REPO.keyword]
+        options = [opt for opt in self.command.options
+                   if opt.keyword == content.OPTION_WHOLE_REPO.keyword]
         self.assertEqual(len(options), 1)
 
     @mock.patch.object(content.ContentMixin, 'get_content_units')
@@ -259,7 +263,8 @@ class TestInstallCommand(base_cli.ExtensionTests):
         self.assertEqual(unit['type_id'], constants.TYPE_PUPPET_MODULE)
         self.assertTrue(unit['unit_key'] is None)
 
-    @mock.patch('pulp.client.commands.consumer.content.ConsumerContentInstallCommand.get_install_options')
+    @mock.patch(
+        'pulp.client.commands.consumer.content.ConsumerContentInstallCommand.get_install_options')
     def test_get_install_options_not_present(self, mock_get_options):
         kwargs = {'foo': 'bar'}
 
@@ -269,8 +274,9 @@ class TestInstallCommand(base_cli.ExtensionTests):
         mock_get_options.assert_called_once_with(kwargs)
         self.assertEqual(result, mock_get_options.return_value)
 
-    @mock.patch('pulp.client.commands.consumer.content.ConsumerContentInstallCommand.get_install_options')
-    def test_get_install_options_not_present(self, mock_get_options):
+    @mock.patch(
+        'pulp.client.commands.consumer.content.ConsumerContentInstallCommand.get_install_options')
+    def test_get_install_options_not_present_2(self, mock_get_options):
         kwargs = {content.OPTION_WHOLE_REPO.keyword: 'repo1'}
 
         result = self.command.get_install_options(kwargs)
