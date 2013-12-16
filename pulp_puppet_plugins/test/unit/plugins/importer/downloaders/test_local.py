@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2012 Red Hat, Inc.
+# Copyright © 2013 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -22,6 +22,7 @@ from pulp_puppet.plugins.importers.downloaders.local import LocalDownloader
 DATA_DIR = os.path.abspath(os.path.dirname(__file__)) + '/../../../../data'
 VALID_REPO_DIR = os.path.join(DATA_DIR, 'repos', 'valid')
 INVALID_REPO_DIR = os.path.join(DATA_DIR, 'repos', 'invalid')
+
 
 class LocalDownloaderTests(base_downloader.BaseDownloaderTests):
 
