@@ -77,7 +77,7 @@ class PuppetModuleImporter(Importer):
             report = upload.handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path,
                                                  conduit)
         except Exception, e:
-            _LOG.exception(e, exc_info=True)
+            _LOG.exception(e)
             report = {'success_flag': False, 'summary': e.message, 'details': {}}
         return report
 
