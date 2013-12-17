@@ -18,6 +18,7 @@ from pulp_puppet.common import constants
 from pulp_puppet.common.model import Module
 from pulp_puppet.plugins.importers import metadata as metadata_parser
 
+
 def handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path, conduit):
     """
     Handles an upload unit request to the importer. This call is responsible
@@ -65,4 +66,4 @@ def handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path, conduit):
     # Save the unit into the destination repository
     conduit.save_unit(unit)
 
-    
+    return {'success_flag': True, 'summary': '', 'details': {}}

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2012 Red Hat, Inc.
+# Copyright © 2013 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -25,13 +25,15 @@ from pulp_puppet.plugins.importers.sync import PuppetModuleSyncRun
 
 # -- constants ----------------------------------------------------------------
 
-FEED = 'file://' + os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'data', 'repos', 'valid')
-INVALID_FEED = 'file://' + os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'data', 'repos', 'invalid')
+DATA_DIR = os.path.abspath(os.path.dirname(__file__)) + '/../../../data'
+FEED = 'file://' + os.path.join(DATA_DIR, 'repos', 'valid')
+INVALID_FEED = 'file://' + os.path.join(DATA_DIR, 'repos', 'invalid')
 
 # Simulated location where Pulp will store synchronized units
 MOCK_PULP_STORAGE_LOCATION = tempfile.mkdtemp(prefix='var-lib')
 
 # -- test cases ---------------------------------------------------------------
+
 
 class MockConduit(mock.MagicMock):
 
@@ -50,8 +52,11 @@ class UnitsMockConduit(MockConduit):
 
     def get_units(self, criteria=None):
         units = [
-            Unit(constants.TYPE_PUPPET_MODULE, {'name' : 'valid', 'version' : '1.1.0', 'author' : 'jdob'}, {}, ''),
-            Unit(constants.TYPE_PUPPET_MODULE, {'name' : 'good', 'version' : '2.0.0', 'author' : 'adob'}, {}, ''),
+            Unit(constants.TYPE_PUPPET_MODULE, {'name': 'valid',
+                                                'version': '1.1.0',
+                                                'author': 'jdob'}, {}, ''),
+            Unit(constants.TYPE_PUPPET_MODULE, {'name': 'good', 'version': '2.0.0',
+                                                'author': 'adob'}, {}, ''),
         ]
         return units
 
