@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2012 Red Hat, Inc.
+# Copyright © 2013 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -23,6 +23,7 @@ from pulp_puppet.plugins.importers.downloaders import exceptions, web
 from pulp_puppet.plugins.importers.downloaders.web import HttpDownloader
 
 TEST_SOURCE = 'http://forge.puppetlabs.com/'
+
 
 class HttpDownloaderTests(base_downloader.BaseDownloaderTests):
 

@@ -23,9 +23,10 @@ from pulp_puppet.plugins.importers import metadata
 
 # -- constants ----------------------------------------------------------------
 
-DATA_DIR = os.path.abspath(os.path.dirname(__file__)) + '/../data'
+DATA_DIR = os.path.abspath(os.path.dirname(__file__)) + '/../../../data'
 
 # -- test cases ---------------------------------------------------------------
+
 
 class SuccessfulMetadataTests(unittest.TestCase):
 
@@ -87,7 +88,7 @@ class SuccessfulMetadataTests(unittest.TestCase):
         self.assertEqual(self.module.project_page, 'http://example.org/jdob-valid')
 
         self.assertEqual(2, len(self.module.dependencies))
-        sorted_deps = sorted(self.module.dependencies, key=lambda x : x['name'])
+        sorted_deps = sorted(self.module.dependencies, key=lambda x :x['name'])
         self.assertEqual(sorted_deps[0]['name'], 'jdob/dep-alpha')
         self.assertEqual(sorted_deps[0]['version_requirement'], '>= 1.0.0')
         self.assertEqual(sorted_deps[1]['name'], 'ldob/dep-beta')
@@ -115,7 +116,7 @@ class NegativeMetadataTests(unittest.TestCase):
 
     def setUp(self):
         self.author = 'jdob'
-        self.name = None # set in test itself
+        self.name = None  # set in test itself
         self.version = '1.0.0'
 
         self.module = Module(self.name, self.version, self.author)
