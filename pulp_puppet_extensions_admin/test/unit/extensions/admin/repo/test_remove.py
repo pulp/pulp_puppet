@@ -14,12 +14,12 @@ import mock
 
 from pulp.client.commands.unit import UnitRemoveCommand
 
-import base_cli
-from pulp_puppet.common.constants import DISPLAY_MODULES_THRESHOLD
+from ....base_cli import ExtensionTests
+from pulp_puppet.common.constants import DISPLAY_MODULES_THRESHOLD, TYPE_PUPPET_MODULE
 from pulp_puppet.extensions.admin.repo.remove import RemoveCommand, DESC_REMOVE
 
 
-class RemovePuppetModulesCommand(base_cli.ExtensionTests):
+class RemovePuppetModulesCommand(ExtensionTests):
 
     def setUp(self):
         super(RemovePuppetModulesCommand, self).setUp()
@@ -29,19 +29,14 @@ class RemovePuppetModulesCommand(base_cli.ExtensionTests):
         self.assertTrue(isinstance(self.command, UnitRemoveCommand))
         self.assertEqual('remove', self.command.name)
         self.assertEqual(DESC_REMOVE, self.command.description)
-        self.assertEqual(DISPLAY_MODULES_THRESHOLD, self.command.module_count_threshold)
+        self.assertEqual(DISPLAY_MODULES_THRESHOLD, self.command.max_units_displayed)
         # uses default remove method
         self.assertEqual(self.command.method, self.command.run)
 
-    @mock.patch('pulp_puppet.extensions.admin.repo.units_display.display_modules')
-    def test_succeeded(self, mock_display):
-        # Setup
-        fake_modules = 'm'
-        fake_task = mock.MagicMock()
-        fake_task.result = fake_modules
+    @mock.patch('pulp_puppet.extensions.admin.repo.units_display.get_formatter_for_type')
+    def test_get_formatter_for_type(self, mock_formatter):
+        context = mock.MagicMock()
+        command = RemoveCommand(context)
 
-        # Test
-        self.command.succeeded(fake_task)
-
-        # Verify
-        mock_display.assert_called_once_with(self.prompt, fake_modules, self.command.module_count_threshold)
+        command.get_formatter_for_type(TYPE_PUPPET_MODULE)
+        mock_formatter.assert_called_once_with(TYPE_PUPPET_MODULE)
