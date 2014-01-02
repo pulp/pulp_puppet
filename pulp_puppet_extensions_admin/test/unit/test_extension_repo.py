@@ -10,14 +10,13 @@
 # NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
 from pulp.client.commands import options
 from pulp.client.commands.repo import cudl as pulp_cudl
 from pulp.client.extensions.core import TAG_SUCCESS, TAG_REASONS
 from pulp.common.compat import json
 
-import base_cli
 from pulp_puppet.common import constants
+from pulp_puppet.devel import base_cli
 from pulp_puppet.extensions.admin import pulp_cli as commands
 from pulp_puppet.extensions.admin.repo import cudl
 

@@ -14,12 +14,13 @@
 import unittest
 
 import mock
+
 from pulp.bindings.responses import Task, STATE_FINISHED
 from pulp.client.commands.consumer.content import ConsumerContentUpdateCommand, \
     ConsumerContentUninstallCommand
 
-import base_cli
 from pulp_puppet.common import constants
+from pulp_puppet.devel import base_cli
 from pulp_puppet.extensions.admin.consumer import content
 
 

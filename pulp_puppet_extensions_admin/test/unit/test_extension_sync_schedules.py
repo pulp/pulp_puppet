@@ -10,13 +10,13 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 import mock
+
 from pulp.client.commands.options import OPTION_REPO_ID
 from pulp.client.commands.schedule import (
     DeleteScheduleCommand, ListScheduleCommand, CreateScheduleCommand,
     UpdateScheduleCommand, NextRunCommand)
-
-import base_cli
 from pulp_puppet.common.constants import IMPORTER_ID
+from pulp_puppet.devel import base_cli
 from pulp_puppet.extensions.admin.repo import sync_schedules
 
 

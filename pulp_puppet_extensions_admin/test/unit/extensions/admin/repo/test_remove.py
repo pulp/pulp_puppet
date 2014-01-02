@@ -14,8 +14,8 @@ import mock
 
 from pulp.client.commands.unit import UnitRemoveCommand
 
-from ....base_cli import ExtensionTests
 from pulp_puppet.common.constants import DISPLAY_MODULES_THRESHOLD, TYPE_PUPPET_MODULE
+from pulp_puppet.devel.base_cli import ExtensionTests
 from pulp_puppet.extensions.admin.repo.remove import RemoveCommand, DESC_REMOVE
 
 

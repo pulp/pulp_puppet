@@ -17,8 +17,8 @@ from pulp.bindings.exceptions import BadRequestException
 from pulp.common.compat import json
 from pulp.client.commands.unit import UnitCopyCommand
 
-from ....base_cli import ExtensionTests
 from pulp_puppet.common import constants
+from pulp_puppet.devel.base_cli import ExtensionTests
 from pulp_puppet.extensions.admin.repo import copy_modules as copy_commands
 
 

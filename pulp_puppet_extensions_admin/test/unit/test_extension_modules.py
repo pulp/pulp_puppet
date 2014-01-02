@@ -14,7 +14,7 @@
 from pulp.client.commands import options
 from pulp.client.commands.criteria import DisplayUnitAssociationsCommand
 
-import base_cli
+from pulp_puppet.devel import base_cli
 from pulp_puppet.extensions.admin.repo import modules
 
 # -- constants ----------------------------------------------------------------
