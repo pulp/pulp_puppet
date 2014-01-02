@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2013 Red Hat, Inc.
+# Copyright © 2012 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -37,8 +37,8 @@ class CopyCommandTests(ExtensionTests):
     def test_run(self):
         # Setup
         data = {
-            'from-repo-id' : 'from',
-            'to-repo-id' : 'to'
+            'from-repo-id': 'from',
+            'to-repo-id': 'to'
         }
 
         self.server_mock.request.return_value = 202, self.task()
@@ -63,11 +63,11 @@ class CopyCommandTests(ExtensionTests):
     def test_run_invalid_source_repo(self):
         # Setup
         data = {
-            'from-repo-id' : 'from',
-            'to-repo-id' : 'to',
+            'from-repo-id': 'from',
+            'to-repo-id': 'to',
         }
 
-        error_report =  {
+        error_report = {
             'exception': None,
             'traceback': None,
             'property_names': [

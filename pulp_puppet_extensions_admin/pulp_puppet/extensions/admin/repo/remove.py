@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2013 Red Hat, Inc.
+# Copyright © 2012 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -24,7 +24,7 @@ DESC_REMOVE = _('remove copied or uploaded modules from a repository')
 
 class RemoveCommand(UnitRemoveCommand):
     """
-    Class for executing unit copy commands for puppet_module units
+    Class for executing unit remove commands for puppet_module units
     """
 
     def __init__(self, context, name='remove', description=DESC_REMOVE,
@@ -34,7 +34,8 @@ class RemoveCommand(UnitRemoveCommand):
 
         self.max_units_displayed = module_count_threshold
 
-    def get_formatter_for_type(self, type_id):
+    @staticmethod
+    def get_formatter_for_type(type_id):
         """
         Returns a method that can be used to format the unit key of a puppet_module
         for display purposes
