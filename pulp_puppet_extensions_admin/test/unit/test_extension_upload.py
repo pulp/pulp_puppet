@@ -17,9 +17,9 @@ import unittest
 import mock
 from pulp.client.commands.repo.upload import UploadCommand, OPTION_FILE
 
-import base_cli
 from pulp_puppet.common import constants
 from pulp_puppet.common.model import Module
+from pulp_puppet.devel import base_cli
 from pulp_puppet.extensions.admin.repo import upload
 
 MODULES_DIR = os.path.abspath(os.path.dirname(__file__)) + '/../data/good-modules/jdob-valid/pkg'

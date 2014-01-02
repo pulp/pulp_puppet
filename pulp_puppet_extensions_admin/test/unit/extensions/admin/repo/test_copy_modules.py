@@ -17,11 +17,12 @@ from pulp.bindings.exceptions import BadRequestException
 from pulp.common.compat import json
 from pulp.client.commands.unit import UnitCopyCommand
 
-import base_cli
 from pulp_puppet.common import constants
+from pulp_puppet.devel.base_cli import ExtensionTests
 from pulp_puppet.extensions.admin.repo import copy_modules as copy_commands
 
-class CopyCommandTests(base_cli.ExtensionTests):
+
+class CopyCommandTests(ExtensionTests):
 
     def setUp(self):
         super(CopyCommandTests, self).setUp()
@@ -36,8 +37,8 @@ class CopyCommandTests(base_cli.ExtensionTests):
     def test_run(self):
         # Setup
         data = {
-            'from-repo-id' : 'from',
-            'to-repo-id' : 'to'
+            'from-repo-id': 'from',
+            'to-repo-id': 'to'
         }
 
         self.server_mock.request.return_value = 202, self.task()
@@ -62,11 +63,11 @@ class CopyCommandTests(base_cli.ExtensionTests):
     def test_run_invalid_source_repo(self):
         # Setup
         data = {
-            'from-repo-id' : 'from',
-            'to-repo-id' : 'to',
+            'from-repo-id': 'from',
+            'to-repo-id': 'to',
         }
 
-        error_report =  {
+        error_report = {
             'exception': None,
             'traceback': None,
             'property_names': [
@@ -90,15 +91,10 @@ class CopyCommandTests(base_cli.ExtensionTests):
             self.assertEqual(['from-repo-id'], e.extra_data['property_names'])
             self.assertTrue('source_repo_id' not in e.extra_data['property_names'])
 
-    @mock.patch('pulp_puppet.extensions.admin.repo.units_display.display_modules')
-    def test_succeeded(self, mock_display):
-        # Setup
-        fake_modules = 'm'
-        fake_task = mock.MagicMock()
-        fake_task.result = fake_modules
+    @mock.patch('pulp_puppet.extensions.admin.repo.units_display.get_formatter_for_type')
+    def test_get_formatter_for_type(self, mock_formatter):
+        context = mock.MagicMock()
+        command = copy_commands.PuppetModuleCopyCommand(context)
 
-        # Test
-        self.command.succeeded(fake_task)
-
-        # Verify
-        mock_display.assert_called_once_with(self.prompt, fake_modules, self.command.module_count_threshold)
+        command.get_formatter_for_type('foo')
+        mock_formatter.assert_called_once_with('foo')

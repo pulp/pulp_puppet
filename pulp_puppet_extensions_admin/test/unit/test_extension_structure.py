@@ -11,7 +11,7 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-import base_cli
+from pulp_puppet.devel import base_cli
 from pulp_puppet.extensions.admin import structure
 
 class StructureTests(base_cli.ExtensionTests):

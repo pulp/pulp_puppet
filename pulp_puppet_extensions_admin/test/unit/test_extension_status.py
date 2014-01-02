@@ -16,10 +16,10 @@ import traceback
 
 from pulp.client.extensions.core import TAG_FAILURE, TAG_PROGRESS_BAR, TAG_SPINNER
 
-import base_cli
 from pulp_puppet.common import constants
 from pulp_puppet.common.publish_progress import  PublishProgressReport
 from pulp_puppet.common.sync_progress import SyncProgressReport
+from pulp_puppet.devel import base_cli
 from pulp_puppet.extensions.admin.repo.status import PuppetStatusRenderer
 
 

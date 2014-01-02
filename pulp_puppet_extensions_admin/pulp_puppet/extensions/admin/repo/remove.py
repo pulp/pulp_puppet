@@ -23,14 +23,25 @@ DESC_REMOVE = _('remove copied or uploaded modules from a repository')
 
 
 class RemoveCommand(UnitRemoveCommand):
+    """
+    Class for executing unit remove commands for puppet_module units
+    """
 
     def __init__(self, context, name='remove', description=DESC_REMOVE,
                  module_count_threshold=constants.DISPLAY_MODULES_THRESHOLD):
         UnitRemoveCommand.__init__(self, context, name=name, description=description,
                                    type_id=constants.TYPE_PUPPET_MODULE)
 
-        self.module_count_threshold = module_count_threshold
+        self.max_units_displayed = module_count_threshold
 
-    def succeeded(self, task):
-        removed_modules = task.result  # list of dict containing unit_key and type_id
-        units_display.display_modules(self.prompt, removed_modules, self.module_count_threshold)
+    @staticmethod
+    def get_formatter_for_type(type_id):
+        """
+        Returns a method that can be used to format the unit key of a puppet_module
+        for display purposes
+
+        :param type_id: the type_id of the unit key to get a formatter for
+        :type type_id: str
+        :return: function
+        """
+        return units_display.get_formatter_for_type(type_id)

@@ -31,6 +31,14 @@ class PuppetModuleCopyCommand(UnitCopyCommand):
 
         self.module_count_threshold = module_count_threshold
 
-    def succeeded(self, task):
-        copied_modules = task.result  # list of dict containing unit_key and type_id
-        units_display.display_modules(self.prompt, copied_modules, self.module_count_threshold)
+    @staticmethod
+    def get_formatter_for_type(type_id):
+        """
+        Returns a method that can be used to format the unit key of a puppet_module
+        for display purposes
+
+        :param type_id: the type_id of the unit key to get a formatter for
+        :type type_id: str
+        :return: function
+        """
+        return units_display.get_formatter_for_type(type_id)

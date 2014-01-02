@@ -11,10 +11,9 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 from pulp.client.commands.options import OPTION_REPO_ID
-from pulp.client.commands.repo.sync_publish import RunPublishRepositoryCommand
 from pulp.client.commands.schedule import ListScheduleCommand, CreateScheduleCommand, DeleteScheduleCommand, UpdateScheduleCommand, NextRunCommand
 
-import base_cli
+from pulp_puppet.devel import base_cli
 from pulp_puppet.extensions.admin.repo import publish_schedules
 
 

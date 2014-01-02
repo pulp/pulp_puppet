@@ -1,4 +1,6 @@
-# Copyright (c) 2012 Red Hat, Inc.
+# -*- coding: utf-8 -*-
+#
+# Copyright © 2012 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -53,7 +55,8 @@ class ExtensionTests(unittest.TestCase):
     def setUp(self):
         super(ExtensionTests, self).setUp()
 
-        config_filename = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'test-override-admin.conf')
+        config_filename = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                                       'data', 'test-override-admin.conf')
         self.config = Config(config_filename)
 
         self.server_mock = mock.Mock()

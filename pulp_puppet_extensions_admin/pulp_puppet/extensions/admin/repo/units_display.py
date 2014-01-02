@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2013 Red Hat, Inc.
+# Copyright © 2013 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -16,21 +16,21 @@ or remove units commands.
 """
 
 from gettext import gettext as _
-
+from pulp_puppet.common.constants import TYPE_PUPPET_MODULE
 
 MODULE_ID_TEMPLATE = '%(author)s-%(name)s-%(version)s'
 
 
-def display_modules(prompt, modules, module_count_threshold):
-    if len(modules) == 0:
-        prompt.write(_('No modules matched the given criteria.'), tag='too-few')
+def get_formatter_for_type(type_id):
+    """
+    Return a method that takes one argument (a unit) and formats a short string
+    to be used as the output for the unit_remove command
 
-    elif len(modules) >= module_count_threshold:
-        prompt.write(_('%s modules were affected.') % len(modules), tag='too-many')
+    :param type_id: The type of the unit for which a formatter is needed
+    :type type_id: str
+    """
 
-    else:
-        prompt.write(_('Modules:'), tag='just-enough')
-        modules.sort(key=lambda x : x['unit_key']['author'])
-        for m in modules:
-            module_id = MODULE_ID_TEMPLATE % m['unit_key']
-            prompt.write('  %s' % module_id, tag='module')
+    if type_id != TYPE_PUPPET_MODULE:
+        raise ValueError(_("The puppet module formatter can not process %s units.") % type_id)
+
+    return lambda x: MODULE_ID_TEMPLATE % x
