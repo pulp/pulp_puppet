@@ -18,7 +18,6 @@ from pulp.plugins.distributor import Distributor
 from pulp_puppet.common import constants
 from pulp_puppet.plugins.distributors import configuration, publish
 
-# -- plugins ------------------------------------------------------------------
 
 def entry_point():
     """
@@ -53,11 +52,15 @@ class PuppetModuleDistributor(Distributor):
     def publish_repo(self, repo, publish_conduit, config):
         self.publish_cancelled = False
         config.default_config = configuration.DEFAULT_CONFIG
-        publish_runner = publish.PuppetModulePublishRun(repo, publish_conduit, config, self.is_publish_cancelled)
+        publish_runner = publish.PuppetModulePublishRun(repo, publish_conduit, config,
+                                                        self.is_publish_cancelled)
         report = publish_runner.perform_publish()
         return report
 
-    def cancel_publish_repo(self, call_request, call_report):
+    def cancel_publish_repo(self):
+        """
+        Cancel a running repository publish operation.
+        """
         self.publish_cancelled = True
 
     def is_publish_cancelled(self):
