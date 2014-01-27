@@ -17,11 +17,12 @@ import tempfile
 import unittest
 
 import mock
+
 from pulp.plugins.config import PluginCallConfiguration
 from pulp.plugins.model import Repository, SyncReport, Unit
 
 from pulp_puppet.common import constants
-from pulp_puppet.plugins.importers.sync import PuppetModuleSyncRun
+from pulp_puppet.plugins.importers.forge import SynchronizeWithPuppetForge
 
 # -- constants ----------------------------------------------------------------
 
@@ -61,7 +62,7 @@ class UnitsMockConduit(MockConduit):
         return units
 
 
-class PuppetModuleSyncRunTests(unittest.TestCase):
+class TestSynchronizeWithPuppetForge(unittest.TestCase):
 
     def setUp(self):
         self.working_dir = tempfile.mkdtemp(prefix='puppet-sync-tests')
@@ -71,7 +72,7 @@ class PuppetModuleSyncRunTests(unittest.TestCase):
             constants.CONFIG_FEED : FEED,
         })
 
-        self.run = PuppetModuleSyncRun(self.repo, self.conduit, self.config)
+        self.method = SynchronizeWithPuppetForge(self.repo, self.conduit, self.config)
 
     def tearDown(self):
         shutil.rmtree(self.working_dir)
@@ -80,9 +81,9 @@ class PuppetModuleSyncRunTests(unittest.TestCase):
     def tearDownClass(cls):
         shutil.rmtree(MOCK_PULP_STORAGE_LOCATION)
 
-    def test_perform_sync(self):
+    def test_synchronize(self):
         # Test
-        report = self.run.perform_sync()
+        report = self.method()
 
         # Verify
 
@@ -102,7 +103,7 @@ class PuppetModuleSyncRunTests(unittest.TestCase):
         self.assertEqual(report.details['error_count'], 0)
 
         # Progress Reporting
-        pr = self.run.progress_report
+        pr = self.method.progress_report
         self.assertEqual(pr.metadata_state, constants.STATE_SUCCESS)
         self.assertEqual(pr.metadata_query_total_count, 1)
         self.assertEqual(pr.metadata_query_finished_count, 1)
@@ -124,17 +125,17 @@ class PuppetModuleSyncRunTests(unittest.TestCase):
         # Number of times update was called on the progress report
         self.assertEqual(self.conduit.set_progress.call_count, 9)
 
-    def test_perform_sync_metadata_error(self):
+    def test_synchronize_metadata_error(self):
         # Setup
         self.config.repo_plugin_config[constants.CONFIG_FEED] = INVALID_FEED
 
         # Test
-        report = self.run.perform_sync()
+        report = self.method()
 
         # Verify
         self.assertTrue(not report.success_flag)
 
-        pr = self.run.progress_report
+        pr = self.method.progress_report
         self.assertEqual(pr.metadata_state, constants.STATE_FAILED)
         self.assertEqual(pr.metadata_query_total_count, 1)
         self.assertEqual(pr.metadata_query_finished_count, 0)
@@ -143,64 +144,64 @@ class PuppetModuleSyncRunTests(unittest.TestCase):
         self.assertEqual(pr.modules_total_count, None)
         self.assertEqual(pr.modules_finished_count, None)
 
-    def test_perform_sync_no_feed(self):
+    def test_synchronize_no_feed(self):
         # Setup
         del self.config.repo_plugin_config[constants.CONFIG_FEED]
 
         # Test
-        report = self.run.perform_sync()
+        report = self.method()
 
         # Verify
         self.assertTrue(not report.success_flag)
-        pr = self.run.progress_report
+        pr = self.method.progress_report
         self.assertEqual(pr.metadata_state, constants.STATE_FAILED)
         self.assertTrue(len(pr.metadata_error_message) > 0)
         self.assertEqual(pr.modules_state, constants.STATE_NOT_STARTED)
 
-    @mock.patch('pulp_puppet.plugins.importers.sync.PuppetModuleSyncRun._resolve_remove_units')
-    def test_perform_sync_with_remove_units(self, mock_resolve):
+    @mock.patch('pulp_puppet.plugins.importers.forge.SynchronizeWithPuppetForge._resolve_remove_units')
+    def test_synchronize_with_remove_units(self, mock_resolve):
         # Setup
         remove_me = 'valid-1.1.0-jdob'
         mock_resolve.return_value = [remove_me]
 
         self.conduit = UnitsMockConduit()
-        self.run.sync_conduit = self.conduit
+        self.method.sync_conduit = self.conduit
 
         self.config.repo_plugin_config[constants.CONFIG_REMOVE_MISSING] = 'true'
 
         # Test
-        report = self.run.perform_sync()
+        report = self.method()
 
         # Verify
         self.assertEqual(1, self.conduit.remove_unit.call_count)
 
-    @mock.patch('pulp_puppet.plugins.importers.sync.PuppetModuleSyncRun._parse_metadata')
-    def test_perform_sync_no_metadata(self, mock_parse):
+    @mock.patch('pulp_puppet.plugins.importers.forge.SynchronizeWithPuppetForge._parse_metadata')
+    def test_synchronize_no_metadata(self, mock_parse):
         # Setup
         mock_parse.return_value = None
 
         # Test
-        report = self.run.perform_sync()
+        report = self.method()
 
         # Verify
         self.assertTrue(report is not None)
         self.assertTrue(not report.success_flag)
 
-        pr = self.run.progress_report
+        pr = self.method.progress_report
         self.assertEqual(pr.modules_state, constants.STATE_NOT_STARTED)
 
-    @mock.patch('pulp_puppet.plugins.importers.sync.PuppetModuleSyncRun._create_downloader')
+    @mock.patch('pulp_puppet.plugins.importers.forge.SynchronizeWithPuppetForge._create_downloader')
     def test_parse_metadata_retrieve_exception(self, mock_create):
         # Setup
         mock_create.side_effect = Exception()
 
         # Test
-        report = self.run.perform_sync()
+        report = self.method()
 
         # Verify
         self.assertTrue(not report.success_flag)
 
-        pr = self.run.progress_report
+        pr = self.method.progress_report
         self.assertEqual(pr.metadata_state, constants.STATE_FAILED)
         self.assertEqual(pr.metadata_query_total_count, None)
         self.assertEqual(pr.metadata_query_finished_count, None)
@@ -217,12 +218,12 @@ class PuppetModuleSyncRunTests(unittest.TestCase):
         mock_retrieve.return_value = ['not parsable json']
 
         # Test
-        report = self.run.perform_sync()
+        report = self.method()
 
         # Test
         self.assertTrue(not report.success_flag)
 
-        pr = self.run.progress_report
+        pr = self.method.progress_report
         self.assertEqual(pr.metadata_state, constants.STATE_FAILED)
         self.assertTrue(pr.metadata_execution_time is not None)
         self.assertTrue(pr.metadata_error_message is not None)
@@ -231,18 +232,18 @@ class PuppetModuleSyncRunTests(unittest.TestCase):
 
         self.assertEqual(pr.modules_state, constants.STATE_NOT_STARTED)
 
-    @mock.patch('pulp_puppet.plugins.importers.sync.PuppetModuleSyncRun._do_import_modules')
+    @mock.patch('pulp_puppet.plugins.importers.forge.SynchronizeWithPuppetForge._do_import_modules')
     def test_import_modules_exception(self, mock_import):
         # Setup
         mock_import.side_effect = Exception()
 
         # Test
-        report = self.run.perform_sync()
+        report = self.method()
 
         # Verify
         self.assertTrue(not report.success_flag)
 
-        pr = self.run.progress_report
+        pr = self.method.progress_report
         self.assertEqual(pr.metadata_state, constants.STATE_SUCCESS)
         self.assertEqual(pr.metadata_query_total_count, 1)
         self.assertEqual(pr.metadata_query_finished_count, 1)
@@ -259,13 +260,13 @@ class PuppetModuleSyncRunTests(unittest.TestCase):
         self.assertTrue(pr.modules_exception is not None)
         self.assertTrue(pr.modules_traceback is not None)
 
-    @mock.patch('pulp_puppet.plugins.importers.sync.PuppetModuleSyncRun._add_new_module')
+    @mock.patch('pulp_puppet.plugins.importers.forge.SynchronizeWithPuppetForge._add_new_module')
     def test_do_import_add_exception(self, mock_add):
         # Setup
         mock_add.side_effect = Exception()
 
         # Test
-        report = self.run.perform_sync()
+        report = self.method()
 
         # Verify
 
@@ -276,7 +277,7 @@ class PuppetModuleSyncRunTests(unittest.TestCase):
 
         self.assertTrue(report.success_flag)
 
-        pr = self.run.progress_report
+        pr = self.method.progress_report
         self.assertEqual(pr.metadata_state, constants.STATE_SUCCESS)
 
         self.assertEqual(pr.modules_state, constants.STATE_SUCCESS)

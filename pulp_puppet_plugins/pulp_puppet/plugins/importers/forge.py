@@ -32,7 +32,8 @@ _LOG = logging.getLogger(__name__)
 
 # -- public classes -----------------------------------------------------------
 
-class PuppetModuleSyncRun(object):
+
+class SynchronizeWithPuppetForge(object):
     """
     Used to perform a single sync of a puppet repository. This class will
     maintain state relevant to the run and should not be reused across runs.
@@ -46,7 +47,7 @@ class PuppetModuleSyncRun(object):
         self.progress_report = SyncProgressReport(sync_conduit)
         self.downloader = None
 
-    def perform_sync(self):
+    def __call__(self):
         """
         Performs the sync operation according to the configured state of the
         instance. The report to be sent back to Pulp is returned from this
@@ -84,7 +85,7 @@ class PuppetModuleSyncRun(object):
             report = self.progress_report.build_final_report()
             return report
 
-    def cancel_sync(self):
+    def cancel(self):
         """
         Cancel an in-progress sync, if there is one.
         """

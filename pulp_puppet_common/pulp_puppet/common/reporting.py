@@ -16,6 +16,7 @@ Contains methods related to formatting the progress reports sent back to Pulp
 by all of the puppet plugins.
 """
 
+import time
 import traceback
 
 
@@ -23,7 +24,7 @@ def format_exception(e):
     """
     Formats the given exception to be included in the report.
 
-    :return: string representtion of the exception
+    :return: string representation of the exception
     :rtype:  str
     """
     return str(e)
@@ -40,3 +41,61 @@ def format_traceback(tb):
         return traceback.extract_tb(tb)
     else:
         return None
+
+
+class Timer(object):
+    """
+    Timer object used to determine elapsed time.
+
+    :ivar started: The stated timestamp.
+    :type started; float
+    :ivar stopped: The stopped timestamp.
+    :type stopped: float
+    """
+
+    def __init__(self):
+        self.started = 0
+        self.stopped = 0
+
+    def reset(self):
+        """
+        Rest the timer.
+        """
+        self.started = 0
+        self.stopped = 0
+
+    def start(self):
+        """
+        Start the timer.
+        """
+        self.reset()
+        self.started = time.time()
+
+    def stop(self):
+        """
+        Stop the timer.
+        :return:
+        """
+        if self.running():
+            self.stopped = time.time()
+
+    def running(self):
+        """
+        Get whether the timer is running.
+
+        :return: True if running.
+        :rtype: bool
+        """
+        return self.started > 0 and self.stopped == 0
+
+    def duration(self):
+        """
+        Get how long the timer has been running.
+        Stop the timer is still running.
+
+        :return: The time that has elapsed between the when the
+            timer was started and stopped in seconds.
+        :rtype: float
+        """
+        self.stop()
+        return self.stopped - self.started
