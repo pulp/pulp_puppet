@@ -77,7 +77,7 @@ class PuppetModuleImporter(Importer):
 
         feed_url = config.get(constants.CONFIG_FEED)
         parsed_url = urlparse(feed_url)
-        if parsed_url.path.rsplit('/', 1)[-1].endswith('PULP_MANIFEST'):
+        if parsed_url.path.rsplit('/', 1)[-1].endswith(constants.MANIFEST_FILENAME):
             self.sync_method = SynchronizeWithDirectory(sync_conduit, config)
             report = self.sync_method(repo)
             self.sync_method = None

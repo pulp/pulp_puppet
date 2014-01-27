@@ -34,7 +34,7 @@ class TestPuppetModuleImporter(unittest.TestCase):
     def test_directory_synchronization(self, mock_class):
         conduit = Mock()
         repository = Mock()
-        config = {constants.CONFIG_FEED: 'http://host/tmp/PULP_MANIFEST'}
+        config = {constants.CONFIG_FEED: 'http://host/tmp/%s' % constants.MANIFEST_FILENAME}
         mock_inst = Mock(return_value=1234)
         mock_class.return_value = mock_inst
 

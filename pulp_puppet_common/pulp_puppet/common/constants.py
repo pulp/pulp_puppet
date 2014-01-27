@@ -148,7 +148,7 @@ REPO_ID_OPTION = 'repo_id'
 # as its value that should have its entire contents installed
 WHOLE_REPO_OPTION = 'whole_repo'
 
-# -- simple API --------------------------------------------------------------
+# -- directory synchronization  ----------------------------------------------
 
 MANIFEST_FILENAME = 'PULP_MANIFEST'
 
