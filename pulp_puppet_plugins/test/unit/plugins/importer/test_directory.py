@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Red Hat, Inc.
+# Copyright (c) 2014 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -12,9 +12,10 @@
 import os
 
 from uuid import uuid4
-from mock import patch, Mock, ANY
 from unittest import TestCase
 from collections import namedtuple
+
+from mock import patch, Mock, ANY
 
 from pulp_puppet.common import constants
 from pulp_puppet.plugins.importers.directory import SynchronizeWithDirectory, DownloadListener, Inventory
@@ -543,12 +544,12 @@ class TestSynchronizeWithDirectory(TestCase):
 class TestListener(TestCase):
 
     def test_constructor(self):
-        import_function = Mock()
+        synchronizer = Mock()
         downloader = Mock()
 
-        listener = DownloadListener(import_function, downloader)
+        listener = DownloadListener(synchronizer, downloader)
 
-        self.assertEqual(listener.import_function, import_function)
+        self.assertEqual(listener.synchronizer, synchronizer)
         self.assertEqual(listener.downloader, downloader)
 
     def test_progress(self):

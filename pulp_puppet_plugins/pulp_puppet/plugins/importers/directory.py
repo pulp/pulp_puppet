@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Red Hat, Inc.
+# Copyright (c) 2014 Red Hat, Inc.
 #
 # This software is licensed to you under the GNU General Public
 # License as published by the Free Software Foundation; either version
@@ -15,9 +15,11 @@ import shutil
 import tarfile
 import json
 
+from time import time
 from urlparse import urlparse, urljoin, urlunparse
 from StringIO import StringIO
 from tempfile import mkdtemp
+from contextlib import closing
 
 from nectar.downloaders.local import LocalFileDownloader
 from nectar.downloaders.threaded import HTTPThreadedDownloader
@@ -29,7 +31,6 @@ from pulp.plugins.conduits.mixins import UnitAssociationCriteria
 
 from pulp_puppet.common import constants
 from pulp_puppet.common.model import Module
-from pulp_puppet.common.reporting import Timer
 from pulp_puppet.common.sync_progress import SyncProgressReport
 
 
@@ -45,7 +46,7 @@ url_to_downloader = {
 
 class SynchronizeWithDirectory(object):
     """
-    A function object used to synchronize with a directory of packaged puppet modules.
+    A callable object used to synchronize with a directory of packaged puppet modules.
     The source of the import is a directory containing a PULP_MANIFEST and
     multiple puppet built puppet modules.
 
@@ -75,16 +76,13 @@ class SynchronizeWithDirectory(object):
         """
         tmp_dir = mkdtemp(dir=os.path.dirname(module_path))
         try:
-            tarball = tarfile.open(module_path)
-            try:
+            with closing(tarfile.open(module_path)) as tarball:
                 for member in tarball.getmembers():
                     path = member.name.split('/')
                     if path[-1] == constants.MODULE_METADATA_FILENAME:
                         tarball.extract(member, tmp_dir)
                         with open(os.path.join(tmp_dir, member.name)) as fp:
                             return json.load(fp)
-            finally:
-                tarball.close()
         finally:
             shutil.rmtree(tmp_dir)
 
@@ -142,7 +140,9 @@ class SynchronizeWithDirectory(object):
         Encapsulates nectar details and provides a simplified method
         of downloading files.
 
-        :param urls: A list of tuples: (url, destination)
+        :param urls: A list of tuples: (url, destination).  The *url* and
+            *destination* are both strings.  The *destination* is the fully
+            qualified path to where the file is to be downloaded.
         :type urls: list
         :return: The nectar reports.  Tuple of: (succeeded_reports, failed_reports)
         :rtype: tuple
@@ -162,16 +162,14 @@ class SynchronizeWithDirectory(object):
     def _fetch_manifest(self):
         """
         Fetch the PULP_MANAFEST.
-        After the manifest referenced by the feed URL.  After the
-        manifest is fetched, the file is parsed into a list of tuples.
+        After the manifest is fetched, the file is parsed into a list of tuples.
 
         :return: The manifest content.  List of: (name,checksum,size).
         :rtype: list
         """
-        timer = Timer()
+        started = time()
 
         # report progress: started
-        timer.start()
         self.report.metadata_state = constants.STATE_RUNNING
         self.report.update_progress()
 
@@ -179,14 +177,13 @@ class SynchronizeWithDirectory(object):
         destination = StringIO()
         feed_url = self.config.get(constants.CONFIG_FEED)
         succeeded_reports, failed_reports = self._download([(feed_url, destination)])
-        timer.stop()
 
         # report download failed
         if failed_reports:
             report = failed_reports[0]
             self.report.metadata_state = constants.STATE_FAILED
             self.report.metadata_error_message = report.error_msg
-            self.report.metadata_execution_time = timer.duration()
+            self.report.metadata_execution_time = time() - started
             return []
 
         # report download succeeded
@@ -194,7 +191,7 @@ class SynchronizeWithDirectory(object):
         self.report.metadata_query_finished_count = 1
         self.report.metadata_query_total_count = 1
         self.report.metadata_current_query = None
-        self.report.metadata_execution_time = timer.duration()
+        self.report.metadata_execution_time = time() - started
         self.report.update_progress()
 
         # return parsed manifest
@@ -211,10 +208,9 @@ class SynchronizeWithDirectory(object):
         :return: A list of paths to the fetched module files.
         :rtype: list
         """
-        timer = Timer()
+        started = time()
 
         # report progress: started
-        timer.start()
         self.report.modules_state = constants.STATE_RUNNING
         self.report.update_progress()
 
@@ -226,7 +222,6 @@ class SynchronizeWithDirectory(object):
             destination = os.path.join(self.tmp_dir, os.path.basename(path))
             urls.append((url, destination))
         succeeded_reports, failed_reports = self._download(urls)
-        timer.stop()
 
         # report failed downloads
         if failed_reports:
@@ -239,7 +234,7 @@ class SynchronizeWithDirectory(object):
             self.report.modules_individual_errors.append(report.error_msg)
 
         # report succeeded
-        self.report.modules_execution_time = timer.duration()
+        self.report.modules_execution_time = time() - started
         self.report.modules_total_count = len(succeeded_reports)
         self.report.modules_finished_count = len(succeeded_reports)
 
@@ -316,12 +311,12 @@ class SynchronizeWithDirectory(object):
 
     def __call__(self, repository):
         """
-        Invoke the function object.
+        Invoke the callable object.
         All work is performed in the repository working directory and
         cleaned up after the call.
 
         :param repository: A Pulp repository object.
-        :type repository: pulp.server.plugins.model.Repository.
+        :type repository: pulp.server.plugins.model.Repository
         :return: The final synchronization report.
         :rtype: pulp.plugins.model.SyncReport
         """
@@ -343,21 +338,21 @@ class DownloadListener(AggregatingEventListener):
     An extension of the nectar AggregatingEventListener used primarily
     to detect cancellation and cancel the associated nectar downloader.
 
-    :ivar import_function: An import function object.
-    :type import_function: ImportDirectory
+    :ivar synchronizer: The object performing the synchronization.
+    :type synchronizer: SynchronizeWithDirectory
     :ivar downloader: A nectar downloader.
-    :type downloader: nectar.downoaders.base.Downloader.
+    :type downloader: nectar.downoaders.base.Downloader
     """
 
-    def __init__(self, import_function, downloader):
+    def __init__(self, synchronizer, downloader):
         """
-        :param import_function: An import function object.
-        :type import_function: ImportDirectory
+        :param synchronizer: The object performing the synchronization.
+        :type synchronizer: SynchronizeWithDirectory
         :param downloader: A nectar downloader.
-        :type downloader: nectar.downoaders.base.Downloader.
+        :type downloader: nectar.downoaders.base.Downloader
         """
         AggregatingEventListener.__init__(self)
-        self.import_function = import_function
+        self.synchronizer = synchronizer
         self.downloader = downloader
         downloader.event_listener = self
 
@@ -367,9 +362,9 @@ class DownloadListener(AggregatingEventListener):
         Cancel the download if the import_function call has been canceled.
 
         :param report: A nectar download report.
-        :type report: nectar.report.DownloadReport.
+        :type report: nectar.report.DownloadReport
         """
-        if self.import_function.canceled:
+        if self.synchronizer.canceled:
             self.downloader.cancel()
 
 
@@ -432,8 +427,8 @@ class Inventory(object):
         deemed *unwanted*.
         :param wanted_modules: A list of module unit keys.
         :type wanted_modules: list
-        :return: A set of unwanted module unit keys.
-        :rtype: set
+        :return: A list of unwanted module unit keys.
+        :rtype: list
         """
         wanted_set = set()
         for unit_key in wanted_modules:

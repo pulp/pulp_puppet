@@ -20,6 +20,7 @@ Type ID: ``puppet_importer``
 
  Directory containing:
 
+ - PULP_MANIFEST
  - module-a.tar.gz
  - module-b.tar.gz
  - module-c.tar.gz
