@@ -18,7 +18,7 @@
 
 Name: pulp-puppet
 Version: 2.4.0
-Release: 0.1.alpha%{?dist}
+Release: 0.2.alpha%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -229,6 +229,12 @@ uninstall, bind, and unbind.
 
 
 %changelog
+* Tue Jan 28 2014 Jeff Ortel <jortel@redhat.com> 2.4.0-0.2.alpha
+- 1034978 - Move general formatting for puppet_module copy & remove to the base
+  class in pulp (bcourt@redhat.com)
+- 1040958 - puppet uploader isn't returning a properly formatted upload report
+  (bcourt@redhat.com)
+
 * Thu Dec 12 2013 Jeff Ortel <jortel@redhat.com> 2.4.0-0.1.alpha
 - 995076 - make sure to call finalize on the nectar config object
   (jason.connor@gmail.com)
