@@ -70,6 +70,8 @@ class RepositoryMetadata(object):
 
 class Module(object):
 
+    UNIT_KEY_NAMES = ('name', 'version', 'author')
+
     @classmethod
     def from_dict(cls, module_dict):
         """

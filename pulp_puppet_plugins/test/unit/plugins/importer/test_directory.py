@@ -18,6 +18,7 @@ from collections import namedtuple
 from mock import patch, Mock, ANY
 
 from pulp_puppet.common import constants
+from pulp_puppet.common.model import Module
 from pulp_puppet.plugins.importers.directory import SynchronizeWithDirectory, DownloadListener, Inventory
 from pulp_puppet.common.sync_progress import SyncProgressReport
 
@@ -623,7 +624,8 @@ class TestInventory(TestCase):
         # validation
 
         conduit.get_units.assert_called_once_with(criteria=criteria, as_generator=True)
-        mock_criteria.assert_called_once_with(type_ids=[constants.TYPE_PUPPET_MODULE])
+        mock_criteria.assert_called_once_with(
+            type_ids=[constants.TYPE_PUPPET_MODULE], unit_fields=Module.UNIT_KEY_NAMES)
         self.assertEqual(len(inventory.associated), 2)
         self.assertTrue(tuple(unit_1.unit_key.items()) in inventory.associated)
         self.assertTrue(tuple(unit_2.unit_key.items()) in inventory.associated)

@@ -390,7 +390,8 @@ class Inventory(object):
         :rtype: set
         """
         key_set = set()
-        criteria = UnitAssociationCriteria(type_ids=[constants.TYPE_PUPPET_MODULE])
+        criteria = UnitAssociationCriteria(
+            type_ids=[constants.TYPE_PUPPET_MODULE], unit_fields=Module.UNIT_KEY_NAMES)
         units = conduit.get_units(criteria=criteria, as_generator=True)
         for unit in units:
             module = Module.from_unit(unit)
