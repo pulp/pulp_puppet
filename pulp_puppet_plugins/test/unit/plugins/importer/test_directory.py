@@ -152,9 +152,10 @@ class TestSynchronizeWithDirectory(TestCase):
         self.assertFalse(_import_modules.called)
         self.assertFalse(_purge_unwanted_modules.called)
 
-    @patch('pulp_puppet.plugins.importers.directory.url_to_downloader')
+    @patch('pulp_puppet.plugins.importers.directory.URL_TO_DOWNLOADER')
     @patch('pulp_puppet.plugins.importers.directory.importer_config_to_nectar_config')
-    def test_download(self, mock_nectar_config, mock_downloader_mapping):
+    @patch('pulp_puppet.plugins.importers.directory.DownloadListener')
+    def test_download(self, mock_listener, mock_nectar_config, mock_downloader_mapping):
         mock_nectar_config.return_value = Mock()
 
         mock_http_downloader = Mock()
@@ -171,6 +172,12 @@ class TestSynchronizeWithDirectory(TestCase):
             ('http://host/root/path_2', '/tmp/path_1'),
         ]
 
+        report = namedtuple('Report', ['url', 'destination', 'error_msg'])
+        _listener = Mock()
+        _listener.succeeded_reports = [report(urls[0][0], urls[0][1], None)]
+        _listener.failed_reports = [report(urls[1][0], urls[1][1], 'File Not Found')]
+        mock_listener.return_value = _listener
+
         # test
 
         method = SynchronizeWithDirectory(conduit, config)
@@ -180,16 +187,26 @@ class TestSynchronizeWithDirectory(TestCase):
 
         method.config.flatten.assert_called_with()
         mock_nectar_config.assert_called_with(method.config.flatten())
+
         self.assertTrue(mock_http_downloader.download.called)
         self.assertEqual(mock_http_downloader.download.call_count, 1)
         self.assertEqual(mock_http_downloader.download.call_args[0][0][0].url, urls[0][0])
         self.assertEqual(mock_http_downloader.download.call_args[0][0][0].destination, urls[0][1])
         self.assertEqual(mock_http_downloader.download.call_args[0][0][1].url, urls[1][0])
         self.assertEqual(mock_http_downloader.download.call_args[0][0][0].destination, urls[1][1])
+
         self.assertTrue(isinstance(succeeded_reports, list))
-        self.assertEqual(failed_reports, [])
+        self.assertEqual(len(succeeded_reports), 1)
+        self.assertEqual(succeeded_reports[0].url, urls[0][0])
+        self.assertEqual(succeeded_reports[0].destination, urls[0][1])
+        self.assertTrue(isinstance(succeeded_reports, list))
+
         self.assertTrue(isinstance(failed_reports, list))
-        self.assertEqual(failed_reports, [])
+        self.assertEqual(len(failed_reports), 1)
+        self.assertEqual(failed_reports[0].url, urls[1][0])
+        self.assertEqual(failed_reports[0].destination, urls[1][1])
+        self.assertTrue(isinstance(failed_reports, list))
+
 
     @patch('pulp_puppet.plugins.importers.directory.StringIO.getvalue')
     @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._download')
