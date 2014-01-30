@@ -11,14 +11,18 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-from gettext import gettext as _
 import logging
+
+from gettext import gettext as _
+from urlparse import urlparse
 
 from pulp.plugins.importer import Importer
 from pulp.common.config import read_json_config
 
 from pulp_puppet.common import constants
-from pulp_puppet.plugins.importers import configuration, sync, upload, copier
+from pulp_puppet.plugins.importers import configuration, upload, copier
+from pulp_puppet.plugins.importers.directory import SynchronizeWithDirectory
+from pulp_puppet.plugins.importers.forge import SynchronizeWithPuppetForge
 
 # The platform currently doesn't support automatic loading of conf files when the plugin
 # uses entry points. The current thinking is that the conf files will be named the same as
@@ -46,7 +50,7 @@ class PuppetModuleImporter(Importer):
 
     def __init__(self):
         super(PuppetModuleImporter, self).__init__()
-        self.sync_runner = None
+        self.sync_method = None
         self.sync_cancelled = False
 
     @classmethod
@@ -62,20 +66,36 @@ class PuppetModuleImporter(Importer):
 
     def sync_repo(self, repo, sync_conduit, config):
         self.sync_cancelled = False
-        self.sync_runner = sync.PuppetModuleSyncRun(repo, sync_conduit, config)
-        report = self.sync_runner.perform_sync()
-        self.sync_runner = None
+
+        # Supports two methods of synchronization.
+        # 1. Synchronize with a directory containing a pulp manifest and puppet modules.
+        # 2. Synchronize with Puppet Forge.
+        # When the feed URL references a PULP_MANIFEST, the directory synchronization
+        # method is used.  Otherwise, the puppet forge synchronization method is used.
+
+        # synchronize with a directory
+
+        feed_url = config.get(constants.CONFIG_FEED)
+        parsed_url = urlparse(feed_url)
+        if parsed_url.path.rsplit('/', 1)[-1].endswith(constants.MANIFEST_FILENAME):
+            self.sync_method = SynchronizeWithDirectory(sync_conduit, config)
+            report = self.sync_method(repo)
+            self.sync_method = None
+            return report
+
+        # synchronize with puppet forge
+
+        self.sync_method = SynchronizeWithPuppetForge(repo, sync_conduit, config)
+        report = self.sync_method()
+        self.sync_method = None
         return report
 
-    def import_units(self, source_repo, dest_repo, import_conduit, config,
-                     units=None):
+    def import_units(self, source_repo, dest_repo, import_conduit, config, units=None):
         return copier.copy_units(import_conduit, units)
 
-    def upload_unit(self, repo, type_id, unit_key, metadata, file_path, conduit,
-                    config):
+    def upload_unit(self, repo, type_id, unit_key, metadata, file_path, conduit, config):
         try:
-            report = upload.handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path,
-                                                 conduit)
+            report = upload.handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path, conduit)
         except Exception, e:
             _LOG.exception(e)
             report = {'success_flag': False, 'summary': e.message, 'details': {}}
@@ -83,10 +103,10 @@ class PuppetModuleImporter(Importer):
 
     def cancel_sync_repo(self, call_request, call_report):
         self.sync_cancelled = True
-        sync_runner = self.sync_runner
-        if sync_runner is None:
+        sync_method = self.sync_method
+        if sync_method is None:
             return
-        sync_runner.cancel_sync()
+        sync_method.cancel()
 
     def is_sync_cancelled(self):
         """

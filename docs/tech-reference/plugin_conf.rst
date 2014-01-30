@@ -9,6 +9,32 @@ Type ID: ``puppet_importer``
 ``feed``
  URL to an existing repository that should be imported, for example ``http://forge.puppetlabs.com``
 
+ The repository may be either a Puppet Forge repository or a plain directory containing a
+ pulp manifest and packaged puppet modules.  The pulp manifest is a file listing each puppet
+ module contained in the directory. Each module is listed on a separate line which has the
+ following format: <name>,<checksum>,<size>. The *name* is the file name. The *checksum* is
+ SHA-256 digest of the file.  The *size* is the size of the file in bytes. The Pulp manifest
+ must be named ``PULP_MANIFEST``.
+
+ Example:
+
+ Directory containing:
+
+ - PULP_MANIFEST
+ - module-a.tar.gz
+ - module-b.tar.gz
+ - module-c.tar.gz
+
+ The PULP_MANIFEST:
+
+ ::
+
+  module-a.tar.gz,2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881,1763
+  module-b.tar.gz,5dde896887f6754c9b15bfe3a441ae4806df2fde94001311e08bf110622e0bbe,1431
+  module-c.tar.gz,cd2eb0837c9b4c962c22d2ff8b5441b7b45805887f051d39bf133b583baf6860,2213
+
+ The URL:  ``file://myhost/modules/PULP_MANIFEST``
+
 ``queries``
  Comma-separated list of queries that should be run against the upstream
  repository. Each query is used separately to retrieve a result set, and each
