@@ -90,7 +90,8 @@ cp -R pulp_puppet_extensions_admin/etc/pulp %{buildroot}/%{_sysconfdir}
 cp pulp_puppet_plugins/etc/pulp/vhosts80/puppet.conf %{buildroot}/%{_sysconfdir}/pulp/vhosts80/
 
 # WSGI app
-cp -R pulp_puppet_plugins/srv/pulp/puppet_forge_api.wsgi %{buildroot}/srv/pulp/
+cp -R pulp_puppet_plugins/srv/pulp/puppet_forge_post33_api.wsgi %{buildroot}/srv/pulp/
+cp -R pulp_puppet_plugins/srv/pulp/puppet_forge_pre33_api.wsgi %{buildroot}/srv/pulp/
 
 # Agent Handlers
 cp pulp_puppet_handlers/etc/pulp/agent/conf.d/* %{buildroot}/%{_sysconfdir}/pulp/agent/conf.d/

@@ -20,9 +20,10 @@ import web
 from pulp_puppet.forge import api
 
 
-class TestApp(unittest.TestCase):
+class TestAppPre33(unittest.TestCase):
+    app = api.pre_33_app
     FAKE_VIEW_DATA = {
-        'foo/bar' : [{'version' : '1.0.0', 'file': '/tmp/foo', 'dependencies': []}]
+        'foo/bar': [{'version': '1.0.0', 'file': '/tmp/foo', 'dependencies': []}]
     }
 
     @staticmethod
@@ -35,11 +36,11 @@ class TestApp(unittest.TestCase):
         return path
 
     def test_no_credentials(self):
-        result = api.app.request(self.make_path())
+        result = self.app.request(self.make_path())
         self.assertEqual(result.status, '401 Unauthorized')
 
     def test_404_at_root(self):
-        result = api.app.request('/')
+        result = self.app.request('/')
         self.assertEqual(result.status, '404 Not Found')
 
     @mock.patch('pulp_puppet.forge.releases.view', autospec=True)
@@ -48,7 +49,7 @@ class TestApp(unittest.TestCase):
         mock_get_cred.return_value = ('consumer1', 'repo1')
         mock_view.return_value = self.FAKE_VIEW_DATA
 
-        result = api.app.request(self.make_path('foo/bar'))
+        result = self.app.request(self.make_path('foo/bar'))
 
         self.assertEqual(result.status, '200 OK')
         self.assertEqual(result.headers['Content-Type'], 'application/json')
@@ -61,10 +62,70 @@ class TestApp(unittest.TestCase):
         mock_get_cred.return_value = ('consumer1', 'repo1')
         mock_view.return_value = {}
 
-        result = api.app.request(self.make_path('foo/bar', '1.0.0'))
+        result = self.app.request(self.make_path('foo/bar', '1.0.0'))
 
         self.assertEqual(result.status, '200 OK')
         mock_view.assert_called_once_with('consumer1', 'repo1', module_name='foo/bar', version='1.0.0')
+
+
+
+
+class TestAppPost33(unittest.TestCase):
+    app = api.post_33_app
+    FAKE_VIEW_DATA = {
+        'foo/bar': [{'version': '1.0.0', 'file': '/tmp/foo', 'dependencies': []}]
+    }
+
+    @staticmethod
+    def make_path(repo=None, consumer=None, name=None, version=None):
+        if repo:
+            base = '/repository/%s/api/v1/releases.json' % repo
+        else:
+            base = '/consumer/%s/api/v1/releases.json' % consumer
+
+        if name:
+            base += '?module=%s' % name
+            if version:
+                base += '&version=%s' % version
+        return base
+
+    @mock.patch('pulp_puppet.forge.releases.view', autospec=True)
+    def test_normal_with_repo(self, mock_view):
+        mock_view.return_value = self.FAKE_VIEW_DATA
+
+        path = self.make_path('repo1', None, 'foo/bar')
+        result = self.app.request(path)
+
+        self.assertEqual(result.status, '200 OK')
+        self.assertEqual(result.headers['Content-Type'], 'application/json')
+        self.assertEqual(result.data, json.dumps(self.FAKE_VIEW_DATA))
+        mock_view.assert_called_once_with('.', 'repo1', module_name='foo/bar', version=None)
+
+    @mock.patch('pulp_puppet.forge.releases.view', autospec=True)
+    def test_normal_with_consumer(self, mock_view):
+        mock_view.return_value = self.FAKE_VIEW_DATA
+
+        path = self.make_path(None, 'consumer1', 'foo/bar')
+        result = self.app.request(path)
+
+        self.assertEqual(result.status, '200 OK')
+        self.assertEqual(result.headers['Content-Type'], 'application/json')
+        self.assertEqual(result.data, json.dumps(self.FAKE_VIEW_DATA))
+        mock_view.assert_called_once_with('consumer1', '.', module_name='foo/bar', version=None)
+
+    @mock.patch('pulp_puppet.forge.releases.view', autospec=True)
+    def test_with_version(self, mock_view):
+        mock_view.return_value = {}
+
+        result = self.app.request(self.make_path('repo1', None, 'foo/bar', '1.0.0'))
+
+        self.assertEqual(result.status, '200 OK')
+        mock_view.assert_called_once_with('.', 'repo1', module_name='foo/bar', version='1.0.0')
+
+    def test_invalid_resource_type(self):
+        result = self.app.request('/notatype/foo/api/v1/releases.json?module=foo/bar')
+
+        self.assertEqual(result.status, '404 Not Found')
 
 
 # these header objects are very annoying to mock out, and we really just want

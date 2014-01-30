@@ -23,17 +23,24 @@ from pulp_puppet.forge import releases
 # This is all that is required to start using Manager classes
 connection.initialize()
 
-urls = (
+pre_33_urls = (
     '/releases.json', 'Releases',
 )
+post_33_urls = (
+    '/([^/]+)/([^/]+)/api/v1/releases.json', 'Releases',
+)
 
-app = web.application(urls, globals())
+pre_33_app = web.application(pre_33_urls, globals())
+post_33_app = web.application(post_33_urls, globals())
 
 MODULE_PATTERN = re.compile('^[a-zA-Z0-9]+/[a-zA-Z0-9_]+$')
 
 
 class Releases(object):
-    def GET(self):
+    REPO_RESOURCE = 'repository'
+    CONSUMER_RESOURCE = 'consumer'
+
+    def GET(self, resource_type=None, resource=None):
         """
         Credentials here are not actually used for authorization, but instead
         are used to identify:
@@ -45,16 +52,25 @@ class Releases(object):
         command has hard-coded absolute paths, so we cannot put consumer or
         repository IDs in the URL's path.
         """
-        credentials = self._get_credentials()
-        if not credentials:
-            return web.unauthorized()
+        if resource_type is not None:
+            if resource_type == self.REPO_RESOURCE:
+                credentials = ('.', resource)
+            elif resource_type == self.CONSUMER_RESOURCE:
+                credentials = (resource, '.')
+            else:
+                return web.notfound()
+
+        else:
+            credentials = self._get_credentials()
+            if not credentials:
+                return web.unauthorized()
 
         module_name = self._get_module_name()
         if not module_name:
             # apparently our version of web.py, 0.36, doesn't take a message
             # parameter for error handlers like this one. Ugh.
             return web.badrequest()
-        version =  web.input().get('version')
+        version = web.input().get('version')
 
         web.header('Content-Type', 'application/json')
         data = releases.view(*credentials, module_name=module_name, version=version)
@@ -88,4 +104,4 @@ class Releases(object):
 
 if __name__ == '__main__':
     # run this app stand-alone, useful for testing
-    app.run()
+    post_33_app.run()
