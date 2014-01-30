@@ -16,6 +16,7 @@ import tarfile
 import json
 
 from time import time
+from gettext import gettext as _
 from urlparse import urlparse, urljoin, urlunparse
 from StringIO import StringIO
 from tempfile import mkdtemp
@@ -37,11 +38,15 @@ from pulp_puppet.common.sync_progress import SyncProgressReport
 _LOG = logging.getLogger(__name__)
 
 
-url_to_downloader = {
+URL_TO_DOWNLOADER = {
     'http': HTTPThreadedDownloader,
     'https': HTTPThreadedDownloader,
     'file': LocalFileDownloader,
 }
+
+FETCH_SUCCEEDED = _('Fetched URL: %(url)s destination: %(dst)s')
+FETCH_FAILED = _('Fetch URL: %(url)s failed: %(msg)s')
+IMPORT_MODULE = _('Importing module: %(mod)s')
 
 
 class SynchronizeWithDirectory(object):
@@ -130,6 +135,9 @@ class SynchronizeWithDirectory(object):
         :type inventory: Inventory
         """
         manifest = self._fetch_manifest()
+        if manifest is None:
+            # fetch manifest failed
+            return
         module_paths = self._fetch_modules(manifest)
         imported_modules = self._import_modules(inventory, module_paths)
         self._purge_unwanted_modules(inventory, imported_modules)
@@ -149,14 +157,18 @@ class SynchronizeWithDirectory(object):
         """
         feed_url = self.config.get(constants.CONFIG_FEED)
         nectar_config = importer_config_to_nectar_config(self.config.flatten())
-        nectar_class = url_to_downloader[urlparse(feed_url).scheme]
+        nectar_class = URL_TO_DOWNLOADER[urlparse(feed_url).scheme]
         downloader = nectar_class(nectar_config)
         listener = DownloadListener(self, downloader)
-        self_list = []
+        request_list = []
         for url, destination in urls:
-            self_list.append(DownloadRequest(url, destination))
-        downloader.download(self_list)
+            request_list.append(DownloadRequest(url, destination))
+        downloader.download(request_list)
         nectar_config.finalize()
+        for report in listener.succeeded_reports:
+            _LOG.info(FETCH_SUCCEEDED % dict(url=report.url, dst=report.destination))
+        for report in listener.failed_reports:
+            _LOG.error(FETCH_FAILED % dict(url=report.url, msg=report.error_msg))
         return listener.succeeded_reports, listener.failed_reports
 
     def _fetch_manifest(self):
@@ -184,7 +196,7 @@ class SynchronizeWithDirectory(object):
             self.report.metadata_state = constants.STATE_FAILED
             self.report.metadata_error_message = report.error_msg
             self.report.metadata_execution_time = time() - started
-            return []
+            return None
 
         # report download succeeded
         self.report.metadata_state = constants.STATE_SUCCESS
@@ -260,6 +272,7 @@ class SynchronizeWithDirectory(object):
             module = Module.from_dict(puppet_manifest)
             if inventory.already_associated(module):
                 continue
+            _LOG.info(IMPORT_MODULE % dict(mod=module_path))
             imported_modules.append(module.unit_key())
             self._add_module(module_path, module)
         return imported_modules

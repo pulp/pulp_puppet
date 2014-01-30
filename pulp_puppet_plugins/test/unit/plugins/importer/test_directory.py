@@ -123,6 +123,35 @@ class TestSynchronizeWithDirectory(TestCase):
         _import_modules.assert_called_with(inventory, _fetch_modules())
         _purge_unwanted_modules.assert_called_with(inventory, _import_modules())
 
+    @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._fetch_manifest')
+    @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._fetch_modules')
+    @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._import_modules')
+    @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._purge_unwanted_modules')
+    def test_run_fetch_manifest_failed(self, *mocks):
+        config = {}
+        conduit = Mock()
+        inventory = Mock()
+
+        _purge_unwanted_modules = mocks[0]
+        _import_modules = mocks[1]
+        _import_modules.return_value = []
+        _fetch_modules = mocks[2]
+        _fetch_modules.return_value = []
+        _fetch_manifest = mocks[3]
+        _fetch_manifest.return_value = None
+
+        # testing
+
+        method = SynchronizeWithDirectory(conduit, config)
+        method._run(inventory)
+
+        # validation
+
+        _fetch_manifest.assert_called_with()
+        self.assertFalse(_fetch_modules.called)
+        self.assertFalse(_import_modules.called)
+        self.assertFalse(_purge_unwanted_modules.called)
+
     @patch('pulp_puppet.plugins.importers.directory.url_to_downloader')
     @patch('pulp_puppet.plugins.importers.directory.importer_config_to_nectar_config')
     def test_download(self, mock_nectar_config, mock_downloader_mapping):
@@ -213,6 +242,8 @@ class TestSynchronizeWithDirectory(TestCase):
         # validation
 
         mock_download.assert_called_with([(feed_url, ANY)])
+
+        self.assertTrue(manifest is None)
 
         self.assertTrue(method.report.update_progress.called)
         self.assertEqual(method.report.metadata_state, constants.STATE_FAILED)
