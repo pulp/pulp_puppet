@@ -160,20 +160,23 @@ class SynchronizeWithDirectory(object):
         nectar_class = URL_TO_DOWNLOADER[urlparse(feed_url).scheme]
         downloader = nectar_class(nectar_config)
         listener = DownloadListener(self, downloader)
+
         request_list = []
         for url, destination in urls:
             request_list.append(DownloadRequest(url, destination))
         downloader.download(request_list)
         nectar_config.finalize()
+
         for report in listener.succeeded_reports:
             _LOG.info(FETCH_SUCCEEDED % dict(url=report.url, dst=report.destination))
         for report in listener.failed_reports:
             _LOG.error(FETCH_FAILED % dict(url=report.url, msg=report.error_msg))
+
         return listener.succeeded_reports, listener.failed_reports
 
     def _fetch_manifest(self):
         """
-        Fetch the PULP_MANAFEST.
+        Fetch the PULP_MANIFEST.
         After the manifest is fetched, the file is parsed into a list of tuples.
 
         :return: The manifest content.  List of: (name,checksum,size).
@@ -183,6 +186,8 @@ class SynchronizeWithDirectory(object):
 
         # report progress: started
         self.report.metadata_state = constants.STATE_RUNNING
+        self.report.metadata_query_total_count = 1
+        self.report.metadata_query_finished_count = 0
         self.report.update_progress()
 
         # download manifest
@@ -201,7 +206,6 @@ class SynchronizeWithDirectory(object):
         # report download succeeded
         self.report.metadata_state = constants.STATE_SUCCESS
         self.report.metadata_query_finished_count = 1
-        self.report.metadata_query_total_count = 1
         self.report.metadata_current_query = None
         self.report.metadata_execution_time = time() - started
         self.report.update_progress()
@@ -224,6 +228,9 @@ class SynchronizeWithDirectory(object):
 
         # report progress: started
         self.report.modules_state = constants.STATE_RUNNING
+        self.report.modules_total_count = len(manifest)
+        self.report.modules_finished_count = 0
+        self.report.modules_error_count = 0
         self.report.update_progress()
 
         # download modules
@@ -247,7 +254,6 @@ class SynchronizeWithDirectory(object):
 
         # report succeeded
         self.report.modules_execution_time = time() - started
-        self.report.modules_total_count = len(succeeded_reports)
         self.report.modules_finished_count = len(succeeded_reports)
 
         # return module paths
