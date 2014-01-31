@@ -241,6 +241,7 @@ Summary: Pulp puppet tools
 Group: Development/Languages
 Requires: python-pulp-common = %{pulp_version}
 Requires: puppet >= 2.7
+Requires: git >= 1.7
 
 %description tools
 A collection of tools used to manage puppet modules.
