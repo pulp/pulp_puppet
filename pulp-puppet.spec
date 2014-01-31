@@ -239,7 +239,8 @@ uninstall, bind, and unbind.
 %package tools
 Summary: Pulp puppet tools
 Group: Development/Languages
-Requires: puppet >= 2.7.23
+Requires: python-pulp-common = %{pulp_version}
+Requires: puppet >= 2.7
 
 %description tools
 A collection of tools used to manage puppet modules.
