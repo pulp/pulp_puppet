@@ -2,9 +2,10 @@ Forge API
 =========
 
 Puppet Forge implements a basic API that is not currently documented. The
-challenging aspect of re-implementing the API is that the ``puppet module``
-tool uses hard-coded absolute paths, so the API must exist at the root of the
-web server. This also prevents the inclusion of a repository ID in the URL.
+challenging aspect of re-implementing the API is that prior to puppet version
+3.3, the ``puppet module`` tool used hard-coded absolute paths, so the API must
+exist at the root of the web server. This also prevents the inclusion of a
+repository ID in the URL.
 
 Search
 ------
@@ -32,11 +33,11 @@ determining the dependencies for a module.
 Basic Auth
 ^^^^^^^^^^
 
-Basic authentication credentials included in the URL are used to specify either
-a repository ID or a consumer ID. When a consumer ID is specified, all
-repositories to which it is bound are searched for the specified module. If a
-verison was not specified, the repository with the newest version is then
-queried for dependency information.
+For puppet versions prior to 3.3, basic authentication credentials included in
+the URL are used to specify either a repository ID or a consumer ID. When a
+consumer ID is specified, all repositories to which it is bound are searched for
+the specified module. If a verison was not specified, the repository with the
+newest version is then queried for dependency information.
 
 This is an example request with a consumer ID:
 
