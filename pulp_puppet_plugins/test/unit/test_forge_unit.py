@@ -127,6 +127,12 @@ class TestDepsAsList(unittest.TestCase):
 
         self.assertEqual(result, [])
 
+    def test_default_version(self):
+        unit = unit_generator(dependencies=[{'name':'you/yourmodule'}])
+	result = unit._deps_as_list
+
+	self.assertEqual(result[0][1], '>= 0.0.0')
+
 
 class TestToDict(unittest.TestCase):
     def test_normal(self):

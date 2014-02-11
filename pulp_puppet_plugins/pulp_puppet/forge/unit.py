@@ -233,7 +233,7 @@ class Unit(object):
                     expression
         :rtype:     list
         """
-        return [[dep['name'], dep['version_requirement']] for dep in self.dependencies]
+        return [[dep['name'], dep.get('version_requirement', '>= 0.0.0') ] for dep in self.dependencies]
 
     def to_dict(self):
         """
