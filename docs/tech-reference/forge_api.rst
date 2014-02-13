@@ -36,7 +36,7 @@ Basic Auth
 For puppet versions prior to 3.3, basic authentication credentials included in
 the URL are used to specify either a repository ID or a consumer ID. When a
 consumer ID is specified, all repositories to which it is bound are searched for
-the specified module. If a verison was not specified, the repository with the
+the specified module. If a version was not specified, the repository with the
 newest version is then queried for dependency information.
 
 This is an example request with a consumer ID:

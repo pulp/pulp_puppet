@@ -63,8 +63,8 @@ class ModuleHandler(handler.ContentHandler):
         :return: URL
         :rtype:  str
         """
-        # the "puppet module" tool does not seem to support HTTPS, unfortunately
-        # although v3.4 might given a trusted cert on the server
+        # the "puppet module" tool does not seem to support HTTPS, unfortunately.
+        # although v3.4 might, if given a trusted cert on the server
         if cls._detect_puppet_version() < (3, 3):
             # puppet < 3.3 does not honor the path component of a URL, so we must
             # do this basic auth silliness
