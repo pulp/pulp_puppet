@@ -20,6 +20,8 @@ support plugins (importers, distributors, extensions).
 # -- ids ----------------------------------------------------------------------
 
 # ID used to refer to the puppet importer
+import os
+
 IMPORTER_TYPE_ID = 'puppet_importer'
 
 # ID used to refer to the puppet importer instance on a repository
@@ -137,6 +139,13 @@ FORGE_HOST = 'host'
 # value passed as either username or password in basic auth to signify that the
 # field should be considered null
 FORGE_NULL_AUTH_VALUE = '.'
+
+# for puppet 3.3+, the path to the forge API
+FORGE_PATH = 'pulp_puppet/forge'
+# path to use when identifying a specific repo to query
+FORGE_PATH_REPO = os.path.join(FORGE_PATH, 'repository')
+# path to use when identifying a consumer whose bindings should be considered
+FORGE_PATH_CONSUMER = os.path.join(FORGE_PATH, 'consumer')
 
 # -- REST API ----------------------------------------------------------------
 

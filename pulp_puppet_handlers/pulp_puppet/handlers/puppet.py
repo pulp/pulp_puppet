@@ -11,7 +11,10 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
+from gettext import gettext as _
 import logging
+import urlparse
+import os
 import subprocess
 
 from pulp.agent.lib import handler
@@ -25,8 +28,30 @@ logger = logging.getLogger(__name__)
 
 
 class ModuleHandler(handler.ContentHandler):
-    @staticmethod
-    def _generate_forge_url(conduit, host, repo_id=None):
+    VERSION_ARGS = ('puppet', '--version')
+
+    @classmethod
+    def _detect_puppet_version(cls):
+        """
+        Detects and returns the version of puppet current available by running
+        "puppet --version".
+
+        :return:    version of puppet currently available, as a tuple of int
+        :rtype:     tuple
+        """
+        try:
+            popen = subprocess.Popen(cls.VERSION_ARGS, stdout=subprocess.PIPE)
+        except OSError:
+            logger.error(_('"puppet module" tool not found'))
+            raise
+
+        stdout, stderr = popen.communicate()
+
+        # turns "3.4.2\n" into (3, 4, 2)
+        return tuple(map(int, stdout.strip().split('.')))
+
+    @classmethod
+    def _generate_forge_url(cls, conduit, host, repo_id=None):
         """
         Generate a URL for the forge to use, and encode consumer ID or repo ID
         as appropriate with basic auth credentials.
@@ -38,14 +63,28 @@ class ModuleHandler(handler.ContentHandler):
         :return: URL
         :rtype:  str
         """
-        if repo_id:
-            username = constants.FORGE_NULL_AUTH_VALUE
-        else:
-            username = conduit.consumer_id
-        password = repo_id or constants.FORGE_NULL_AUTH_VALUE
+        # the "puppet module" tool does not seem to support HTTPS, unfortunately.
+        # although v3.4 might, if given a trusted cert on the server
+        if cls._detect_puppet_version() < (3, 3):
+            # puppet < 3.3 does not honor the path component of a URL, so we must
+            # do this basic auth silliness
+            logger.debug(_('detected puppet version less than 3.3'))
+            if repo_id:
+                username = constants.FORGE_NULL_AUTH_VALUE
+            else:
+                username = conduit.consumer_id
+            password = repo_id or constants.FORGE_NULL_AUTH_VALUE
 
-        # the "puppet module" tool does not seem to support HTTPS, unfortunately
-        return 'http://%s:%s@%s' % (username, password, host)
+            return 'http://%s:%s@%s' % (username, password, host)
+        else:
+            # puppet 3.3+ honors the path component, so we can embed the repo
+            # or consumer id there
+            logger.debug(_('detected puppet version 3.3 or greater'))
+            if repo_id:
+                path = os.path.join(constants.FORGE_PATH_REPO, repo_id)
+            else:
+                path = os.path.join(constants.FORGE_PATH_CONSUMER, conduit.consumer_id)
+            return urlparse.urlunparse(('http', host, path, '', '', ''))
 
     @classmethod
     def install(cls, conduit, units, options):

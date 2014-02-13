@@ -243,10 +243,7 @@ class Unit(object):
         :rtype: dict
         """
         return {
-            'file' : urlparse.urljoin(
-                '%s://%s/' % (self.protocol, self.host),
-                self.file,
-            ),
+            'file' :  self.file,
             'version' : self.version,
             'dependencies' : self._deps_as_list,
         }

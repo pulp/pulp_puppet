@@ -141,24 +141,14 @@ class TestToDict(unittest.TestCase):
 
         self.assertEqual(len(result), 3)
         self.assertEqual(result['version'], unit.version)
-        expected_url = '%s://%s%s' % (unit.protocol, unit.host, unit.file)
-        self.assertEqual(result['file'], expected_url)
+        self.assertEqual(result['file'], unit.file)
         self.assertEqual(result['dependencies'], unit._deps_as_list)
 
     def test_file_url(self):
         unit = unit_generator(host='localhost')
         result = unit.to_dict()
-        parsed = urlparse.urlparse(result['file'])
 
-        self.assertEqual(parsed.hostname, unit.host)
-        self.assertEqual(parsed.scheme, unit.protocol)
-        self.assertEqual(parsed.path, unit.file)
-
-    def test_specify_port(self):
-        unit = unit_generator(host='localhost:8000')
-        result = unit.to_dict()
-        parsed = urlparse.urlparse(result['file'])
-        self.assertEqual(parsed.port, 8000)
+        self.assertEqual(result['file'], unit.file)
 
 
 class TestCmp(unittest.TestCase):

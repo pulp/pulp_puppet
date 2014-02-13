@@ -21,6 +21,18 @@ from pulp_puppet.common import constants
 from pulp_puppet.handlers.puppet import ModuleHandler
 
 
+def mock_puppet_pre33(f):
+    return mock.patch.object(ModuleHandler, '_detect_puppet_version',
+                             spec_set=ModuleHandler._detect_puppet_version,
+                             return_value = (3, 1, 0))(f)
+
+
+def mock_puppet_post33(f):
+    return mock.patch.object(ModuleHandler, '_detect_puppet_version',
+                             spec_set=ModuleHandler._detect_puppet_version,
+                             return_value = (3, 3, 0))(f)
+
+
 class ModuleHandlerTest(unittest.TestCase):
     def setUp(self):
         self.handler = ModuleHandler({})
@@ -30,18 +42,52 @@ class ModuleHandlerTest(unittest.TestCase):
             'server': {'host': 'localhost'}
         }
 
+
+class TestDetectPuppetVersion(ModuleHandlerTest):
+    @mock.patch('subprocess.Popen.communicate')
+    def test_version(self, mock_comm):
+        mock_comm.return_value = ('3.4.2\n', '')
+
+        version = self.handler._detect_puppet_version()
+        self.assertEqual(version, (3, 4, 2))
+
+    @mock.patch('subprocess.Popen')
+    def test_args(self, mock_popen):
+        mock_popen.return_value.communicate.return_value = ('3.4.2\n', '')
+
+        self.handler._detect_puppet_version()
+
+        mock_popen.assert_called_once_with(('puppet', '--version'), stdout=subprocess.PIPE)
+
+
 class TestGenerateForgeURL(ModuleHandlerTest):
-    def test_with_repo_id(self):
+    @mock_puppet_pre33
+    def test_with_repo_id_pre33(self, mock_detect):
         host = 'localhost'
         result = self.handler._generate_forge_url(self.conduit, host, 'repo1')
 
         self.assertEqual(result, 'http://.:repo1@%s' % host)
 
-    def test_without_repo_id(self):
+    @mock_puppet_pre33
+    def test_without_repo_id_pre33(self, mock_detect):
         host = 'localhost'
         result = self.handler._generate_forge_url(self.conduit, host)
 
         self.assertEqual(result, 'http://consumer1:.@%s' % host)
+
+    @mock_puppet_post33
+    def test_with_repo_id_post33(self, mock_detect):
+        host = 'localhost'
+        result = self.handler._generate_forge_url(self.conduit, host, 'repo1')
+
+        self.assertEqual(result, 'http://%s/pulp_puppet/forge/repository/repo1' % host)
+
+    @mock_puppet_post33
+    def test_without_repo_id_post33(self, mock_detect):
+        host = 'localhost'
+        result = self.handler._generate_forge_url(self.conduit, host)
+
+        self.assertEqual(result, 'http://%s/pulp_puppet/forge/consumer/consumer1' % host)
 
 
 class TestInstall(ModuleHandlerTest):
@@ -72,8 +118,9 @@ notice: Installing -- do not interrupt ...
         self.assertTrue(isinstance(report, ContentReport))
         self.assertEqual(report.num_changes, 0)
 
+    @mock_puppet_pre33
     @mock.patch('subprocess.Popen', autospec=True)
-    def test_with_units(self, mock_popen):
+    def test_with_units(self, mock_popen, mock_version):
         mock_popen.return_value.communicate.side_effect = self.POPEN_OUTPUT
         mock_popen.return_value.returncode = 0
 
@@ -104,8 +151,9 @@ notice: Installing -- do not interrupt ...
         self.assertTrue(successes.get('puppetlabs/java'))
         self.assertTrue(successes.get('puppetlabs/stdlib'))
 
+    @mock_puppet_pre33
     @mock.patch('subprocess.Popen', autospec=True)
-    def test_with_units_and_repo_id(self, mock_popen):
+    def test_with_units_and_repo_id(self, mock_popen, mock_version):
         mock_popen.return_value.communicate.side_effect = self.POPEN_OUTPUT
         mock_popen.return_value.returncode = 0
         options = {
@@ -123,8 +171,9 @@ notice: Installing -- do not interrupt ...
         self.assertTrue(report.succeeded)
         self.assertEqual(report.num_changes, 2)
 
+    @mock_puppet_pre33
     @mock.patch('subprocess.Popen', autospec=True)
-    def test_with_error(self, mock_popen):
+    def test_with_error(self, mock_popen, mock_version):
         mock_popen.return_value.communicate.return_value = (self.POPEN_STDOUT_ERROR, '')
         mock_popen.return_value.returncode = 1
 
@@ -172,8 +221,9 @@ notice: Upgrading -- do not interrupt ...
         self.assertTrue(isinstance(report, ContentReport))
         self.assertEqual(report.num_changes, 0)
 
+    @mock_puppet_post33
     @mock.patch('subprocess.Popen', autospec=True)
-    def test_with_unit(self, mock_popen):
+    def test_with_unit(self, mock_popen, mock_version):
         mock_popen.return_value.communicate.return_value = (self.POPEN_STDOUT, '')
         mock_popen.return_value.returncode = 0
 
@@ -189,7 +239,7 @@ notice: Upgrading -- do not interrupt ...
 
         mock_popen.assert_called_once_with(
             ['puppet', 'module', 'upgrade', '--render-as', 'json', '--module_repository',
-             'http://consumer1:.@localhost', 'puppetlabs/stdlib'],
+            'http://localhost/pulp_puppet/forge/consumer/consumer1', 'puppetlabs/stdlib'],
             stdout=subprocess.PIPE
         )
 
@@ -198,8 +248,9 @@ notice: Upgrading -- do not interrupt ...
         # by the puppet module tool, which is out of our control.
         self.assertTrue(successes.get('puppetlabs/stdlib'))
 
+    @mock_puppet_post33
     @mock.patch('subprocess.Popen', autospec=True)
-    def test_with_unit_and_repo_id(self, mock_popen):
+    def test_with_unit_and_repo_id(self, mock_popen, mock_version):
         mock_popen.return_value.communicate.return_value = (self.POPEN_STDOUT, '')
         mock_popen.return_value.returncode = 0
         options = {
@@ -214,12 +265,13 @@ notice: Upgrading -- do not interrupt ...
 
         mock_popen.assert_called_once_with(
             ['puppet', 'module', 'upgrade', '--render-as', 'json', '--module_repository',
-             'http://.:repo1@localhost', 'puppetlabs/stdlib'],
-            stdout=subprocess.PIPE
+             'http://localhost/pulp_puppet/forge/repository/repo1', 'puppetlabs/stdlib'],
+              stdout=subprocess.PIPE
         )
 
+    @mock_puppet_post33
     @mock.patch('subprocess.Popen', autospec=True)
-    def test_with_error(self, mock_popen):
+    def test_with_error(self, mock_popen, mock_version):
         mock_popen.return_value.communicate.return_value = (self.POPEN_STDOUT_ERROR, '')
         mock_popen.return_value.returncode = 1
 
@@ -235,7 +287,7 @@ notice: Upgrading -- do not interrupt ...
 
         mock_popen.assert_called_once_with(
             ['puppet', 'module', 'upgrade', '--render-as', 'json', '--module_repository',
-             'http://consumer1:.@localhost', 'puppetlabs/stdlib'],
+             'http://localhost/pulp_puppet/forge/consumer/consumer1', 'puppetlabs/stdlib'],
             stdout=subprocess.PIPE
         )
 

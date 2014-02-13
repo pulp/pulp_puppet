@@ -69,8 +69,35 @@ Also point a browser to
 `http://localhost/pulp/puppet/forge/ <http://localhost/pulp/puppet/forge/>`_
 (adjust the host name as needed) to view the published repository.
 
-Installing With Puppet Client
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Install Modules
+---------------
+
+.. _install_post_33:
+
+Installing With Puppet Client 3.3+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To install from a specific pulp repository, the forge URL is formed
+as ``http://<hostname>/pulp_puppet/forge/repository/<repository_id>``. To
+install as a consumer from any bound repository, the URL is formed
+as ``http://<hostname>/pulp_puppet/forge/consumer/<consumer_id>``.
+
+For example, to install module puppetlabs-stdlib from the repository "demo",
+run the following command.
+
+::
+
+  $ puppet module install --module_repository=http://localhost/pulp_puppet/forge/repository/demo puppetlabs-stdlib
+
+Or to install module puppetlabs-stdlib as the consumer "con1" from any repository
+to which that consumer is bound, run the following command.
+
+::
+
+  $ puppet module install --module_repository=http://localhost/pulp_puppet/forge/consumer/con1 puppetlabs-stdlib
+
+Installing With Puppet Client < 3.3
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You might notice that this command does not work:
 
@@ -79,10 +106,10 @@ You might notice that this command does not work:
   $ puppet module install --module_repository http://localhost/pulp/puppet/forge author/name
 
 For technical reasons described in the note below, the ``puppet module install``
-tool ignores the part of the URL after the host name, which means we cannot put
-the repository ID in the URL. We have a work-around that will still allow you to
-use the ``puppet module install`` command with Pulp, and it involves the use of
-basic auth credentials as part of the URL.
+tool in versions prior to 3.3 ignores the part of the URL after the host name,
+which means we cannot put the repository ID in the URL. We have a work-around
+that will still allow you to use the ``puppet module install`` command with Pulp,
+and it involves the use of basic auth credentials as part of the URL.
 
 .. note:: Puppet Forge implements a web API that their client uses to obtain dependency
           data when installing a module. Unfortunately, their command line tool has

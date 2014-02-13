@@ -1,0 +1,19 @@
+======================
+Pulp 2.4 Release Notes
+======================
+
+Pulp 2.4.0
+==========
+
+New Features
+------------
+
+-  Install and update operations can now be performed with puppet version 3.3+
+   against a pulp repository. See :ref:`install_post_33`.
+
+
+Notable Bugs Fixed
+------------------
+
+All Bugs
+--------
