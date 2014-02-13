@@ -53,6 +53,9 @@ popd
 pushd pulp_puppet_handlers
 %{__python} setup.py build
 popd
+pushd pulp_puppet_tools
+%{__python} setup.py build
+popd
 
 %install
 rm -rf %{buildroot}
@@ -71,6 +74,9 @@ popd
 pushd pulp_puppet_handlers
 %{__python} setup.py install -O1 --skip-build --root %{buildroot}
 popd
+pushd pulp_puppet_tools
+%{__python} setup.py install -O1 --skip-build --root %{buildroot}
+popd
 
 # Directories
 mkdir -p %{buildroot}/%{_sysconfdir}/pulp/agent/conf.d
@@ -83,6 +89,7 @@ mkdir -p %{buildroot}/%{_var}/www/pulp_puppet
 mkdir -p %{buildroot}/%{_var}/www/pulp_puppet/http
 mkdir -p %{buildroot}/%{_var}/www/pulp_puppet/https
 mkdir -p %{buildroot}/srv/pulp
+mkdir -p %{buildroot}/%{_bindir}
 
 # Configuration
 cp -R pulp_puppet_plugins/etc/httpd %{buildroot}/%{_sysconfdir}
@@ -225,6 +232,25 @@ uninstall, bind, and unbind.
 %{_sysconfdir}/pulp/agent/conf.d/puppet_bind.conf
 %{_sysconfdir}/pulp/agent/conf.d/puppet_module.conf
 %{python_sitelib}/pulp_puppet_handlers*.egg-info
+%doc
+
+# ---- Tools -----------------------------------------------------------------
+
+%package tools
+Summary: Pulp puppet tools
+Group: Development/Languages
+Requires: python-pulp-common = %{pulp_version}
+Requires: puppet >= 2.7
+Requires: git >= 1.7
+
+%description tools
+A collection of tools used to manage puppet modules.
+
+%files tools
+%defattr(-,root,root,-)
+%{python_sitelib}/pulp_puppet/tools/
+%{python_sitelib}/pulp_puppet_tools*.egg-info
+%{_bindir}/pulp-puppet-module-builder
 %doc
 
 
