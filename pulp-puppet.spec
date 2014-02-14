@@ -164,7 +164,8 @@ to provide Puppet specific support.
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/pulp_puppet.conf
 %{_usr}/lib/pulp/plugins/types/puppet.json
 %{python_sitelib}/pulp_puppet_plugins*.egg-info
-/srv/pulp/puppet_forge_api.wsgi
+/srv/pulp/puppet_forge_post33_api.wsgi
+/srv/pulp/puppet_forge_pre33_api.wsgi
 
 %defattr(-,apache,apache,-)
 %{_var}/www/pulp_puppet/
