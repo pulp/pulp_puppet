@@ -14,6 +14,7 @@ import os
 from uuid import uuid4
 from unittest import TestCase
 from collections import namedtuple
+from urlparse import urljoin
 
 from mock import patch, Mock, ANY
 
@@ -51,21 +52,6 @@ class TestSynchronizeWithDirectory(TestCase):
 
         self.assertTrue(method.canceled)
 
-    def test_base_url(self):
-        conduit = Mock()
-        feed_url = 'http://host/root/PULP_MANAFEST'
-        config = {constants.CONFIG_FEED: feed_url}
-
-        # test
-
-        method = SynchronizeWithDirectory(conduit, config)
-        base_url = method.base_url()
-
-        # validation
-
-        self.assertEqual(base_url, feed_url[:-13])
-        self.assertTrue(base_url.endswith('/'))
-
     @patch('shutil.rmtree')
     @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._run')
     @patch('pulp_puppet.plugins.importers.directory.mkdtemp')
@@ -87,7 +73,6 @@ class TestSynchronizeWithDirectory(TestCase):
 
         self.assertFalse(method.canceled)
         self.assertTrue(isinstance(method.report, SyncProgressReport))
-        self.assertEqual(method.base_url(), config[constants.CONFIG_FEED][:-13])
         self.assertTrue(isinstance(report, SyncProgressReport))
         mock_inventory.assert_called_with(conduit)
         mock_mkdtemp.assert_called_with(dir=repository.working_dir)
@@ -211,7 +196,7 @@ class TestSynchronizeWithDirectory(TestCase):
     @patch('pulp_puppet.plugins.importers.directory.StringIO.getvalue')
     @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._download')
     def test_fetch_manifest(self, mock_download, mock_get_value):
-        feed_url = 'http://host/root/PULP_MANAFEST'
+        feed_url = 'http://host/root/'
 
         conduit = Mock()
         config = {constants.CONFIG_FEED: feed_url}
@@ -228,7 +213,7 @@ class TestSynchronizeWithDirectory(TestCase):
 
         # validation
 
-        mock_download.assert_called_with([(feed_url, ANY)])
+        mock_download.assert_called_with([(urljoin(feed_url, constants.MANIFEST_FILENAME), ANY)])
 
         self.assertEqual(manifest, [('A', 'B', 'C'), ('D', 'E', 'F')])
 
@@ -241,7 +226,7 @@ class TestSynchronizeWithDirectory(TestCase):
 
     @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._download')
     def test_fetch_manifest_failed(self, mock_download):
-        feed_url = 'http://host/root/PULP_MANAFEST'
+        feed_url = 'http://host/root/'
 
         conduit = Mock()
         config = {constants.CONFIG_FEED: feed_url}
@@ -258,7 +243,7 @@ class TestSynchronizeWithDirectory(TestCase):
 
         # validation
 
-        mock_download.assert_called_with([(feed_url, ANY)])
+        mock_download.assert_called_with([(urljoin(feed_url, constants.MANIFEST_FILENAME), ANY)])
 
         self.assertTrue(manifest is None)
 
@@ -270,8 +255,7 @@ class TestSynchronizeWithDirectory(TestCase):
     @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._download')
     def test_fetch_modules(self, mock_download):
         tmp_dir = '/tmp/puppet-testing'
-        feed_url = 'http://host/root/PULP_MANAFEST'
-        base_url = feed_url[:-14]
+        feed_url = 'http://host/root/'
 
         conduit = Mock()
         config = {constants.CONFIG_FEED: feed_url}
@@ -293,8 +277,8 @@ class TestSynchronizeWithDirectory(TestCase):
 
         # validation
 
-        url_1 = os.path.join(base_url, manifest[0][0])
-        url_2 = os.path.join(base_url, manifest[1][0])
+        url_1 = os.path.join(feed_url, manifest[0][0])
+        url_2 = os.path.join(feed_url, manifest[1][0])
 
         mock_download.assert_any_with([(url_1, report_1.destination)])
         mock_download.assert_any_with([(url_2, report_2.destination)])
@@ -309,8 +293,7 @@ class TestSynchronizeWithDirectory(TestCase):
     @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._download')
     def test_fetch_modules_failures(self, mock_download):
         tmp_dir = '/tmp/puppet-testing'
-        feed_url = 'http://host/root/PULP_MANAFEST'
-        base_url = feed_url[:-14]
+        feed_url = 'http://host/root/'
 
         conduit = Mock()
         config = {constants.CONFIG_FEED: feed_url}
@@ -333,8 +316,8 @@ class TestSynchronizeWithDirectory(TestCase):
 
         # validation
 
-        url_1 = os.path.join(base_url, manifest[0][0])
-        url_2 = os.path.join(base_url, manifest[1][0])
+        url_1 = os.path.join(feed_url, manifest[0][0])
+        url_2 = os.path.join(feed_url, manifest[1][0])
 
         mock_download.assert_any_with([(url_1, report_1.destination)])
         mock_download.assert_any_with([(url_2, report_2.destination)])
