@@ -14,7 +14,6 @@
 import logging
 
 from gettext import gettext as _
-from urlparse import urlparse
 
 from pulp.plugins.importer import Importer
 from pulp.common.config import read_json_config
