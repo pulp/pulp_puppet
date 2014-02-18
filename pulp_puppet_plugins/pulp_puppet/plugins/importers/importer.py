@@ -14,7 +14,6 @@
 import logging
 
 from gettext import gettext as _
-from urlparse import urlparse
 
 from pulp.plugins.importer import Importer
 from pulp.common.config import read_json_config
@@ -74,19 +73,17 @@ class PuppetModuleImporter(Importer):
         # method is used.  Otherwise, the puppet forge synchronization method is used.
 
         # synchronize with a directory
+        self.sync_method = SynchronizeWithDirectory(sync_conduit, config)
+        report = self.sync_method(repo)
 
-        feed_url = config.get(constants.CONFIG_FEED)
-        parsed_url = urlparse(feed_url)
-        if parsed_url.path.rsplit('/', 1)[-1].endswith(constants.MANIFEST_FILENAME):
-            self.sync_method = SynchronizeWithDirectory(sync_conduit, config)
-            report = self.sync_method(repo)
-            self.sync_method = None
-            return report
+        # When fetching the PULP_MANIFEST is not successful, it's assumed that the
+        # feed points to a puppet forge instance and the synchronization is retried
+        # using puppet forge method.
 
-        # synchronize with puppet forge
+        if report.metadata_state == constants.STATE_FAILED:
+            self.sync_method = SynchronizeWithPuppetForge(repo, sync_conduit, config)
+            report = self.sync_method()
 
-        self.sync_method = SynchronizeWithPuppetForge(repo, sync_conduit, config)
-        report = self.sync_method()
         self.sync_method = None
         return report
 

@@ -17,7 +17,7 @@ import json
 
 from time import time
 from gettext import gettext as _
-from urlparse import urlparse, urljoin, urlunparse
+from urlparse import urlparse, urljoin
 from StringIO import StringIO
 from tempfile import mkdtemp
 from contextlib import closing
@@ -104,28 +104,23 @@ class SynchronizeWithDirectory(object):
         self.canceled = False
         self.tmp_dir = None
 
+    def feed_url(self):
+        """
+        Get the feed URL from the configuration and ensure it has a
+        trailing '/' so urljoin will work correctly.
+        :return: The feed URL.
+        :rtype: str
+        """
+        url = self.config.get(constants.CONFIG_FEED)
+        if not url.endswith('/'):
+            url += '/'
+        return url
+
     def cancel(self):
         """
         Cancel puppet module import.
         """
         self.canceled = True
-
-    def base_url(self):
-        """
-        Get the base URL from feed URL.
-        Basically, this is just the feed URL without the PULP_MANIFEST.
-
-        :return: The base URL.
-        :rtype: str
-        """
-        feed_url = self.config.get(constants.CONFIG_FEED)
-        scheme, netloc, path, params, query, fragment = urlparse(feed_url)
-        path = os.path.dirname(path)
-        if not path.endswith('/'):
-            # must end with / for use with urljoin
-            path += '/'
-        parts = (scheme, netloc, path, params, query, fragment)
-        return urlunparse(parts)
 
     def _run(self, inventory):
         """
@@ -155,7 +150,7 @@ class SynchronizeWithDirectory(object):
         :return: The nectar reports.  Tuple of: (succeeded_reports, failed_reports)
         :rtype: tuple
         """
-        feed_url = self.config.get(constants.CONFIG_FEED)
+        feed_url = self.feed_url()
         nectar_config = importer_config_to_nectar_config(self.config.flatten())
         nectar_class = URL_TO_DOWNLOADER[urlparse(feed_url).scheme]
         downloader = nectar_class(nectar_config)
@@ -192,8 +187,9 @@ class SynchronizeWithDirectory(object):
 
         # download manifest
         destination = StringIO()
-        feed_url = self.config.get(constants.CONFIG_FEED)
-        succeeded_reports, failed_reports = self._download([(feed_url, destination)])
+        feed_url = self.feed_url()
+        url = urljoin(feed_url, constants.MANIFEST_FILENAME)
+        succeeded_reports, failed_reports = self._download([(url, destination)])
 
         # report download failed
         if failed_reports:
@@ -235,9 +231,9 @@ class SynchronizeWithDirectory(object):
 
         # download modules
         urls = []
-        base_url = self.base_url()
+        feed_url = self.feed_url()
         for path, checksum, size in manifest:
-            url = urljoin(base_url, path)
+            url = urljoin(feed_url, path)
             destination = os.path.join(self.tmp_dir, os.path.basename(path))
             urls.append((url, destination))
         succeeded_reports, failed_reports = self._download(urls)

@@ -43,7 +43,7 @@ class TestSynchronizeWithDirectory(TestCase):
 
         config = PluginCallConfiguration(
             {},
-            {constants.CONFIG_FEED: 'file://%s/../data/simple/PULP_MANIFEST' % test_dir,
+            {constants.CONFIG_FEED: 'file://%s/../data/simple/' % test_dir,
              constants.CONFIG_REMOVE_MISSING: True})
 
         conduit = Mock()
