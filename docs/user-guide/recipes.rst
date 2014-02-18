@@ -257,12 +257,12 @@ like so long as you have *write* and *execute* permissions.
  $ sudo mkdir -p /opt/puppet/modules
  $ sudo chmod -R 777 /opt/puppet
 
-Next, create a new repository that includes the URL for a PULP_MANIFEST file that will be created in
-a subsequent step. Use any repo-id you like, as long as it is unique within Pulp.
+Next, create a new repository that specifies a feed URL for the directory that will be created in a
+subsequent step. Use any repo-id you like, as long as it is unique within Pulp.
 
 ::
 
-  $ pulp-admin puppet repo create --repo-id=puppet-builds --feed=file:///opt/puppet/modules/PULP_MANIFEST
+  $ pulp-admin puppet repo create --repo-id=puppet-builds --feed=file:///opt/puppet/modules/
   Successfully created repository [puppet-builds]
 
 Next, build the puppet modules from source. The ``pulp-puppet-module-builder`` tool is provided
