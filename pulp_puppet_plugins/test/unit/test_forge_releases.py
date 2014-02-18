@@ -102,7 +102,8 @@ class TestGetRepoData(unittest.TestCase):
         self.assertTrue(isinstance(result, dict))
         self.assertEqual(result.keys(), ['repo1'])
         self.assertEqual(result['repo1']['db'], mock_open.return_value)
-        mock_open.assert_called_once_with('/var/www/pulp_puppet/http/repos/repo1/.dependency_db', 'r')
+        mock_open.assert_called_once_with('/var/lib/pulp/published/puppet/http/repos/repo1/.dependency_db',
+                                          'r')
 
     @mock.patch('web.ctx')
     @mock.patch('pulp.server.managers.repo.distributor.RepoDistributorManager.find_by_repo_list')
@@ -126,12 +127,12 @@ class TestGetRepoData(unittest.TestCase):
         mock_ctx.protocol = 'http'
         mock_find.return_value = [
             {'repo_id':'repo1',
-             'config':{constants.CONFIG_HTTP_DIR: '/var/www/pulp_puppet/foo'}}
+             'config':{constants.CONFIG_HTTP_DIR: '/var/lib/pulp/published/puppet/foo'}}
         ]
 
         result = releases.get_repo_data(['repo1'])
 
-        mock_open.assert_called_once_with('/var/www/pulp_puppet/foo/repo1/.dependency_db', 'r')
+        mock_open.assert_called_once_with('/var/lib/pulp/published/puppet/foo/repo1/.dependency_db', 'r')
 
     @mock.patch('web.ctx')
     @mock.patch('pulp.server.managers.repo.distributor.RepoDistributorManager.find_by_repo_list')
@@ -144,7 +145,8 @@ class TestGetRepoData(unittest.TestCase):
         result = releases.get_repo_data(['repo1'])
 
         self.assertEqual(result, {})
-        mock_open.assert_called_once_with('/var/www/pulp_puppet/http/repos/repo1/.dependency_db', 'r')
+        mock_open.assert_called_once_with('/var/lib/pulp/published/puppet/http/repos/repo1/.dependency_db',
+                                          'r')
 
 
 class TestGetProtocol(unittest.TestCase):
