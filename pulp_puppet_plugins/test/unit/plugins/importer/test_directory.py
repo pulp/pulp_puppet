@@ -39,6 +39,19 @@ class TestSynchronizeWithDirectory(TestCase):
         self.assertEqual(method.conduit, conduit)
         self.assertEqual(method.config, config)
 
+    def test_feed_url(self):
+        feed_url = 'http://abc.com/repository'
+        conduit = Mock()
+        config = {constants.CONFIG_FEED: feed_url}
+
+        # testing
+
+        method = SynchronizeWithDirectory(conduit, config)
+
+        # validation
+
+        self.assertEqual(method.feed_url(), feed_url + '/')
+
     def test_cancel(self):
         conduit = Mock()
         config = {}
