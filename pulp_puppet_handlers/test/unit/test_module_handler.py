@@ -44,11 +44,12 @@ class ModuleHandlerTest(unittest.TestCase):
 
 
 class TestDetectPuppetVersion(ModuleHandlerTest):
-    @mock.patch('subprocess.Popen.communicate')
-    def test_version(self, mock_comm):
-        mock_comm.return_value = ('3.4.2\n', '')
+    @mock.patch('subprocess.Popen')
+    def test_version(self, mock_popen):
+        mock_popen.return_value.communicate.return_value = ('3.4.2\n', '')
 
         version = self.handler._detect_puppet_version()
+
         self.assertEqual(version, (3, 4, 2))
 
     @mock.patch('subprocess.Popen')
@@ -110,8 +111,8 @@ notice: Installing -- do not interrupt ...
     POPEN_STDOUT_ERROR = """notice: Preparing to install into /etc/puppet/modules ...
 {"module_name":"puppetlabs-stdlib","module_version":null,"install_dir":"/etc/puppet/modules","error":{"oneline":"'puppetlabs-stdlib' (best) requested; 'puppetlabs-stdlib' (v3.2.0) already installed","multiline":"Could not install module 'puppetlabs-stdlib' (best)\\n  Module 'puppetlabs-stdlib' (v3.2.0) is already installed\\n    Use `puppet module upgrade` to install a different version\\n    Use `puppet module install --force` to re-install only this module"},"result":"failure"}
 """
-
-    def test_no_units(self):
+    @mock_puppet_post33
+    def test_no_units(self, mock_version):
         options = {constants.FORGE_HOST: 'localhost'}
         report = self.handler.install(self.conduit, [], options)
 
@@ -213,8 +214,8 @@ notice: Upgrading -- do not interrupt ...
     POPEN_STDOUT_ERROR = """notice: Preparing to uninstall 'puppetlabs-stdlib' ...
 {"module_name":"puppetlabs-stdlib","requested_version":null,"error":{"oneline":"Could not uninstall 'puppetlabs-stdlib'; module is not installed","multiline":"Could not uninstall module 'puppetlabs-stdlib'\\n  Module 'puppetlabs-stdlib' is not installed"},"result":"failure"}
 """
-
-    def test_no_units(self):
+    @mock_puppet_post33
+    def test_no_units(self, mock_version):
         options = {constants.FORGE_HOST: 'localhost'}
         report = self.handler.update(self.conduit, [], options)
 
