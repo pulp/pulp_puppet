@@ -189,7 +189,7 @@ class UpdatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         }
         self.assertEqual(expected_config, body['distributor_configs']['puppet_distributor'])
 
-        self.assertEqual([TAG_SUCCESS], self.prompt.get_write_tags())
+        self.assertEqual(['postponed'], self.prompt.get_write_tags())
 
     def test_queries_overrides_query(self):
         # make sure --queries overrides --query, which is deprecated
@@ -260,7 +260,7 @@ class UpdatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         self.command.run(**data)
 
         # Verify
-        self.assertEqual(['postponed', TAG_REASONS], self.prompt.get_write_tags())
+        self.assertEqual(['postponed'], self.prompt.get_write_tags())
 
 
 class ListPuppetRepositoriesCommandTests(base_cli.ExtensionTests):

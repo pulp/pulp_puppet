@@ -30,9 +30,7 @@ from pulp_puppet.plugins.importers.forge import SynchronizeWithPuppetForge
 # entry_point method.
 CONF_FILENAME = 'server/plugins.conf.d/%s.json' % constants.IMPORTER_TYPE_ID
 
-_LOG = logging.getLogger(__name__)
-
-# -- plugins ------------------------------------------------------------------
+_logger = logging.getLogger(__name__)
 
 
 def entry_point():
@@ -94,11 +92,14 @@ class PuppetModuleImporter(Importer):
         try:
             report = upload.handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path, conduit)
         except Exception, e:
-            _LOG.exception(e)
+            _logger.exception(e)
             report = {'success_flag': False, 'summary': e.message, 'details': {}}
         return report
 
-    def cancel_sync_repo(self, call_request, call_report):
+    def cancel_sync_repo(self):
+        """
+        Cancel a running repository synchronization operation.
+        """
         self.sync_cancelled = True
         sync_method = self.sync_method
         if sync_method is None:
