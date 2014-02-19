@@ -146,14 +146,9 @@ class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand, ImporterConfigMixin
         response = self.context.server.repo.update_repo_and_plugins(repo_id, name,
             description, notes, importer_config, distributor_configs)
 
-        if not response.is_async():
-            msg = _('Repository [%(r)s] successfully updated')
-            self.context.prompt.render_success_message(msg % {'r' : repo_id})
-        else:
-            d = _('Repository update postponed due to another operation. Progress '
-                  'on this task can be viewed using the commands under "repo tasks".')
-            self.context.prompt.render_paragraph(d, tag='postponed')
-            self.context.prompt.render_reasons(response.response_body.reasons)
+        d = _('The repository update operation has been queued. Progress '
+              'on this task can be viewed using the commands under "repo tasks".')
+        self.context.prompt.render_paragraph(d, tag='postponed')
 
 
 class ListPuppetRepositoriesCommand(ListRepositoriesCommand):
