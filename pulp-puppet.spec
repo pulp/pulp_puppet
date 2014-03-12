@@ -18,7 +18,7 @@
 
 Name: pulp-puppet
 Version: 2.4.0
-Release: 0.3.alpha%{?dist}
+Release: 0.4.alpha%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -257,6 +257,9 @@ A collection of tools used to manage puppet modules.
 
 
 %changelog
+* Wed Mar 12 2014 Barnaby Court <bcourt@redhat.com> 2.4.0-0.4.alpha
+- Pulp rebuild
+
 * Mon Feb 24 2014 Jeff Ortel <jortel@redhat.com> 2.4.0-0.3.alpha
 - 1014001 - Puppet forge API and handler now support puppet >= 3.3
   (mhrivnak@redhat.com)
