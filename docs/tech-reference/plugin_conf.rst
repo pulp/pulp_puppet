@@ -64,11 +64,11 @@ at one FQDN.
 
 ``http_dir``
  Full path to the directory where HTTP-published repositories should be created.
- Defaults to ``/var/www/pulp_puppet/http/repos``.
+ Defaults to ``/var/lib/pulp/published/puppet/http/repos``.
 
 ``https_dir``
  Full path to the directory where HTTPS-published repositories should be created.
- Defaults to ``/var/www/pulp_puppet/https/repos``.
+ Defaults to ``/var/lib/pulp/published/puppet/https/repos``.
 
 ``serve_http``
  Boolean indicating if the repository should be served over HTTP. Defaults to ``True``.
@@ -111,4 +111,4 @@ id.  The base URL path where all Puppet repositories are published is ``/pulp/pu
 
 ``https_files_dir``
  Full path to the directory where HTTPS published file repositories will be created.
- Defaults to ``/var/www/pulp_puppet/files``.
+ Defaults to ``/var/lib/pulp/published/puppet/files``.

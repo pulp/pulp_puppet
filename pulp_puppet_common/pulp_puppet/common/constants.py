@@ -115,15 +115,15 @@ DEFAULT_SERVE_HTTPS = False
 
 # Local directory the web server will serve for HTTP repositories
 CONFIG_HTTP_DIR = 'http_dir'
-DEFAULT_HTTP_DIR = '/var/www/pulp_puppet/http/repos'
+DEFAULT_HTTP_DIR = '/var/lib/pulp/published/puppet/http/repos'
 
 # Local directory the web server will serve for HTTPS repositories
 CONFIG_HTTPS_DIR = 'https_dir'
-DEFAULT_HTTPS_DIR = '/var/www/pulp_puppet/https/repos'
+DEFAULT_HTTPS_DIR = '/var/lib/pulp/published/puppet/https/repos'
 
 # Local directory the web server will serve flat directory representations of repositories
 CONFIG_FILE_HTTPS_DIR = 'https_files_dir'
-DEFAULT_FILE_HTTPS_DIR = '/var/www/pulp_puppet/files'
+DEFAULT_FILE_HTTPS_DIR = '/var/lib/pulp/published/puppet/files'
 
 # Default absolute path component of URL where repos are stored
 CONFIG_ABSOLUTE_PATH = 'absolute_path'

@@ -21,9 +21,9 @@ WARNING_COLOR = '\033[31m'
 WARNING_RESET = '\033[0m'
 
 DIRS = (
-    '/var/www/pulp_puppet/http/repos',
-    '/var/www/pulp_puppet/https/repos',
-    '/var/www/pulp_puppet/files',
+    '/var/lib/pulp/published/puppet/http/repos',
+    '/var/lib/pulp/published/puppet/https/repos',
+    '/var/lib/pulp/published/puppet/files',
 )
 
 #
@@ -120,8 +120,6 @@ def install(opts):
         warning_msg = create_link(opts, os.path.join(currdir,src), dst)
         if warning_msg:
             warnings.append(warning_msg)
-
-    os.system('chown -R apache:apache /var/www/pulp_puppet')
 
     if warnings:
         print "\n***\nPossible problems:  Please read below\n***"

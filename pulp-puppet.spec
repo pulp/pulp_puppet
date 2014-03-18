@@ -85,9 +85,8 @@ mkdir -p %{buildroot}/%{_usr}/lib
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/plugins/types
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/admin/extensions
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/agent/handlers
-mkdir -p %{buildroot}/%{_var}/www/pulp_puppet
-mkdir -p %{buildroot}/%{_var}/www/pulp_puppet/http
-mkdir -p %{buildroot}/%{_var}/www/pulp_puppet/https
+mkdir -p %{buildroot}/%{_var}/lib/pulp/published/puppet/http
+mkdir -p %{buildroot}/%{_var}/lib/pulp/published/puppet/https
 mkdir -p %{buildroot}/srv/pulp
 mkdir -p %{buildroot}/%{_bindir}
 
@@ -168,7 +167,7 @@ to provide Puppet specific support.
 /srv/pulp/puppet_forge_pre33_api.wsgi
 
 %defattr(-,apache,apache,-)
-%{_var}/www/pulp_puppet/
+%{_var}/lib/pulp/published/puppet/
 
 %doc
 
