@@ -11,6 +11,8 @@ New Features
 -  Install and update operations can now be performed with puppet version 3.3+
    against a pulp repository. See :ref:`install_post_33`.
 
+-  Pulp's puppet distributor is now updated to publish to /var/lib/pulp/puppet
+   instead of /var/www/pulp_puppet.
 
 Notable Bugs Fixed
 ------------------
