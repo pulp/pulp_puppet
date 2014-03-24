@@ -59,7 +59,7 @@ class SynchronizeWithPuppetForge(object):
         completed.
 
         :return: the report object to return to Pulp from the sync call
-        :rtype:  pulp.plugins.model.SyncReport
+        :rtype:  SyncProgressReport
         """
         _LOG.info('Beginning sync for repository <%s>' % self.repo.id)
 
@@ -82,8 +82,7 @@ class SynchronizeWithPuppetForge(object):
             # One final progress update before finishing
             self.progress_report.update_progress()
 
-            report = self.progress_report.build_final_report()
-            return report
+            return self.progress_report
 
     def cancel(self):
         """

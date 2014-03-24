@@ -240,11 +240,11 @@ class SynchronizeWithDirectory(object):
 
         # report failed downloads
         if failed_reports:
-            self.report.module_state = constants.STATE_FAILED
+            self.report.modules_state = constants.STATE_FAILED
             self.report.modules_error_count = len(failed_reports)
             self.report.modules_individual_errors = []
         else:
-            self.report.module_state = constants.STATE_SUCCESS
+            self.report.modules_state = constants.STATE_SUCCESS
         for report in failed_reports:
             self.report.modules_individual_errors.append(report.error_msg)
 
@@ -333,7 +333,7 @@ class SynchronizeWithDirectory(object):
         :param repository: A Pulp repository object.
         :type repository: pulp.server.plugins.model.Repository
         :return: The final synchronization report.
-        :rtype: pulp.plugins.model.SyncReport
+        :rtype: SyncProgressReport
         """
         self.canceled = False
         self.report = SyncProgressReport(self.conduit)
@@ -341,7 +341,6 @@ class SynchronizeWithDirectory(object):
         try:
             inventory = Inventory(self.conduit)
             self._run(inventory)
-            self.report.build_final_report()
             return self.report
         finally:
             shutil.rmtree(self.tmp_dir)
