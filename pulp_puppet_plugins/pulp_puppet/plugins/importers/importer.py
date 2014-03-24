@@ -83,7 +83,7 @@ class PuppetModuleImporter(Importer):
             report = self.sync_method()
 
         self.sync_method = None
-        return report
+        return report.build_final_report()
 
     def import_units(self, source_repo, dest_repo, import_conduit, config, units=None):
         return copier.copy_units(import_conduit, units)

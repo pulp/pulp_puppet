@@ -301,7 +301,7 @@ class TestSynchronizeWithDirectory(TestCase):
         self.assertEqual(module_paths[1], report_2.destination)
 
         self.assertTrue(method.report.update_progress.called)
-        self.assertEqual(method.report.module_state, constants.STATE_SUCCESS)
+        self.assertEqual(method.report.modules_state, constants.STATE_SUCCESS)
 
     @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._download')
     def test_fetch_modules_failures(self, mock_download):
@@ -339,7 +339,7 @@ class TestSynchronizeWithDirectory(TestCase):
         self.assertEqual(module_paths[0], report_1.destination)
 
         self.assertTrue(method.report.update_progress.called)
-        self.assertEqual(method.report.module_state, constants.STATE_FAILED)
+        self.assertEqual(method.report.modules_state, constants.STATE_FAILED)
         self.assertEqual(method.report.modules_error_count, 1)
         self.assertEqual(len(method.report.modules_individual_errors), 1)
         self.assertEqual(method.report.modules_individual_errors[0], report_2.error_msg)

@@ -14,6 +14,7 @@
 import unittest
 
 from mock import Mock, patch
+from pulp.plugins.model import SyncReport
 
 from pulp_puppet.common import constants
 from pulp_puppet.common.sync_progress import SyncProgressReport
@@ -39,6 +40,7 @@ class TestPuppetModuleImporter(unittest.TestCase):
         config = {constants.CONFIG_FEED: 'http://host/tmp/%s' % constants.MANIFEST_FILENAME}
         progress_report = SyncProgressReport(conduit)
         progress_report.metadata_state = constants.STATE_SUCCESS
+        progress_report.modules_state = constants.STATE_SUCCESS
         mock_call.return_value = progress_report
 
         # test
@@ -49,7 +51,7 @@ class TestPuppetModuleImporter(unittest.TestCase):
         # validation
 
         mock_call.assert_called_with(repository)
-        self.assertEqual(report, progress_report)
+        self.assertEquals(report, conduit.build_success_report.return_value)
         self.assertFalse(forge_call.called)
 
     @patch('pulp_puppet.plugins.importers.importer.SynchronizeWithPuppetForge.__call__')
@@ -75,9 +77,8 @@ class TestPuppetModuleImporter(unittest.TestCase):
         report = plugin.sync_repo(repository, conduit, config)
 
         # validation
-
         mock_call.assert_called_with()
-        self.assertEqual(report, progress_report)
+        self.assertEquals(report, conduit.build_failure_report.return_value)
 
 
     @patch('pulp_puppet.plugins.importers.upload.handle_uploaded_unit')

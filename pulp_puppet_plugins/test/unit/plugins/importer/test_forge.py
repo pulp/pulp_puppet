@@ -83,7 +83,7 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
 
     def test_synchronize(self):
         # Test
-        report = self.method()
+        report = self.method().build_final_report()
 
         # Verify
 
@@ -130,7 +130,7 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
         self.config.repo_plugin_config[constants.CONFIG_FEED] = INVALID_FEED
 
         # Test
-        report = self.method()
+        report = self.method().build_final_report()
 
         # Verify
         self.assertTrue(not report.success_flag)
@@ -181,7 +181,7 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
         mock_parse.return_value = None
 
         # Test
-        report = self.method()
+        report = self.method().build_final_report()
 
         # Verify
         self.assertTrue(report is not None)
@@ -196,7 +196,7 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
         mock_create.side_effect = Exception()
 
         # Test
-        report = self.method()
+        report = self.method().build_final_report()
 
         # Verify
         self.assertTrue(not report.success_flag)
@@ -218,7 +218,7 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
         mock_retrieve.return_value = ['not parsable json']
 
         # Test
-        report = self.method()
+        report = self.method().build_final_report()
 
         # Test
         self.assertTrue(not report.success_flag)
@@ -238,7 +238,7 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
         mock_import.side_effect = Exception()
 
         # Test
-        report = self.method()
+        report = self.method().build_final_report()
 
         # Verify
         self.assertTrue(not report.success_flag)
@@ -266,7 +266,7 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
         mock_add.side_effect = Exception()
 
         # Test
-        report = self.method()
+        report = self.method().build_final_report()
 
         # Verify
 
