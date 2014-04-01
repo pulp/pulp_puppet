@@ -23,17 +23,16 @@ from pulp_puppet.plugins.importers.downloaders.exceptions import UnsupportedFeed
 from pulp_puppet.plugins.importers.downloaders.web import HttpDownloader
 from pulp_puppet.plugins.importers.downloaders.local import LocalDownloader
 
-# -- constants ----------------------------------------------------------------
 
 # Mapping from feed prefix to downloader class
 MAPPINGS = {
     'file'  : LocalDownloader,
     'http'  : HttpDownloader,
+    'https'  : HttpDownloader,
 }
 
-_LOG = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
-# -- public -------------------------------------------------------------------
 
 def get_downloader(feed, repo, conduit, config):
     """
@@ -66,6 +65,7 @@ def get_downloader(feed, repo, conduit, config):
     downloader = MAPPINGS[feed_type](repo, conduit, config)
     return downloader
 
+
 def is_valid_feed(feed):
     """
     Returns whether or not the feed is valid.
@@ -83,7 +83,6 @@ def is_valid_feed(feed):
     except InvalidFeed:
         return False
 
-# -- private ------------------------------------------------------------------
 
 def _determine_feed_type(feed):
     """
@@ -102,5 +101,5 @@ def _determine_feed_type(feed):
         proto, netloc, path, params, query, frag = urlparse.urlparse(feed)
         return proto
     except Exception:
-        _LOG.exception('Exception parsing feed type for feed <%s>' % feed)
+        logger.exception('Exception parsing feed type for feed <%s>' % feed)
         raise InvalidFeed(feed)

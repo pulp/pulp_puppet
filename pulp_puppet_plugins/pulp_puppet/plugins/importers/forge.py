@@ -28,9 +28,8 @@ from pulp_puppet.common.sync_progress import SyncProgressReport
 from pulp_puppet.plugins.importers import metadata
 from pulp_puppet.plugins.importers.downloaders import factory as downloader_factory
 
-_LOG = logging.getLogger(__name__)
 
-# -- public classes -----------------------------------------------------------
+logger = logging.getLogger(__name__)
 
 
 class SynchronizeWithPuppetForge(object):
@@ -61,7 +60,7 @@ class SynchronizeWithPuppetForge(object):
         :return: the report object to return to Pulp from the sync call
         :rtype:  SyncProgressReport
         """
-        _LOG.info('Beginning sync for repository <%s>' % self.repo.id)
+        logger.info('Beginning sync for repository <%s>' % self.repo.id)
 
         # quit now if there is no feed URL defined
         if not self.config.get(constants.CONFIG_FEED):
@@ -106,7 +105,7 @@ class SynchronizeWithPuppetForge(object):
         :return: object representation of the metadata
         :rtype:  RepositoryMetadata
         """
-        _LOG.info('Beginning metadata retrieval for repository <%s>' % self.repo.id)
+        logger.info('Beginning metadata retrieval for repository <%s>' % self.repo.id)
 
         self.progress_report.metadata_state = STATE_RUNNING
         self.progress_report.update_progress()
@@ -120,7 +119,7 @@ class SynchronizeWithPuppetForge(object):
             metadata_json_docs = downloader.retrieve_metadata(self.progress_report)
 
         except Exception, e:
-            _LOG.exception('Exception while retrieving metadata for repository <%s>' % self.repo.id)
+            logger.exception('Exception while retrieving metadata for repository <%s>' % self.repo.id)
             self.progress_report.metadata_state = STATE_FAILED
             self.progress_report.metadata_error_message = _('Error downloading metadata')
             self.progress_report.metadata_exception = e
@@ -143,7 +142,7 @@ class SynchronizeWithPuppetForge(object):
             for doc in metadata_json_docs:
                 metadata.update_from_json(doc)
         except Exception, e:
-            _LOG.exception('Exception parsing metadata for repository <%s>' % self.repo.id)
+            logger.exception('Exception parsing metadata for repository <%s>' % self.repo.id)
             self.progress_report.metadata_state = STATE_FAILED
             self.progress_report.metadata_error_message = _('Error parsing repository modules metadata document')
             self.progress_report.metadata_exception = e
@@ -180,7 +179,7 @@ class SynchronizeWithPuppetForge(object):
                containing the modules to import
         :type  metadata: RepositoryMetadata
         """
-        _LOG.info('Retrieving modules for repository <%s>' % self.repo.id)
+        logger.info('Retrieving modules for repository <%s>' % self.repo.id)
 
         self.progress_report.modules_state = STATE_RUNNING
 
@@ -195,7 +194,7 @@ class SynchronizeWithPuppetForge(object):
         try:
             self._do_import_modules(metadata)
         except Exception, e:
-            _LOG.exception('Exception importing modules for repository <%s>' % self.repo.id)
+            logger.exception('Exception importing modules for repository <%s>' % self.repo.id)
             self.progress_report.modules_state = STATE_FAILED
             self.progress_report.modules_error_message = _('Error retrieving modules')
             self.progress_report.modules_exception = e

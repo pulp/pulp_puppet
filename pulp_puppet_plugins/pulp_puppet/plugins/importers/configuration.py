@@ -13,8 +13,11 @@
 
 from gettext import gettext as _
 
+from pulp.plugins.util import importer_config
+
 from pulp_puppet.common import constants
 from pulp_puppet.plugins.importers.downloaders import factory as downloader_factory
+
 
 def validate(config):
     """
@@ -38,7 +41,19 @@ def validate(config):
         if not result:
             return result, msg
 
-    return True, None
+    try:
+        # This will raise an InvalidConfig if there are problems
+        importer_config.validate_config(config)
+        return True, None
+    except importer_config.InvalidConfig, e:
+        # Because the validate() API is silly, we must concatenate all the failure messages into
+        # one.
+        msg = _(u'Configuration errors:\n')
+        for failure_message in e.failure_messages:
+            msg += failure_message + u'\n'
+        # Remove the last newline
+        msg = msg.rstrip()
+        return False, msg
 
 
 def _validate_feed(config):

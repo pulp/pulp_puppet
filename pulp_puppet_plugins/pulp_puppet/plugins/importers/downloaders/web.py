@@ -26,13 +26,9 @@ from pulp_puppet.plugins.importers.downloaders.base import BaseDownloader
 from pulp_puppet.common import constants
 from pulp_puppet.plugins.importers.downloaders import exceptions
 
-# -- constants ----------------------------------------------------------------
 
 DOWNLOAD_TMP_DIR = 'http-downloads'
 
-_LOG = logging.getLogger(__name__)
-
-# -- downloader implementations -----------------------------------------------
 
 class HttpDownloader(BaseDownloader):
     """
@@ -221,7 +217,6 @@ class HttpDownloader(BaseDownloader):
         config = importer_config_to_nectar_config(self.config.flatten())
         return HTTPThreadedDownloader(config, listener)
 
-# -- private classes ----------------------------------------------------------
 
 class HTTPMetadataDownloadEventListener(AggregatingEventListener):
     """
@@ -271,7 +266,6 @@ class HTTPModuleDownloadEventListener(AggregatingEventListener):
         super(HTTPModuleDownloadEventListener, self).__init__()
         self.progress_report = progress_report
 
-# -- utilities ----------------------------------------------------------------
 
 def _create_download_tmp_dir(repo_working_dir):
     tmp_dir = os.path.join(repo_working_dir, DOWNLOAD_TMP_DIR)
