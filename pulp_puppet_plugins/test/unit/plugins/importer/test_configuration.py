@@ -26,7 +26,7 @@ class FeedTests(unittest.TestCase):
 
     def test_validate_feed(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_FEED : 'http://localhost'}, {})
+        config = PluginCallConfiguration({constants.CONFIG_FEED: 'http://localhost'}, {})
         result, msg = configuration._validate_feed(config)
 
         # Verify
@@ -44,7 +44,7 @@ class FeedTests(unittest.TestCase):
 
     def test_validate_feed_invalid(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_FEED : 'bad-feed'}, {})
+        config = PluginCallConfiguration({constants.CONFIG_FEED: 'bad-feed'}, {})
         result, msg = configuration._validate_feed(config)
 
         # Verify
@@ -57,7 +57,7 @@ class QueriesTests(unittest.TestCase):
 
     def test_validate_queries(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_QUERIES : ['httpd', 'mysql']}, {})
+        config = PluginCallConfiguration({constants.CONFIG_QUERIES: ['httpd', 'mysql']}, {})
         result, msg = configuration._validate_queries(config)
 
         # Verify
@@ -75,7 +75,7 @@ class QueriesTests(unittest.TestCase):
 
     def test_validate_queries_invalid(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_QUERIES : 'non-list'}, {})
+        config = PluginCallConfiguration({constants.CONFIG_QUERIES: 'non-list'}, {})
         result, msg = configuration._validate_queries(config)
 
         # Verify
@@ -88,7 +88,7 @@ class RemoveMissingTests(unittest.TestCase):
 
     def test_validate_remove_missing(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_REMOVE_MISSING : 'true'}, {})
+        config = PluginCallConfiguration({constants.CONFIG_REMOVE_MISSING: 'true'}, {})
         result, msg = configuration._validate_remove_missing(config)
 
         # Verify
@@ -106,7 +106,7 @@ class RemoveMissingTests(unittest.TestCase):
 
     def test_validate_remove_missing_invalid(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_REMOVE_MISSING : 'foo'}, {})
+        config = PluginCallConfiguration({constants.CONFIG_REMOVE_MISSING: 'foo'}, {})
         result, msg = configuration._validate_remove_missing(config)
 
         # Verify
@@ -154,7 +154,7 @@ class TestValidate(unittest.TestCase):
 
         result, msg = configuration.validate(config)
 
-        self.assertIs(result, False)
+        self.assertFalse(result, False)
         # For ss_ca_cert being 5
         self.assertTrue('should be a string' in msg)
         # For max_speed being 'fast'

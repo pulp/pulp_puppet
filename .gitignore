@@ -36,5 +36,8 @@ cover
 # Sphinx
 */docs/*/_build
 
+# Sublime
+.codeintel
+
 # Vim
 *.swp
