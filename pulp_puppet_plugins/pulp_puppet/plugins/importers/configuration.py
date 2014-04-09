@@ -13,8 +13,11 @@
 
 from gettext import gettext as _
 
+from pulp.plugins.util import importer_config
+
 from pulp_puppet.common import constants
 from pulp_puppet.plugins.importers.downloaders import factory as downloader_factory
+
 
 def validate(config):
     """
@@ -38,7 +41,18 @@ def validate(config):
         if not result:
             return result, msg
 
-    return True, None
+    try:
+        # This will raise an InvalidConfig if there are problems
+        importer_config.validate_config(config)
+        return True, None
+    except importer_config.InvalidConfig, e:
+        # Because the validate() API is silly, we must concatenate all the failure messages into
+        # one.
+        msg = _(u'Configuration errors:\n')
+        msg += '\n'.join(e.failure_messages)
+        # Remove the last newline
+        msg = msg.rstrip()
+        return False, msg
 
 
 def _validate_feed(config):
@@ -54,7 +68,7 @@ def _validate_feed(config):
     feed = config.get(constants.CONFIG_FEED)
     is_valid = downloader_factory.is_valid_feed(feed)
     if not is_valid:
-        return False, _('The feed <%(f)s> is invalid') % {'f' : feed}
+        return False, _('The feed <%(f)s> is invalid') % {'f': feed}
 
     return True, None
 
@@ -70,7 +84,9 @@ def _validate_queries(config):
 
     queries = config.get(constants.CONFIG_QUERIES)
     if not isinstance(queries, (list, tuple)):
-        return False, _('The value for <%(q)s> must be specified as a list') % {'q' : constants.CONFIG_QUERIES}
+        msg = _('The value for <%(q)s> must be specified as a list')
+        msg = msg % {'q': constants.CONFIG_QUERIES}
+        return False, msg
 
     return True, None
 
@@ -87,6 +103,8 @@ def _validate_remove_missing(config):
     # Make sure it's a boolean
     parsed = config.get_boolean(constants.CONFIG_REMOVE_MISSING)
     if parsed is None:
-        return False, _('The value for <%(r)s> must be either "true" or "false"') % {'r' : constants.CONFIG_REMOVE_MISSING}
+        msg = _('The value for <%(r)s> must be either "true" or "false"')
+        msg = msg % {'r': constants.CONFIG_REMOVE_MISSING}
+        return False, msg
 
     return True, None

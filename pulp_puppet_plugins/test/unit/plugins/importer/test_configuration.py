@@ -10,7 +10,9 @@
 # NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
+"""
+This module contains tests for the pulp_puppet.plugins.importers.configuration module.
+"""
 import unittest
 
 import mock
@@ -24,7 +26,7 @@ class FeedTests(unittest.TestCase):
 
     def test_validate_feed(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_FEED : 'http://localhost'}, {})
+        config = PluginCallConfiguration({constants.CONFIG_FEED: 'http://localhost'}, {})
         result, msg = configuration._validate_feed(config)
 
         # Verify
@@ -42,7 +44,7 @@ class FeedTests(unittest.TestCase):
 
     def test_validate_feed_invalid(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_FEED : 'bad-feed'}, {})
+        config = PluginCallConfiguration({constants.CONFIG_FEED: 'bad-feed'}, {})
         result, msg = configuration._validate_feed(config)
 
         # Verify
@@ -55,7 +57,7 @@ class QueriesTests(unittest.TestCase):
 
     def test_validate_queries(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_QUERIES : ['httpd', 'mysql']}, {})
+        config = PluginCallConfiguration({constants.CONFIG_QUERIES: ['httpd', 'mysql']}, {})
         result, msg = configuration._validate_queries(config)
 
         # Verify
@@ -73,7 +75,7 @@ class QueriesTests(unittest.TestCase):
 
     def test_validate_queries_invalid(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_QUERIES : 'non-list'}, {})
+        config = PluginCallConfiguration({constants.CONFIG_QUERIES: 'non-list'}, {})
         result, msg = configuration._validate_queries(config)
 
         # Verify
@@ -86,7 +88,7 @@ class RemoveMissingTests(unittest.TestCase):
 
     def test_validate_remove_missing(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_REMOVE_MISSING : 'true'}, {})
+        config = PluginCallConfiguration({constants.CONFIG_REMOVE_MISSING: 'true'}, {})
         result, msg = configuration._validate_remove_missing(config)
 
         # Verify
@@ -104,7 +106,7 @@ class RemoveMissingTests(unittest.TestCase):
 
     def test_validate_remove_missing_invalid(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_REMOVE_MISSING : 'foo'}, {})
+        config = PluginCallConfiguration({constants.CONFIG_REMOVE_MISSING: 'foo'}, {})
         result, msg = configuration._validate_remove_missing(config)
 
         # Verify
@@ -113,8 +115,10 @@ class RemoveMissingTests(unittest.TestCase):
         self.assertTrue(constants.CONFIG_REMOVE_MISSING in msg)
 
 
-class FullValidationTests(unittest.TestCase):
-
+class TestValidate(unittest.TestCase):
+    """
+    Tests for the validate() function.
+    """
     @mock.patch('pulp_puppet.plugins.importers.configuration._validate_feed')
     @mock.patch('pulp_puppet.plugins.importers.configuration._validate_queries')
     @mock.patch('pulp_puppet.plugins.importers.configuration._validate_remove_missing')
@@ -139,6 +143,22 @@ class FullValidationTests(unittest.TestCase):
 
         for x in all_mock_calls:
             x.assert_called_once_with(c)
+
+    def test_validate_handles_invalid_config_exception(self):
+        """
+        Assert that validate() properly handles the InvalidConfig Exception.
+        """
+        # The CA certificate must be a string, and max_speed must be a number. Both of these errors
+        # should make it out the door
+        config = PluginCallConfiguration({}, {'max_speed': 'fast', 'ssl_ca_cert': 5})
+
+        result, msg = configuration.validate(config)
+
+        self.assertFalse(result, False)
+        # For ss_ca_cert being 5
+        self.assertTrue('should be a string' in msg)
+        # For max_speed being 'fast'
+        self.assertTrue('positive numerical value' in msg)
 
     @mock.patch('pulp_puppet.plugins.importers.configuration._validate_feed')
     @mock.patch('pulp_puppet.plugins.importers.configuration._validate_queries')
