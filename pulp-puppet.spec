@@ -135,7 +135,7 @@ A collection of modules shared among all Puppet components.
 %dir %{python_sitelib}/pulp_puppet/extensions
 %{python_sitelib}/pulp_puppet/extensions/__init__.py*
 %{python_sitelib}/pulp_puppet_common*.egg-info
-%doc
+%doc COPYRIGHT LICENSE AUTHORS
 
 
 # ---- Plugins -----------------------------------------------------------------
@@ -169,7 +169,7 @@ to provide Puppet specific support.
 %defattr(-,apache,apache,-)
 %{_var}/lib/pulp/published/puppet/
 
-%doc
+%doc COPYRIGHT LICENSE AUTHORS
 
 
 # ---- Admin Extensions --------------------------------------------------------
@@ -192,7 +192,7 @@ client capabilites with Puppet specific features.
 %{_sysconfdir}/pulp/admin/conf.d/puppet.conf
 %{python_sitelib}/pulp_puppet/extensions/admin/
 %{python_sitelib}/pulp_puppet_extensions_admin*.egg-info
-%doc
+%doc COPYRIGHT LICENSE AUTHORS
 
 
 # ---- Consumer Extensions --------------------------------------------------------
@@ -212,7 +212,7 @@ client capabilites with Puppet specific features.
 %defattr(-,root,root,-)
 %{python_sitelib}/pulp_puppet/extensions/consumer/
 %{python_sitelib}/pulp_puppet_extensions_consumer*.egg-info
-%doc
+%doc COPYRIGHT LICENSE AUTHORS
 
 # ---- Agent Handlers ----------------------------------------------------------
 
@@ -233,7 +233,7 @@ uninstall, bind, and unbind.
 %{_sysconfdir}/pulp/agent/conf.d/puppet_bind.conf
 %{_sysconfdir}/pulp/agent/conf.d/puppet_module.conf
 %{python_sitelib}/pulp_puppet_handlers*.egg-info
-%doc
+%doc COPYRIGHT LICENSE AUTHORS
 
 # ---- Tools -----------------------------------------------------------------
 
@@ -252,7 +252,7 @@ A collection of tools used to manage puppet modules.
 %{python_sitelib}/pulp_puppet/tools/
 %{python_sitelib}/pulp_puppet_tools*.egg-info
 %{_bindir}/pulp-puppet-module-builder
-%doc
+%doc COPYRIGHT LICENSE AUTHORS
 
 
 %changelog
