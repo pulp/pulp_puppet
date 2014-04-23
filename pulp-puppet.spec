@@ -221,6 +221,7 @@ Summary: Pulp agent puppet handlers
 Group: Development/Languages
 Requires: python-pulp-agent-lib = %{pulp_version}
 Requires: python-pulp-common = %{pulp_version}
+Requires: puppet >= 2.7.14
 
 %description handlers
 A collection of handlers that provide Puppet specific
