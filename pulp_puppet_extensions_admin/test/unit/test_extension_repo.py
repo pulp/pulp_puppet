@@ -10,7 +10,7 @@
 # NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-from pulp.client.commands import options
+from pulp.client.commands import options, polling
 from pulp.client.commands.repo import cudl as pulp_cudl
 from pulp.client.extensions.core import TAG_SUCCESS, TAG_REASONS
 from pulp.common.compat import json
@@ -136,7 +136,7 @@ class UpdatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         expected_options = set([options.OPTION_REPO_ID, options.OPTION_DESCRIPTION,
                                 options.OPTION_NAME, options.OPTION_NOTES,
                                 cudl.OPTION_HTTP, cudl.OPTION_HTTPS, cudl.OPTION_QUERY,
-                                cudl.OPTION_QUERIES_UPDATE])
+                                cudl.OPTION_QUERIES_UPDATE, polling.FLAG_BACKGROUND])
         found_options = set(self.command.options)
         self.assertEqual(expected_options, found_options)
 
