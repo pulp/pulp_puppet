@@ -19,6 +19,7 @@ importer.
 from pulp_puppet.common import reporting
 from pulp_puppet.common.constants import STATE_NOT_STARTED, STATE_SUCCESS
 
+
 class SyncProgressReport(object):
     """
     Used to carry the state of the sync run as it proceeds. This object is used
@@ -90,12 +91,12 @@ class SyncProgressReport(object):
         self.modules_total_count = None
         self.modules_finished_count = None
         self.modules_error_count = None
-        self.modules_individual_errors = None # mapping of module to its error
+        # list of dictionaries describing module failures. The keys are module, author, exception,
+        # and traceback.
+        self.modules_individual_errors = []
         self.modules_error_message = None # overall execution error
         self.modules_exception = None
         self.modules_traceback = None
-
-    # -- public methods -------------------------------------------------------
 
     def update_progress(self):
         """
@@ -158,14 +159,12 @@ class SyncProgressReport(object):
         Updates the progress report that a module failed to be imported.
         """
         self.modules_error_count += 1
-        self.modules_individual_errors = self.modules_individual_errors or {}
-        error_key = '%s-%s-%s' % (module.name, module.version, module.author)
-        self.modules_individual_errors[error_key] = {
-            'exception' : reporting.format_exception(exception),
-            'traceback' : reporting.format_traceback(traceback),
-        }
-
-    # -- report creation methods ----------------------------------------------
+        self.modules_individual_errors.append({
+            'module': '%s-%s' % (module.name, module.version),
+            'author': module.author,
+            'exception': reporting.format_exception(exception),
+            'traceback': reporting.format_traceback(traceback),
+        })
 
     def _metadata_section(self):
         metadata_report = {

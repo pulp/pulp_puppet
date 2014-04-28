@@ -25,7 +25,6 @@ from pulp.server.exceptions import InvalidValue
 
 from pulp_puppet.common import constants
 
-# -- exceptions ---------------------------------------------------------------
 
 class ExtractionException(InvalidValue):
     """
@@ -50,7 +49,6 @@ class InvalidTarball(ExtractionException):
     """
     pass
 
-# -- public -------------------------------------------------------------------
 
 CHECKSUM_READ_BUFFER_SIZE = 65536
 
@@ -107,8 +105,6 @@ def calculate_checksum(filename):
                 break
             m.update(file_buffer)
     return m.hexdigest()
-
-# -- private ------------------------------------------------------------------
 
 
 def _extract_json(module, filename, temp_dir):

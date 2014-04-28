@@ -24,7 +24,6 @@ from pulp.plugins.model import Repository, SyncReport, Unit
 from pulp_puppet.common import constants
 from pulp_puppet.plugins.importers.forge import SynchronizeWithPuppetForge
 
-# -- constants ----------------------------------------------------------------
 
 DATA_DIR = os.path.abspath(os.path.dirname(__file__)) + '/../../../data'
 FEED = 'file://' + os.path.join(DATA_DIR, 'repos', 'valid')
@@ -32,8 +31,6 @@ INVALID_FEED = 'file://' + os.path.join(DATA_DIR, 'repos', 'invalid')
 
 # Simulated location where Pulp will store synchronized units
 MOCK_PULP_STORAGE_LOCATION = tempfile.mkdtemp(prefix='var-lib')
-
-# -- test cases ---------------------------------------------------------------
 
 
 class MockConduit(mock.MagicMock):
@@ -120,7 +117,7 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
         self.assertEqual(pr.modules_error_message, None)
         self.assertEqual(pr.modules_exception, None)
         self.assertEqual(pr.modules_traceback, None)
-        self.assertEqual(pr.modules_individual_errors, None)
+        self.assertEqual(pr.modules_individual_errors, [])
 
         # Number of times update was called on the progress report
         self.assertEqual(self.conduit.set_progress.call_count, 9)
@@ -285,6 +282,9 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
         self.assertEqual(pr.modules_finished_count, 0)
         self.assertEqual(pr.modules_error_count, 2)
         self.assertEqual(len(pr.modules_individual_errors), 2)
+        # Make sure the individual_errors are the correct format
+        for error in pr.modules_individual_errors:
+            self.assertEqual(set(error.keys()), set(['exception', 'traceback', 'module', 'author']))
         self.assertTrue(pr.modules_execution_time is not None)
         self.assertTrue(pr.modules_error_message is None)
         self.assertTrue(pr.modules_exception is None)
