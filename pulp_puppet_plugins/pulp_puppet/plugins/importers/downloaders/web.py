@@ -12,7 +12,6 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 import copy
-import logging
 import os
 from cStringIO import StringIO
 
@@ -136,10 +135,9 @@ class HttpDownloader(BaseDownloader):
         """
         Cancel the current operation.
         """
-        downloader = self.downloader
-        if downloader is None:
+        if self.downloader is None:
             return
-        downloader.cancel()
+        self.downloader.cancel()
 
     def cleanup_module(self, module):
         """
