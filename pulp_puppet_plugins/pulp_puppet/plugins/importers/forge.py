@@ -45,6 +45,10 @@ class SynchronizeWithPuppetForge(object):
 
         self.progress_report = SyncProgressReport(sync_conduit)
         self.downloader = None
+        # Since SynchronizeWithPuppetForge creats a Nectar downloader for each unit, we cannot
+        # rely on telling the current downloader to cancel. Therefore, we need another state tracker
+        # to check in the download units loop.
+        self._canceled = False
 
     def __call__(self):
         """
@@ -87,10 +91,10 @@ class SynchronizeWithPuppetForge(object):
         """
         Cancel an in-progress sync, if there is one.
         """
-        downloader = self.downloader
-        if downloader is None:
+        self._canceled = True
+        if self.downloader is None:
             return
-        downloader.cancel()
+        self.downloader.cancel()
 
     def _parse_metadata(self):
         """
@@ -259,6 +263,8 @@ class SynchronizeWithPuppetForge(object):
 
         # Add new units
         for key in new_unit_keys:
+            if self._canceled:
+                break
             module = modules_by_key[key]
             try:
                 self._add_new_module(downloader, module)

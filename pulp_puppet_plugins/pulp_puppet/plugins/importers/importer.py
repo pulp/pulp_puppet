@@ -101,10 +101,9 @@ class PuppetModuleImporter(Importer):
         Cancel a running repository synchronization operation.
         """
         self.sync_cancelled = True
-        sync_method = self.sync_method
-        if sync_method is None:
+        if self.sync_method is None:
             return
-        sync_method.cancel()
+        self.sync_method.cancel()
 
     def is_sync_cancelled(self):
         """

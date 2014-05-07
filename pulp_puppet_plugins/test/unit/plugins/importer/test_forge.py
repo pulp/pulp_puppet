@@ -21,7 +21,7 @@ import mock
 from pulp.plugins.config import PluginCallConfiguration
 from pulp.plugins.model import Repository, SyncReport, Unit
 
-from pulp_puppet.common import constants
+from pulp_puppet.common import constants, model, sync_progress
 from pulp_puppet.plugins.importers.forge import SynchronizeWithPuppetForge
 
 
@@ -77,6 +77,71 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(MOCK_PULP_STORAGE_LOCATION)
+
+    def test___init__(self):
+        """
+        Ensure the __init__() method works properly.
+        """
+        swpf = SynchronizeWithPuppetForge(self.repo, self.conduit, self.config)
+
+        self.assertEqual(swpf.repo, self.repo)
+        self.assertEqual(swpf.sync_conduit, self.conduit)
+        self.assertEqual(swpf.config, self.config)
+        self.assertTrue(isinstance(swpf.progress_report, sync_progress.SyncProgressReport))
+        self.assertEqual(swpf.progress_report.conduit, self.conduit)
+        self.assertEqual(swpf.downloader, None)
+        self.assertEqual(swpf._canceled, False)
+
+    @mock.patch('pulp_puppet.plugins.importers.forge.SynchronizeWithPuppetForge._add_new_module')
+    def test__do_import_modules_handles_cancel(self, _add_new_module):
+        """
+        Make sure _do_import_modules() handles the cancel signal correctly. We'll do this by setting
+        up a side effect with the first module to call cancel so the second never happens.
+        """
+        swpf = SynchronizeWithPuppetForge(self.repo, self.conduit, self.config)
+
+        def _side_effect(*args, **kwargs):
+            swpf.cancel()
+
+        _add_new_module.side_effect = _side_effect
+        metadata = model.RepositoryMetadata()
+        module_1 = model.Module('module_1', '1.0.0', 'simon')
+        module_2 = model.Module('module_2', '2.0.3', 'garfunkel')
+        metadata.modules = [module_1, module_2]
+
+        swpf._do_import_modules(metadata)
+
+        # If _add_new_module was called exactly once, then our cancel was successful because the
+        # first call to _add_new_module set the cancel flag, and the loop exited the next time.
+        # Because dictionaries are involved in the order in which the modules get downloaded, we
+        # don't have a documented guarantee about which module will be the one. Therefore, we'll
+        # just assert that only one was downloaded and that it was one of the two.
+        self.assertEqual(_add_new_module.call_count, 1)
+        downloaded_module = _add_new_module.mock_calls[0][1][1]
+        self.assertTrue(downloaded_module in [module_1, module_2])
+
+    def test_cancel_downloader_none(self):
+        """
+        Ensure correct operation of the cancel() method when the downloader is None.
+        """
+        swpf = SynchronizeWithPuppetForge(self.repo, self.conduit, self.config)
+
+        # This should not blow up due to the downloader being None
+        swpf.cancel()
+
+        self.assertEqual(swpf._canceled, True)
+
+    def test_cancel_downloader_set(self):
+        """
+        Ensure correct operation of the cancel() method when the downloader is set.
+        """
+        swpf = SynchronizeWithPuppetForge(self.repo, self.conduit, self.config)
+        swpf.downloader = mock.MagicMock()
+
+        swpf.cancel()
+
+        self.assertEqual(swpf._canceled, True)
+        swpf.downloader.cancel.assert_called_once_with()
 
     def test_synchronize(self):
         # Test
