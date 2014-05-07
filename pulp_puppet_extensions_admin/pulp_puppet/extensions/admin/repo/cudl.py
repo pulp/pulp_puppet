@@ -118,37 +118,34 @@ class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand, ImporterConfigMixin
         self.add_option(OPTION_HTTPS)
 
     def run(self, **kwargs):
-        # -- repository metadata --
-        repo_id = kwargs.pop(options.OPTION_REPO_ID.keyword)
-        description = kwargs.pop(options.OPTION_DESCRIPTION.keyword, None)
-        name = kwargs.pop(options.OPTION_NAME.keyword, None)
-        notes = kwargs.pop(options.OPTION_NOTES.keyword, None)
-
         # -- importer metadata --
         queries = kwargs.pop(OPTION_QUERIES.keyword, None)
         if queries is None:
             queries = kwargs.pop(OPTION_QUERY.keyword, None)
         importer_config = self.parse_user_input(kwargs)
         importer_config.update({constants.CONFIG_QUERIES: queries})
-        arg_utils.convert_removed_options(importer_config)
+        if importer_config:
+            arg_utils.convert_removed_options(importer_config)
+            kwargs['importer_config'] = importer_config
+
+        # Remove the importer keys from kwargs so they don't get added to the repo config
+        for key in importer_config:
+            kwargs.pop(key, None)
 
         # -- distributor metadata --
         distributor_config = {
-            constants.CONFIG_SERVE_HTTP : kwargs.pop(OPTION_HTTP.keyword, None),
-            constants.CONFIG_SERVE_HTTPS : kwargs.pop(OPTION_HTTPS.keyword, None),
-            }
+            constants.CONFIG_SERVE_HTTP: kwargs.pop(OPTION_HTTP.keyword, None),
+            constants.CONFIG_SERVE_HTTPS: kwargs.pop(OPTION_HTTPS.keyword, None)
+        }
         arg_utils.convert_removed_options(distributor_config)
-        arg_utils.convert_boolean_arguments((constants.CONFIG_SERVE_HTTP, constants.CONFIG_SERVE_HTTPS), distributor_config)
+        arg_utils.convert_boolean_arguments((constants.CONFIG_SERVE_HTTP,
+                                             constants.CONFIG_SERVE_HTTPS), distributor_config)
+        # Remove the distributor keys from kwargs so they don't get added to the repo config
+        for key in distributor_config:
+            kwargs.pop(key, None)
 
-        distributor_configs = {constants.DISTRIBUTOR_ID : distributor_config}
-
-        # -- server update --
-        response = self.context.server.repo.update_repo_and_plugins(repo_id, name,
-            description, notes, importer_config, distributor_configs)
-
-        d = _('The repository update operation has been queued. Progress '
-              'on this task can be viewed using the commands under "repo tasks".')
-        self.context.prompt.render_paragraph(d, tag='postponed')
+        kwargs['distributor_configs'] = {constants.DISTRIBUTOR_ID: distributor_config}
+        super(UpdatePuppetRepositoryCommand, self).run(**kwargs)
 
 
 class ListPuppetRepositoriesCommand(ListRepositoriesCommand):
