@@ -128,6 +128,7 @@ class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand, ImporterConfigMixin
             arg_utils.convert_removed_options(importer_config)
             kwargs['importer_config'] = importer_config
 
+        # Remove the importer keys from kwargs so they don't get added to the repo config
         for key in importer_config:
             kwargs.pop(key, None)
 
@@ -139,6 +140,7 @@ class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand, ImporterConfigMixin
         arg_utils.convert_removed_options(distributor_config)
         arg_utils.convert_boolean_arguments((constants.CONFIG_SERVE_HTTP,
                                              constants.CONFIG_SERVE_HTTPS), distributor_config)
+        # Remove the distributor keys from kwargs so they don't get added to the repo config
         for key in distributor_config:
             kwargs.pop(key, None)
 
