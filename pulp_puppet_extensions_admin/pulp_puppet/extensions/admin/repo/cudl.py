@@ -33,7 +33,7 @@ OPTION_QUERY = PulpCliOption('--query', DESC_QUERY, required=False, allow_multip
 
 DESC_QUERIES = _(
     'comma-separated list of queries to issue against the feed\'s modules.json '
-    'file to scope which modules are imported.'
+    'file to scope which modules are imported. ignored when feed is static files.'
 )
 OPTION_QUERIES = PulpCliOption(
     '--queries', DESC_QUERIES, required=False, allow_multiple=False,
@@ -41,7 +41,8 @@ OPTION_QUERIES = PulpCliOption(
 
 DESC_QUERIES_UPDATE = _(
     'comma-separated list of queries to issue against the feed\'s modules.json '
-    'file to scope which modules are imported. overwrites previous values.'
+    'file to scope which modules are imported. overwrites previous values. '
+    'ignored when feed is static files.'
 )
 OPTION_QUERIES_UPDATE = PulpCliOption(
     '--queries', DESC_QUERIES_UPDATE, required=False, allow_multiple=False,
