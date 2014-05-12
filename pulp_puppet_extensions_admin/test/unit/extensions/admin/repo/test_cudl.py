@@ -73,7 +73,7 @@ class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         self.assertEqual(expected_config, body['importer_config'])
 
         dist = body['distributors'][0]
-        self.assertEqual(constants.DISTRIBUTOR_TYPE_ID, dist['distributor_type'])
+        self.assertEqual(constants.DISTRIBUTOR_TYPE_ID, dist['distributor_type_id'])
         self.assertEqual(True, dist['auto_publish'])
         self.assertEqual(constants.DISTRIBUTOR_ID, dist['distributor_id'])
 

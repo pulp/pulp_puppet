@@ -95,7 +95,7 @@ class CreatePuppetRepositoryCommand(CreateRepositoryCommand, ImporterConfigMixin
         arg_utils.convert_boolean_arguments((constants.CONFIG_SERVE_HTTP, constants.CONFIG_SERVE_HTTPS), distributor_config)
 
         distributors = [
-            dict(distributor_type=constants.DISTRIBUTOR_TYPE_ID, distributor_config=distributor_config,
+            dict(distributor_type_id=constants.DISTRIBUTOR_TYPE_ID, distributor_config=distributor_config,
                  auto_publish=True, distributor_id=constants.DISTRIBUTOR_ID)
         ]
 
