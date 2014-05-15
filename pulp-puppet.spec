@@ -18,7 +18,7 @@
 
 Name: pulp-puppet
 Version: 2.4.0
-Release: 0.13.beta%{?dist}
+Release: 0.14.beta%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -257,6 +257,11 @@ A collection of tools used to manage puppet modules.
 
 
 %changelog
+* Thu May 15 2014 Randy Barlow <rbarlow@redhat.com> 2.4.0-0.14.beta
+- 1073143 - improved CLI docs for --queries option (mhrivnak@redhat.com)
+- 1093429 - Changing parameter name for repo create due to API change
+  (mhrivnak@redhat.com)
+
 * Thu May 08 2014 Jeff Ortel <jortel@redhat.com> 2.4.0-0.13.beta
 - 1082802 - Stop downloading modules when canceled. (rbarlow@redhat.com)
 - 1091038 - Puppet repo update command needs to extend the generic update repo
