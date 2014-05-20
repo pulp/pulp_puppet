@@ -20,7 +20,7 @@ from pulp.devel.test_runner import run_tests
 PROJECT_DIR = os.path.dirname(__file__)
 subprocess.call(['find', PROJECT_DIR, '-name', '*.pyc', '-delete'])
 
-PACKAGES = ['pulp_puppet', ]
+PACKAGES = [os.path.dirname(__file__), 'pulp_puppet']
 
 TESTS = [
     'pulp_puppet_common/test/unit/',
