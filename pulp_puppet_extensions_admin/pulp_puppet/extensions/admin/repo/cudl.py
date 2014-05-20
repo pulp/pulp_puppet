@@ -145,7 +145,9 @@ class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand, ImporterConfigMixin
         for key in distributor_config:
             kwargs.pop(key, None)
 
-        kwargs['distributor_configs'] = {constants.DISTRIBUTOR_ID: distributor_config}
+        kwargs['distributor_configs'] = {}
+        if distributor_config:
+            kwargs['distributor_configs'][constants.DISTRIBUTOR_ID] = distributor_config
         super(UpdatePuppetRepositoryCommand, self).run(**kwargs)
 
 
