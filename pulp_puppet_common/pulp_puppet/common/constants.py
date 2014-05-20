@@ -157,6 +157,14 @@ REPO_ID_OPTION = 'repo_id'
 # as its value that should have its entire contents installed
 WHOLE_REPO_OPTION = 'whole_repo'
 
+# Option key passed to an "install" or "update" consumer request with a boolean
+# as its value that should be used for the request
+SKIP_DEP_OPTION = 'skip_dep'
+
+# Option key passed to an "install", "update" or uninstall consumer request with a modulepath 
+# as its value that should be used for the request
+MODULEPATH_OPTION = 'module_path'
+
 # -- directory synchronization  ----------------------------------------------
 
 MANIFEST_FILENAME = 'PULP_MANIFEST'
