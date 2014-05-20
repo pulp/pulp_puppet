@@ -79,6 +79,9 @@ popd
 
 %install
 rm -rf %{buildroot}
+
+mkdir -p %{buildroot}/%{_sysconfdir}/pulp/
+
 pushd pulp_puppet_common
 %{__python} setup.py install -O1 --skip-build --root %{buildroot}
 popd
