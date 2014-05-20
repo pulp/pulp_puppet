@@ -14,6 +14,7 @@
 from gettext import gettext as _
 
 from pulp.client.commands.consumer import content
+from pulp.client import parsers
 from pulp.client.extensions.extensions import PulpCliOption, PulpCliCommand
 
 from pulp_puppet.common import constants
@@ -77,6 +78,20 @@ OPTION_WHOLE_REPO = PulpCliOption(
     aliases=['-w'],
 )
 
+OPTION_SKIP_DEP = PulpCliOption(
+    '--skip-dep',
+    _('if "true", skip installing any modules required by this module'),
+    required=False,
+    aliases=['-s'],
+    parse_func=parsers.parse_boolean
+)
+
+OPTION_MODULEPATH = PulpCliOption(
+    '--modulepath',
+    _('the target directory'),
+    required=False,
+    aliases=['-m'],
+)
 
 class ContentMixin(PulpCliCommand):
     def add_content_options(self):
@@ -151,6 +166,8 @@ class InstallCommand(ContentMixin, content.ConsumerContentInstallCommand):
 
     def add_install_options(self):
         self.add_option(OPTION_WHOLE_REPO)
+        self.add_option(OPTION_SKIP_DEP)
+        self.add_option(OPTION_MODULEPATH)
 
     def get_content_units(self, kwargs):
         """
@@ -170,7 +187,7 @@ class InstallCommand(ContentMixin, content.ConsumerContentInstallCommand):
 
     def get_install_options(self, kwargs):
         """
-        Looks for the --whole-repo option and returns an corresponding "options"
+        Looks for the --whole-repo, --skip-dep, --modulepath options and returns an corresponding "options"
         dict appropriate for a handler
 
         :param kwargs:  arguments passed on the command line
@@ -180,11 +197,18 @@ class InstallCommand(ContentMixin, content.ConsumerContentInstallCommand):
                     "options" parameter.
         """
         repo_id = kwargs.get(OPTION_WHOLE_REPO.keyword)
+        skip_dep = kwargs.get(OPTION_SKIP_DEP.keyword)
+        module_path = kwargs.get(OPTION_MODULEPATH.keyword)
+        options = {}
         if repo_id:
-            return {
-                constants.REPO_ID_OPTION: repo_id,
-                constants.WHOLE_REPO_OPTION: True
-            }
+            options[constants.REPO_ID_OPTION] = repo_id
+            options[constants.WHOLE_REPO_OPTION] = 'True'
+        if skip_dep:
+            options[constants.SKIP_DEP_OPTION] = skip_dep
+        if module_path:
+            options[constants.MODULEPATH_OPTION] = module_path
+        if options:
+            return options
         else:
             return super(InstallCommand, self).get_install_options(kwargs)
 
@@ -202,8 +226,48 @@ class InstallCommand(ContentMixin, content.ConsumerContentInstallCommand):
 
 
 class UpdateCommand(ContentMixin, content.ConsumerContentUpdateCommand):
-    pass
+    def add_update_options(self):
+        self.add_option(OPTION_SKIP_DEP)
+        self.add_option(OPTION_MODULEPATH)
+
+    def get_update_options(self, kwargs):
+        """
+        Looks for the --skip-dep, --modulepath options and returns an corresponding "options"
+        dict appropriate for a handler
+
+        :param kwargs:  arguments passed on the command line
+        :type  kwargs:  dict
+
+        :return:    a dict suitable to pass to a puppet content handler's
+                    "options" parameter.
+        """
+        skip_dep = kwargs.get(OPTION_SKIP_DEP.keyword)
+        module_path = kwargs.get(OPTION_MODULEPATH.keyword)
+        options = {}
+        if skip_dep:
+            options[constants.SKIP_DEP_OPTION] = skip_dep
+        if module_path:
+            options[constants.MODULEPATH_OPTION] = module_path
+        return options
 
 
 class UninstallCommand(ContentMixin, content.ConsumerContentUninstallCommand):
-    pass
+    def add_uninstall_options(self):
+        self.add_option(OPTION_MODULEPATH)
+  
+    def get_uninstall_options(self, kwargs):
+        """
+        Looks for the --modulepath option and returns an corresponding "options"
+        dict appropriate for a handler
+
+        :param kwargs:  arguments passed on the command line
+        :type  kwargs:  dict
+
+        :return:    a dict suitable to pass to a puppet content handler's
+                    "options" parameter.
+        """
+        module_path = kwargs.get(OPTION_MODULEPATH.keyword)
+        options = {}
+        if module_path:
+            options[constants.MODULEPATH_OPTION] = module_path
+        return options
