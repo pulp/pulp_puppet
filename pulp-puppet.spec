@@ -13,6 +13,15 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")}
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(1))")}
 
+%if 0%{?rhel} == 5
+%define pulp_admin 0
+%define pulp_server 0
+%define pulp_puppet_tools 0
+%else
+%define pulp_admin 1
+%define pulp_server 1
+%define pulp_puppet_tools 1
+%endif # End RHEL 5 if block
 
 # ---- Pulp (puppet) -----------------------------------------------------------
 
@@ -41,69 +50,90 @@ handlers that provide Puppet support.
 pushd pulp_puppet_common
 %{__python} setup.py build
 popd
+
+%if %{pulp_admin}
 pushd pulp_puppet_extensions_admin
 %{__python} setup.py build
 popd
+%endif # End pulp_admin if block
+
 pushd pulp_puppet_extensions_consumer
 %{__python} setup.py build
 popd
+
+%if %{pulp_server}
 pushd pulp_puppet_plugins
 %{__python} setup.py build
 popd
+%endif # End pulp_server if block
+
 pushd pulp_puppet_handlers
 %{__python} setup.py build
 popd
+
+%if %{pulp_puppet_tools}
 pushd pulp_puppet_tools
 %{__python} setup.py build
 popd
+%endif # End pulp_puppet_tools if block
 
 %install
 rm -rf %{buildroot}
 pushd pulp_puppet_common
 %{__python} setup.py install -O1 --skip-build --root %{buildroot}
 popd
+
+%if %{pulp_admin}
 pushd pulp_puppet_extensions_admin
 %{__python} setup.py install -O1 --skip-build --root %{buildroot}
 popd
+
+mkdir -p %{buildroot}/%{_usr}/lib/pulp/admin/extensions
+
+cp -R pulp_puppet_extensions_admin/etc/pulp %{buildroot}/%{_sysconfdir}
+%endif # End pulp_admin if block
+
 pushd pulp_puppet_extensions_consumer
 %{__python} setup.py install -O1 --skip-build --root %{buildroot}
 popd
+
+%if %{pulp_server}
 pushd pulp_puppet_plugins
 %{__python} setup.py install -O1 --skip-build --root %{buildroot}
 popd
-pushd pulp_puppet_handlers
-%{__python} setup.py install -O1 --skip-build --root %{buildroot}
-popd
-pushd pulp_puppet_tools
-%{__python} setup.py install -O1 --skip-build --root %{buildroot}
-popd
 
-# Directories
-mkdir -p %{buildroot}/%{_sysconfdir}/pulp/agent/conf.d
 mkdir -p %{buildroot}/%{_sysconfdir}/pulp/vhosts80
-mkdir -p %{buildroot}/%{_usr}/lib
+mkdir -p %{buildroot}/srv/pulp
 mkdir -p %{buildroot}/%{_usr}/lib/pulp/plugins/types
-mkdir -p %{buildroot}/%{_usr}/lib/pulp/admin/extensions
-mkdir -p %{buildroot}/%{_usr}/lib/pulp/agent/handlers
 mkdir -p %{buildroot}/%{_var}/lib/pulp/published/puppet/http
 mkdir -p %{buildroot}/%{_var}/lib/pulp/published/puppet/https
-mkdir -p %{buildroot}/srv/pulp
-mkdir -p %{buildroot}/%{_bindir}
 
-# Configuration
 cp -R pulp_puppet_plugins/etc/httpd %{buildroot}/%{_sysconfdir}
-cp -R pulp_puppet_extensions_admin/etc/pulp %{buildroot}/%{_sysconfdir}
 cp pulp_puppet_plugins/etc/pulp/vhosts80/puppet.conf %{buildroot}/%{_sysconfdir}/pulp/vhosts80/
-
 # WSGI app
 cp -R pulp_puppet_plugins/srv/pulp/puppet_forge_post33_api.wsgi %{buildroot}/srv/pulp/
 cp -R pulp_puppet_plugins/srv/pulp/puppet_forge_pre33_api.wsgi %{buildroot}/srv/pulp/
+# Types
+cp -R pulp_puppet_plugins/pulp_puppet/plugins/types/* %{buildroot}/%{_usr}/lib/pulp/plugins/types/
+%endif # End pulp_server if block
+
+pushd pulp_puppet_handlers
+%{__python} setup.py install -O1 --skip-build --root %{buildroot}
+popd
+
+%if %{pulp_puppet_tools}
+pushd pulp_puppet_tools
+%{__python} setup.py install -O1 --skip-build --root %{buildroot}
+popd
+%endif # End pulp_puppet_tools if block
+
+# Directories
+mkdir -p %{buildroot}/%{_sysconfdir}/pulp/agent/conf.d
+mkdir -p %{buildroot}/%{_usr}/lib/pulp/agent/handlers
+mkdir -p %{buildroot}/%{_bindir}
 
 # Agent Handlers
 cp pulp_puppet_handlers/etc/pulp/agent/conf.d/* %{buildroot}/%{_sysconfdir}/pulp/agent/conf.d/
-
-# Types
-cp -R pulp_puppet_plugins/pulp_puppet/plugins/types/* %{buildroot}/%{_usr}/lib/pulp/plugins/types/
 
 # Remove tests
 rm -rf %{buildroot}/%{python_sitelib}/test
@@ -139,7 +169,7 @@ A collection of modules shared among all Puppet components.
 
 
 # ---- Plugins -----------------------------------------------------------------
-
+%if %{pulp_server}
 %package plugins
 Summary: Pulp Puppet plugins
 Group: Development/Languages
@@ -170,10 +200,11 @@ to provide Puppet specific support.
 %{_var}/lib/pulp/published/puppet/
 
 %doc COPYRIGHT LICENSE AUTHORS
+%endif # End pulp_server if block
 
 
 # ---- Admin Extensions --------------------------------------------------------
-
+%if %{pulp_admin}
 %package admin-extensions
 Summary: The Puppet admin client extensions
 Group: Development/Languages
@@ -193,6 +224,7 @@ client capabilites with Puppet specific features.
 %{python_sitelib}/pulp_puppet/extensions/admin/
 %{python_sitelib}/pulp_puppet_extensions_admin*.egg-info
 %doc COPYRIGHT LICENSE AUTHORS
+%endif # End pulp_admin if block
 
 
 # ---- Consumer Extensions --------------------------------------------------------
@@ -236,8 +268,9 @@ uninstall, bind, and unbind.
 %{python_sitelib}/pulp_puppet_handlers*.egg-info
 %doc COPYRIGHT LICENSE AUTHORS
 
-# ---- Tools -----------------------------------------------------------------
 
+# ---- Tools -----------------------------------------------------------------
+%if %{pulp_puppet_tools}
 %package tools
 Summary: Pulp puppet tools
 Group: Development/Languages
@@ -253,6 +286,7 @@ A collection of tools used to manage puppet modules.
 %{python_sitelib}/pulp_puppet_tools*.egg-info
 %{_bindir}/pulp-puppet-module-builder
 %doc COPYRIGHT LICENSE AUTHORS
+%endif # End pulp_puppet_tools if block
 
 
 %changelog
