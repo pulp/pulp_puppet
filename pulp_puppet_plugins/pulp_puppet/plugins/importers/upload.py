@@ -45,12 +45,13 @@ def handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path, conduit):
         raise NotImplementedError()
 
     # Create a module out of the uploaded metadata
-    combined = copy.copy(unit_key)
-    combined.update(metadata)
-    module = Module.from_dict(combined)
+    initial_module = None
+    if unit_key:
+        initial_module = Module.from_dict(unit_key)
 
     # Extract the metadata from the module
-    metadata_parser.extract_metadata(module, file_path, repo.working_dir)
+    extracted_data = metadata_parser.extract_metadata(file_path, repo.working_dir, initial_module)
+    module = Module.from_dict(extracted_data)
 
     # Create the Pulp unit
     type_id = constants.TYPE_PUPPET_MODULE

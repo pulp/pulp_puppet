@@ -20,6 +20,7 @@ import shutil
 import sys
 import tarfile
 import hashlib
+import tempfile
 
 from pulp.server.exceptions import InvalidValue
 
@@ -53,7 +54,7 @@ class InvalidTarball(ExtractionException):
 CHECKSUM_READ_BUFFER_SIZE = 65536
 
 
-def extract_metadata(module, filename, temp_dir):
+def extract_metadata(filename, temp_dir, module=None):
     """
     Pulls the module's metadata file out of the module's tarball and updates the
     module instance with its contents. The module instance itself is updated
@@ -73,19 +74,16 @@ def extract_metadata(module, filename, temp_dir):
     :raise InvalidTarball: if the module file cannot be opened
     :raise MissingModuleFile: if the module's metadata file cannot be found
     """
+    if module is None:
+        return _extract_non_standard_json(filename, temp_dir)
 
     # Attempt to load from the standard metadata file location. If it's not
     # found, try the brute force approach. If it's still not found, that call
     # will raise the appropriate MissingModuleFile exception.
     try:
-        metadata_json = _extract_json(module, filename, temp_dir)
+        return _extract_json(module, filename, temp_dir)
     except MissingModuleFile:
-        metadata_json = _extract_non_standard_json(module, filename, temp_dir)
-
-    module.update_from_json(metadata_json)
-
-    # calculate the checksum for the overall module
-    module.checksum = calculate_checksum(filename)
+        return _extract_non_standard_json(filename, temp_dir)
 
 
 def calculate_checksum(filename):
@@ -140,7 +138,7 @@ def _extract_json(module, filename, temp_dir):
     return contents
 
 
-def _extract_non_standard_json(module, filename, temp_dir):
+def _extract_non_standard_json(filename, temp_dir):
     """
     Called if the module's metadata file isn't found in the standard location.
     The entire module will be extracted to a temporary location and an attempt
@@ -152,8 +150,7 @@ def _extract_non_standard_json(module, filename, temp_dir):
     :raise MissingModuleFile: if the module's metadata file cannot be found
     """
 
-    extraction_dir = os.path.join(temp_dir, module.author, module.name, module.version)
-    os.makedirs(extraction_dir)
+    extraction_dir = tempfile.mkdtemp(dir=temp_dir)
 
     # Extract the entire module
     try:
