@@ -163,6 +163,20 @@ class ModuleTests(unittest.TestCase):
         # Verify
         self.assert_valid_module(module)
 
+    def test_from_json(self):
+        # Setup
+        data = json.loads(VALID_MODULE_METADATA_JSON)
+
+        # Test
+        module = Module.from_json(data)
+
+        # Verify
+        self.assertEqual(module.name, "valid")
+        self.assertEqual(module.author, "jdob")
+
+        module.name = "jdob-valid" # rename the module to use the assert
+        self.assert_valid_module(module)
+
     def assert_valid_module(self, module):
         self.assertEqual(module.name, 'jdob-valid')
         self.assertEqual(module.version, '1.0.0')
