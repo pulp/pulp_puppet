@@ -314,7 +314,8 @@ class SynchronizeWithPuppetForge(object):
                 shutil.copy(downloaded_filename, unit.storage_path)
 
             # Extract the extra metadata into the module
-            metadata.extract_metadata(module, unit.storage_path, self.repo.working_dir)
+            metadata_json = metadata.extract_metadata(unit.storage_path, self.repo.working_dir, module)
+            module = Module.from_json(metadata_json)
 
             # Update the unit with the extracted metadata
             unit.metadata = module.unit_metadata()

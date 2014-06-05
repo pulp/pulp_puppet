@@ -16,6 +16,8 @@ import shutil
 import tempfile
 import unittest
 
+from mock import patch
+
 from pulp.server.exceptions import InvalidValue
 
 from pulp_puppet.common.model import Module
@@ -49,7 +51,8 @@ class SuccessfulMetadataTests(unittest.TestCase):
         filename = os.path.join(self.module_dir, self.module.filename())
 
         # Test
-        metadata.extract_metadata(self.module, filename, self.tmp_dir)
+        metadata_json = metadata.extract_metadata(filename, self.tmp_dir, self.module)
+        self.module = Module.from_json(metadata_json)
 
         # Verify
         self.assertEqual(self.module.name, 'valid')
@@ -58,14 +61,18 @@ class SuccessfulMetadataTests(unittest.TestCase):
 
         self._assert_test_module_metadata()
 
-    def test_extract_metadata_non_standard_packaging(self):
+    @patch("tempfile.mkdtemp")
+    def test_extract_metadata_non_standard_packaging(self, mkdtemp):
         # Setup
         self.module = Module('misnamed', '1.0.0', 'ldob')
         self.module_dir = os.path.join(DATA_DIR, 'bad-modules')
         filename = os.path.join(self.module_dir, self.module.filename())
+        extraction_dir = os.path.join(self.tmp_dir, "test")
+        mkdtemp.return_value = extraction_dir
 
         # Test
-        metadata.extract_metadata(self.module, filename, self.tmp_dir)
+        metadata_json = metadata.extract_metadata(filename, self.tmp_dir, self.module)
+        self.module.update_from_dict(metadata_json)
 
         # Verify - contains the same module as jdob-valid-1.0.0, so this is safe
         self.assertEqual(self.module.name, 'misnamed')
@@ -74,8 +81,26 @@ class SuccessfulMetadataTests(unittest.TestCase):
 
         self._assert_test_module_metadata()
 
-        extraction_root = os.path.join(self.tmp_dir, self.module.author)
-        self.assertTrue(not os.path.exists(extraction_root))
+        self.assertTrue(not os.path.exists(extraction_dir))
+
+    @patch("tempfile.mkdtemp")
+    def test_extract_metadata_no_module(self, mkdtemp):
+        # Setup
+        filename = os.path.join(self.module_dir, self.module.filename())
+        extraction_dir = os.path.join(self.tmp_dir, "1234")
+        mkdtemp.return_value = extraction_dir
+
+        metadata_json = metadata.extract_metadata(filename, self.tmp_dir)
+        self.module = Module.from_json(metadata_json)
+
+        # Verify
+        self.assertEqual(self.module.name, 'valid')
+        self.assertEqual(self.module.version, '1.0.0')
+        self.assertEqual(self.module.author, 'jdob')
+
+        self._assert_test_module_metadata()
+
+        self.assertTrue(not os.path.exists(extraction_dir))
 
     def _assert_test_module_metadata(self):
 
@@ -135,7 +160,7 @@ class NegativeMetadataTests(unittest.TestCase):
 
         # Test
         try:
-            metadata.extract_metadata(self.module, filename, self.tmp_dir)
+            metadata.extract_metadata(filename, self.tmp_dir, self.module)
             self.fail()
         except metadata.ExtractionException, e:
             self.assertEqual(e.module_filename, filename)
@@ -149,7 +174,7 @@ class NegativeMetadataTests(unittest.TestCase):
 
         # Test
         try:
-            metadata._extract_non_standard_json(self.module, filename, self.tmp_dir)
+            metadata._extract_non_standard_json(filename, self.tmp_dir)
             self.fail()
         except metadata.ExtractionException, e:
             self.assertEqual(e.module_filename, filename)
@@ -161,7 +186,7 @@ class NegativeMetadataTests(unittest.TestCase):
 
         # Test
         try:
-            metadata.extract_metadata(self.module, filename, self.tmp_dir)
+            metadata.extract_metadata(filename, self.tmp_dir)
             self.fail()
         except metadata.MissingModuleFile, e:
             self.assertEqual(e.module_filename, filename)

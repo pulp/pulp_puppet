@@ -20,7 +20,9 @@ import shutil
 import sys
 import tarfile
 import hashlib
+import tempfile
 
+from pulp.common.compat import json
 from pulp.server.exceptions import InvalidValue
 
 from pulp_puppet.common import constants
@@ -53,15 +55,12 @@ class InvalidTarball(ExtractionException):
 CHECKSUM_READ_BUFFER_SIZE = 65536
 
 
-def extract_metadata(module, filename, temp_dir):
+def extract_metadata(filename, temp_dir, module=None):
     """
     Pulls the module's metadata file out of the module's tarball and updates the
     module instance with its contents. The module instance itself is updated
     as part of this call. It is up to the caller to delete the temp_dir after
     this executes.
-
-    :param module: module instance to extract metadata for
-    :type  module: Module
 
     :param filename: full path to the module file
     :type  filename: str
@@ -70,22 +69,26 @@ def extract_metadata(module, filename, temp_dir):
            must exist prior to this call
     :type  temp_dir: str
 
+    :param module: module instance with name, author, version to help find
+           the directory which contains metadata.json (optional)
+    :type  module: Module
+
     :raise InvalidTarball: if the module file cannot be opened
     :raise MissingModuleFile: if the module's metadata file cannot be found
     """
+    if module is None:
+        metadata = _extract_non_standard_json(filename, temp_dir)
+        return json.loads(metadata)
 
     # Attempt to load from the standard metadata file location. If it's not
     # found, try the brute force approach. If it's still not found, that call
     # will raise the appropriate MissingModuleFile exception.
     try:
-        metadata_json = _extract_json(module, filename, temp_dir)
+        metadata = _extract_json(module, filename, temp_dir)
+        return json.loads(metadata)
     except MissingModuleFile:
-        metadata_json = _extract_non_standard_json(module, filename, temp_dir)
-
-    module.update_from_json(metadata_json)
-
-    # calculate the checksum for the overall module
-    module.checksum = calculate_checksum(filename)
+        metadata = _extract_non_standard_json(filename, temp_dir)
+        return json.loads(metadata)
 
 
 def calculate_checksum(filename):
@@ -140,7 +143,7 @@ def _extract_json(module, filename, temp_dir):
     return contents
 
 
-def _extract_non_standard_json(module, filename, temp_dir):
+def _extract_non_standard_json(filename, temp_dir):
     """
     Called if the module's metadata file isn't found in the standard location.
     The entire module will be extracted to a temporary location and an attempt
@@ -148,12 +151,18 @@ def _extract_non_standard_json(module, filename, temp_dir):
     exception is raised. The temporary location is deleted at the end of this
     call regardless.
 
+    :param filename: full path to the module file
+    :type  filename: str
+
+    :param temp_dir: location the module's files should be extracted to;
+           must exist prior to this call
+    :type  temp_dir: str
+
     :raise InvalidTarball: if the module file cannot be opened
     :raise MissingModuleFile: if the module's metadata file cannot be found
     """
 
-    extraction_dir = os.path.join(temp_dir, module.author, module.name, module.version)
-    os.makedirs(extraction_dir)
+    extraction_dir = tempfile.mkdtemp(dir=temp_dir)
 
     # Extract the entire module
     try:
@@ -176,8 +185,7 @@ def _extract_non_standard_json(module, filename, temp_dir):
         return contents
     finally:
         # Delete the entire extraction directory
-        extraction_root = os.path.join(temp_dir, module.author)
-        shutil.rmtree(extraction_root)
+        shutil.rmtree(extraction_dir)
 
 
 def _read_contents(filename):
@@ -197,7 +205,7 @@ def _read_contents(filename):
         # Clean up the temporary file
         os.remove(filename)
 
-        
+
 def _find_file_in_dir(dir, filename):
     """
     Recursively checks the directory for the presence of a file with the given

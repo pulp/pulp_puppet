@@ -73,6 +73,24 @@ class UploadTests(unittest.TestCase):
         self.assertTrue('summary' in report)
         self.assertTrue('details' in report)
 
+    def test_handle_uploaded_unit_with_no_data(self):
+        # Setup
+        initialized_unit = mock.MagicMock()
+        initialized_unit.storage_path = self.dest_dir
+        self.conduit.init_unit.return_value = initialized_unit
+
+        # Test
+        report = upload.handle_uploaded_unit(self.repo, constants.TYPE_PUPPET_MODULE, {},
+                                             {}, self.source_file, self.conduit)
+
+        # Verify
+        self.assertTrue(os.path.exists(self.dest_file))
+
+        self.assertEqual(1, self.conduit.init_unit.call_count)
+        self.assertEqual(1, self.conduit.save_unit.call_count)
+
+        self.assertTrue(report['success_flag'])
+
     def test_handle_uploaded_unit_bad_type(self):
         self.assertRaises(NotImplementedError, upload.handle_uploaded_unit, self.repo, 'foo',
                           None, None, None, None)
