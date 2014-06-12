@@ -184,7 +184,8 @@ class ModuleHandler(handler.ContentHandler):
                 previous_failure_count = len(failed_names)
                 failed_units = [units_by_full_name[full_name] for full_name in failed_names]
                 # retry the failed attempts
-                new_successes, new_errors, new_num_changes = cls._perform_operation('uninstall', failed_units, None, None, module_path)
+                new_successes, new_errors, new_num_changes = \
+                    cls._perform_operation('uninstall', failed_units, None, None, module_path)
                 num_changes += new_num_changes
                 # move new successes from "errors" to "successes"
                 successes.update(new_successes)
@@ -226,7 +227,7 @@ class ModuleHandler(handler.ContentHandler):
         :param forge_url:   optional URL for a forge. By default, the "puppet
                             module" tool uses the official Puppet Forge.
         :type  forge_url:   str
-        :param skip_dep:    boolean for skip installing any modules dependencies
+        :param skip_dep:    If True, skip installation of module dependencies
         :type  skip_dep:    boolean
         :param module_path: option to manually specify which directory to install into
         :type  module_path: str

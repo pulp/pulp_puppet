@@ -202,7 +202,7 @@ class InstallCommand(ContentMixin, content.ConsumerContentInstallCommand):
         options = {}
         if repo_id:
             options[constants.REPO_ID_OPTION] = repo_id
-            options[constants.WHOLE_REPO_OPTION] = 'True'
+            options[constants.WHOLE_REPO_OPTION] = True
         if skip_dep:
             options[constants.SKIP_DEP_OPTION] = skip_dep
         if module_path:

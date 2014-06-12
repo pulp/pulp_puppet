@@ -15,6 +15,7 @@ import subprocess
 import unittest
 
 import mock
+import pprint
 from pulp.agent.lib.report import ContentReport
 from pulp_puppet.common import constants
 
@@ -428,6 +429,20 @@ notice: Downloading from http://forge.puppetlabs.com ...
 notice: Installing -- do not interrupt ...
 {"module_name":"puppetlabs-java","module_version":null,"install_dir":"/etc/puppet/modules","result":"success","installed_modules":[{"module":"puppetlabs-java","version":{"vstring":"0.2.0","semver":"v0.2.0"},"action":"install","previous_version":null,"file":"/system/releases/p/puppetlabs/puppetlabs-java-0.2.0.tar.gz","path":"/etc/puppet/modules","dependencies":[]}]}
 """, '')]
+
+    @mock.patch('subprocess.Popen', autospec=True)
+    def test_arguments_set(self, mock_popen):
+        mock_popen.return_value.communicate.side_effect = self.POPEN_OUTPUT
+        mock_popen.return_value.returncode = 0
+
+        successes, errors, num_changes = self.handler._perform_operation('upgrade', self.UNITS, 'foo', True, 'bar')
+
+        # make sure there are as many calls as there are units
+        self.assertEqual(len(mock_popen.call_args_list), len(self.UNITS))
+
+        # make sure every call contains the arguments that should be included
+        for call in mock_popen.call_args_list:
+            self.assertTrue('--modulepath' and '--ignore-dependencies' and '--module_repository' in call[0][0])
 
     @mock.patch('subprocess.Popen', autospec=True)
     def test_os_error(self, mock_popen):
