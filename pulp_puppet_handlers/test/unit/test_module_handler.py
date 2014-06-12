@@ -15,7 +15,6 @@ import subprocess
 import unittest
 
 import mock
-import pprint
 from pulp.agent.lib.report import ContentReport
 from pulp_puppet.common import constants
 
