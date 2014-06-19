@@ -252,7 +252,7 @@ class TestInstallCommand(base_cli.ExtensionTests):
         self.assertEqual(len(options), 1)
 
     def test_add_modulepath_option(self):
-        # make sure it adds our skip_dep option
+        # make sure it adds our modulepath option
         options = [opt for opt in self.command.options
                    if opt.keyword == content.OPTION_MODULEPATH.keyword]
         self.assertEqual(len(options), 1)
@@ -290,7 +290,11 @@ class TestInstallCommand(base_cli.ExtensionTests):
     @mock.patch(
         'pulp.client.commands.consumer.content.ConsumerContentInstallCommand.get_install_options')
     def test_get_install_options_not_present_2(self, mock_get_options):
-        kwargs = {content.OPTION_WHOLE_REPO.keyword: 'repo1'}
+        kwargs = {
+            content.OPTION_WHOLE_REPO.keyword: 'repo1',
+            content.OPTION_SKIP_DEP.keyword: True,
+            content.OPTION_MODULEPATH.keyword: 'foo'
+        }
 
         result = self.command.get_install_options(kwargs)
 
@@ -298,6 +302,8 @@ class TestInstallCommand(base_cli.ExtensionTests):
         self.assertEqual(mock_get_options.call_count, 0)
         self.assertEqual(result[constants.REPO_ID_OPTION], 'repo1')
         self.assertTrue(result[constants.WHOLE_REPO_OPTION] is True)
+        self.assertTrue(result[constants.SKIP_DEP_OPTION] is True)
+        self.assertEqual(result[constants.MODULEPATH_OPTION], 'foo')
 
     @mock.patch('pulp.client.commands.consumer.content.ConsumerContentInstallCommand.run')
     def test_run_normal(self, mock_run):
@@ -336,12 +342,6 @@ class TestUpdateCommand(base_cli.ExtensionTests):
         # makes a good example of a plain use of this mixing
         self.command = content.UpdateCommand(self.context)
 
-    def test_add_update_options(self):
-        # make sure it adds our content unit option
-        options = [opt for opt in self.command.options
-                   if opt.keyword == content.OPTION_SKIP_DEP.keyword]
-        self.assertEqual(len(options), 1)
-
     def test_add_skip_dep_option(self):
         # make sure it adds our skip_dep option
         options = [opt for opt in self.command.options
@@ -365,10 +365,14 @@ class TestUpdateCommand(base_cli.ExtensionTests):
     @mock.patch(
         'pulp.client.commands.consumer.content.ConsumerContentUpdateCommand.get_update_options')
     def test_get_update_options_not_present_2(self, mock_get_options):
-        kwargs = {content.OPTION_SKIP_DEP.keyword: True}
+        kwargs = {
+            content.OPTION_SKIP_DEP.keyword: True,
+            content.OPTION_MODULEPATH.keyword: 'foo'
+        }
 
         result = self.command.get_update_options(kwargs)
         self.assertTrue(result[constants.SKIP_DEP_OPTION] is True)
+        self.assertEqual(result[constants.MODULEPATH_OPTION], 'foo')
 
 
 class TestUninstallCommand(base_cli.ExtensionTests):
@@ -377,14 +381,8 @@ class TestUninstallCommand(base_cli.ExtensionTests):
         # makes a good example of a plain use of this mixing
         self.command = content.UninstallCommand(self.context)
 
-    def test_add_uninstall_options(self):
-        # make sure it adds our content unit option
-        options = [opt for opt in self.command.options
-                   if opt.keyword == content.OPTION_MODULEPATH.keyword]
-        self.assertEqual(len(options), 1)
-
     def test_add_modulepath_option(self):
-        # make sure it adds our skip_dep option
+        # make sure it adds our modulepath option
         options = [opt for opt in self.command.options
                    if opt.keyword == content.OPTION_MODULEPATH.keyword]
         self.assertEqual(len(options), 1)
