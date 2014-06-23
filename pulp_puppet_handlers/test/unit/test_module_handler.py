@@ -430,6 +430,20 @@ notice: Installing -- do not interrupt ...
 """, '')]
 
     @mock.patch('subprocess.Popen', autospec=True)
+    def test_arguments_set(self, mock_popen):
+        mock_popen.return_value.communicate.side_effect = self.POPEN_OUTPUT
+        mock_popen.return_value.returncode = 0
+
+        successes, errors, num_changes = self.handler._perform_operation('upgrade', self.UNITS, 'foo', True, 'bar')
+
+        # make sure there are as many calls as there are units
+        self.assertEqual(len(mock_popen.call_args_list), len(self.UNITS))
+
+        # make sure every call contains the arguments that should be included
+        for call in mock_popen.call_args_list:
+            self.assertTrue('--modulepath' and '--ignore-dependencies' and '--module_repository' in call[0][0])
+
+    @mock.patch('subprocess.Popen', autospec=True)
     def test_os_error(self, mock_popen):
         # this probably means the "puppet module" tool isn't installed. This test
         # makes sure that this is caught the first time, and remaining units are

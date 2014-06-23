@@ -107,8 +107,10 @@ class ModuleHandler(handler.ContentHandler):
         """
         host = options[constants.FORGE_HOST]
         repo_id = options.get(constants.REPO_ID_OPTION)
+        skip_dep = options.get(constants.SKIP_DEP_OPTION)
+        module_path = options.get(constants.MODULEPATH_OPTION)
         successes, errors, num_changes = cls._perform_operation(
-            'install', units, cls._generate_forge_url(conduit, host, repo_id))
+            'install', units, cls._generate_forge_url(conduit, host, repo_id), skip_dep, module_path)
         report = ContentReport()
         report.set_succeeded({'successes': successes, 'errors': errors}, num_changes)
         return report
@@ -133,8 +135,10 @@ class ModuleHandler(handler.ContentHandler):
         """
         host = options[constants.FORGE_HOST]
         repo_id = options.get(constants.REPO_ID_OPTION)
+        skip_dep = options.get(constants.SKIP_DEP_OPTION)
+        module_path = options.get(constants.MODULEPATH_OPTION)
         successes, errors, num_changes = cls._perform_operation(
-            'upgrade', units, cls._generate_forge_url(conduit, host, repo_id))
+            'upgrade', units, cls._generate_forge_url(conduit, host, repo_id), skip_dep, module_path)
         report = ContentReport()
         report.set_succeeded({'successes': successes, 'errors': errors}, num_changes)
         return report
@@ -159,8 +163,9 @@ class ModuleHandler(handler.ContentHandler):
                     tool indicated an error. Everything else is in "successes".
         :rtype:     pulp.agent.lib.report.ContentReport
         """
+        module_path = options.get(constants.MODULEPATH_OPTION)
         previous_failure_count = 0
-        successes, errors, num_changes = cls._perform_operation('uninstall', units)
+        successes, errors, num_changes = cls._perform_operation('uninstall', units, None, None, module_path)
 
         # need this so we can easily access original unit objects when constructing
         # new requests below
@@ -179,7 +184,8 @@ class ModuleHandler(handler.ContentHandler):
                 previous_failure_count = len(failed_names)
                 failed_units = [units_by_full_name[full_name] for full_name in failed_names]
                 # retry the failed attempts
-                new_successes, new_errors, new_num_changes = cls._perform_operation('uninstall', failed_units)
+                new_successes, new_errors, new_num_changes = \
+                    cls._perform_operation('uninstall', failed_units, None, None, module_path)
                 num_changes += new_num_changes
                 # move new successes from "errors" to "successes"
                 successes.update(new_successes)
@@ -206,7 +212,7 @@ class ModuleHandler(handler.ContentHandler):
         raise NotImplementedError()
 
     @classmethod
-    def _perform_operation(cls, operation, units, forge_url=None):
+    def _perform_operation(cls, operation, units, forge_url=None, skip_dep=None, module_path=None):
         """
         For a list of units, attempt to perform the given operation. Separates
         results for each individual unit into "successes" and "errors". An error
@@ -221,6 +227,10 @@ class ModuleHandler(handler.ContentHandler):
         :param forge_url:   optional URL for a forge. By default, the "puppet
                             module" tool uses the official Puppet Forge.
         :type  forge_url:   str
+        :param skip_dep:    If True, skip installation of module dependencies
+        :type  skip_dep:    boolean
+        :param module_path: option to manually specify which directory to install into
+        :type  module_path: str
         :return:    three-member tuple of successes, errors, and num_changes.
                     "successes" is a dict where keys are full package names and
                     values are dicts that come from the JSON output of the "puppet
@@ -245,6 +255,10 @@ class ModuleHandler(handler.ContentHandler):
             if unit.get('version'):
                 args.extend(['--version', unit['version']])
             args.append(full_name)
+            if skip_dep:
+                args.extend(['--ignore-dependencies'])
+            if module_path:
+                args.extend(['--modulepath', module_path])
 
             # execute the command
             try:
