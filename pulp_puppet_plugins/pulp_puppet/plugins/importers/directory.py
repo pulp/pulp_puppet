@@ -271,7 +271,7 @@ class SynchronizeWithDirectory(object):
             if self.canceled:
                 return []
             puppet_manifest = self._extract_metadata(module_path)
-            module = Module.from_dict(puppet_manifest)
+            module = Module.from_json(puppet_manifest)
             if inventory.already_associated(module):
                 continue
             _LOG.info(IMPORT_MODULE % dict(mod=module_path))
