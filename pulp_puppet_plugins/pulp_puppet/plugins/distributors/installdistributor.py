@@ -16,6 +16,7 @@ import logging
 import os
 import shutil
 import tarfile
+import tempfile
 import errno
 
 from pulp.plugins.distributor import Distributor
@@ -118,18 +119,10 @@ class PuppetModuleInstallDistributor(Distributor):
 
         # ensure the destination directory exists
         try:
-            self._create_destination_directory(destination)
+            temporarydestination = self._create_temporary_destination_directory(destination)
         except OSError, e:
             return publish_conduit.build_failure_report(
                 'failed to create destination directory: %s' % str(e),
-                self.detail_report.report)
-
-        # clear out pre-existing contents
-        try:
-            self._clear_destination_directory(destination)
-        except (IOError, OSError), e:
-            return publish_conduit.build_failure_report(
-                'failed to clear destination directory: %s' % str(e),
                 self.detail_report.report)
 
         # actually publish
@@ -137,13 +130,33 @@ class PuppetModuleInstallDistributor(Distributor):
             try:
                 archive = tarfile.open(unit.storage_path)
                 try:
-                    archive.extractall(destination)
-                    self._rename_directory(unit, destination, archive.getnames())
+                    archive.extractall(temporarydestination)
+                    self._rename_directory(unit, temporarydestination, archive.getnames())
                 finally:
                     archive.close()
                 self.detail_report.success(unit.unit_key)
             except (OSError, IOError, ValueError), e:
                 self.detail_report.error(unit.unit_key, str(e))
+
+        if self.detail_report.has_errors:
+            return publish_conduit.build_failure_report('failed publishing units',
+                                                        self.detail_report.report)
+
+        # remove old directory if exists
+        try:
+            self._clear_destination_directory(destination)
+        except (IOError, OSError), e:
+            return publish_conduit.build_failure_report(
+                'failed to clear destination directory: %s' % str(e),
+                self.detail_report.report)
+
+        # move the subdirs of the temporary dir to the destination dir
+        try:
+            self._move_to_destination_directory(temporarydestination, destination)
+        except (IOError, OSError), e:
+            return publish_conduit.build_failure_report(
+                'failed to move temporary destination to destination directory: %s' % str(e),
+                self.detail_report.report)
 
         # return some kind of report
         if self.detail_report.has_errors:
@@ -273,23 +286,47 @@ class PuppetModuleInstallDistributor(Distributor):
                 shutil.rmtree(path)
 
     @staticmethod
-    def _create_destination_directory(destination, mode=0755):
+    def _create_temporary_destination_directory(destination, mode=0755):
         """
-        create the destination directory when it does not exist.
+        Create the temporary destination directory as a peer of the target destination.
+        This is so that the move is hopefully taking place on the same filesystem so it
+        will be as fast as possible.
 
         :param destination: absolute path to the destination where modules should
                             be installed
         :type  destination: str
         :param mode: the directory permissions
         :type  mode: int
+        :return: absolute path to temporary created directory
+        :rtype: str
         """
+        basedir, moduledir = os.path.split(destination)
         try:
-            os.makedirs(destination, mode)
+            os.makedirs(basedir, mode)
         except OSError, e:
-            if e.errno == errno.EEXIST and os.path.isdir(destination):
+            if e.errno == errno.EEXIST and os.path.isdir(basedir):
                 pass  # ignored
             else:
                 raise e
+        return tempfile.mkdtemp(prefix=moduledir, dir=basedir)
+
+    @staticmethod
+    def _move_to_destination_directory(source, destination):
+        """
+        move the subdirectories of a source directory to
+        a destination directory and then delete the source directory.
+
+        :param source: absolute path to where modules are installed
+        :type  source: str
+
+        :param destination: absolute path to where the modules should be copied to
+        :type  destination: str
+        """
+        for directory in os.listdir(source):
+            path = os.path.join(source, directory)
+            if os.path.isdir(path):
+                shutil.move(path, destination)
+        shutil.rmtree(source)
 
 
 class DetailReport(object):
