@@ -47,20 +47,20 @@ USAGE = _('%prog <options> [working-dir]')
 
 DESCRIPTION = _(
     'Build puppet modules.'
-    'Search the working directory and build all puppet modules found. The working'
-    'directory is the current directory unless the (-w|--working-dir) option is specified.'
-    'The (-p|--path) option may be used to specify a directory to search/build and'
-    'can be either an absolute path or a path relative to the working directory.'
-    'The archive built using \'puppet module build\' is copied to the output directory'
-    'The output directory is the current directory unless (-o|--output-dir) is'
-    'specified.  The output directory may be either an absolute path or a path that is'
-    'relative to the working directory.'
-    '\nSeveral options are provided for working with git.  Repositories may be cloned'
-    'by specifying the (-u|--url) option. After cloning git repositories, the (-p|--path)'
-    'is set to the root of the cloned repository unless specified explicitly.'
-    'The repository branch may be selected by using the (-b|--branch) option.'
-    'In all cases, when the working directory is a git repository, a \'git pull\' is'
-    'performed to ensure that the repository is up to date.'
+    ' Search the working directory and build all puppet modules found. The working'
+    ' directory is the current directory unless the (-w|--working-dir) option is specified.'
+    ' The (-p|--path) option may be used to specify a directory to search/build and'
+    ' can be either an absolute path or a path relative to the working directory.'
+    ' The archive built using \'puppet module build\' is copied to the output directory'
+    ' The output directory is the current directory unless (-o|--output-dir) is'
+    ' specified.  The output directory may be either an absolute path or a path that is'
+    ' relative to the working directory.'
+    ' \nSeveral options are provided for working with git.  Repositories may be cloned'
+    ' by specifying the (-u|--url) option. After cloning git repositories, the (-p|--path)'
+    ' is set to the root of the cloned repository unless specified explicitly.'
+    ' The repository branch may be selected by using the (-b|--branch) option.'
+    ' In all cases, when the working directory is a git repository, a \'git pull\' is'
+    ' performed to ensure that the repository is up to date.'
     '\n')
 
 BAD_PATH = _('(-p|--path) must be a relative path')
@@ -215,7 +215,7 @@ def git_checkout(options):
 def find_modules():
     """
     Search for puppet (source) modules to build and return a list of paths.
-    Puppet modules are identified by finding '<module>/modules/init.pp'
+    Puppet modules are identified by finding '<module>/manifests/init.pp'
     files.  Once found, the *module* directory path is included in the result.
 
     :return: A set of puppet module directory paths.

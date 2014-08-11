@@ -399,13 +399,20 @@ class TestSynchronizeWithDirectory(TestCase):
         mock_inventory = Mock()
         mock_inventory.already_associated.side_effect = [False, True, False]
 
+        # These manifests represent the parsed metadata.json file. These contain a 'name'
+        # field, where we retrieve both the unit key's 'name' and 'author' field.
         manifests = [
+            {'name': 'john-pulp1', 'author': 'Johnathon', 'version': '1.0'},
+            {'name': 'john-pulp2', 'author': 'Johnathon', 'version': '2.0'},
+            {'name': 'john/pulp3', 'author': 'Johnathon', 'version': '3.0'},
+        ]
+        mock_extract.side_effect = manifests
+
+        unit_keys = [
             {'name': 'pulp1', 'author': 'john', 'version': '1.0'},
             {'name': 'pulp2', 'author': 'john', 'version': '2.0'},
             {'name': 'pulp3', 'author': 'john', 'version': '3.0'},
         ]
-
-        mock_extract.side_effect = manifests
 
         module_paths = [
             '/tmp/module_1',
@@ -414,19 +421,17 @@ class TestSynchronizeWithDirectory(TestCase):
         ]
 
         # test
-
         method = SynchronizeWithDirectory(conduit, config)
         imported_modules = method._import_modules(mock_inventory, module_paths)
 
         # validation
-
         mock_add.assert_any_with(module_paths[0], ANY)
         mock_add.assert_any_with(module_paths[2], ANY)
 
         # should only be modules 1 and 3.  2 already associated.
         self.assertEqual(len(imported_modules), 2)
-        self.assertEqual(imported_modules[0], manifests[0])
-        self.assertEqual(imported_modules[1], manifests[2])
+        self.assertEqual(imported_modules[0], unit_keys[0])
+        self.assertEqual(imported_modules[1], unit_keys[2])
 
     @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._extract_metadata')
     def test_import_modules_cancelled(self, mock_extract):
