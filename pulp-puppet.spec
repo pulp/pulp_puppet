@@ -27,7 +27,7 @@
 
 Name: pulp-puppet
 Version: 2.4.1
-Release: 0.2.alpha%{?dist}
+Release: 0.3.beta%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -293,6 +293,9 @@ A collection of tools used to manage puppet modules.
 
 
 %changelog
+* Fri Aug 22 2014 Randy Barlow <rbarlow@redhat.com> 2.4.1-0.3.beta
+- Pulp rebuild
+
 * Wed Aug 20 2014 Randy Barlow <rbarlow@redhat.com> 2.4.1-0.2.alpha
 - 1123446 - Syncing against a directory uses 'modulename' rather than
   'authorname-modulename' as the module name (jcline@redhat.com)
