@@ -26,8 +26,8 @@
 # ---- Pulp (puppet) -----------------------------------------------------------
 
 Name: pulp-puppet
-Version: 2.4.0
-Release: 0.21.beta%{?dist}
+Version: 2.4.1
+Release: 0.4.beta%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -293,6 +293,46 @@ A collection of tools used to manage puppet modules.
 
 
 %changelog
+* Mon Aug 25 2014 Randy Barlow <rbarlow@redhat.com> 2.4.1-0.4.beta
+- 1130312 - Add release notes for 2.4.1. (rbarlow@redhat.com)
+
+* Fri Aug 22 2014 Randy Barlow <rbarlow@redhat.com> 2.4.1-0.3.beta
+- Pulp rebuild
+
+* Wed Aug 20 2014 Randy Barlow <rbarlow@redhat.com> 2.4.1-0.2.alpha
+- 1123446 - Syncing against a directory uses 'modulename' rather than
+  'authorname-modulename' as the module name (jcline@redhat.com)
+
+* Sat Aug 09 2014 Randy Barlow <rbarlow@redhat.com> 2.4.0-1
+- Pulp rebuild
+
+* Thu Jul 31 2014 Randy Barlow <rbarlow@redhat.com> 2.4.0-0.30.beta
+- Pulp rebuild
+
+* Tue Jul 29 2014 Randy Barlow <rbarlow@redhat.com> 2.4.0-0.29.beta
+- Pulp rebuild
+
+* Tue Jul 29 2014 Randy Barlow <rbarlow@redhat.com> 2.4.0-0.28.beta
+- Pulp rebuild
+
+* Tue Jul 29 2014 Randy Barlow <rbarlow@redhat.com> 2.4.0-0.27.beta
+- Pulp rebuild
+
+* Mon Jul 28 2014 Randy Barlow <rbarlow@redhat.com> 2.4.0-0.26.beta
+- Pulp rebuild
+
+* Wed Jul 16 2014 Unknown name 2.4.0-0.25.beta
+- Pulp rebuild
+
+* Fri Jul 11 2014 Brian Bouterse <bmbouter@gmail.com> 2.4.0-0.24.beta
+- Pulp rebuild
+
+* Wed Jun 25 2014 Randy Barlow <rbarlow@redhat.com> 2.4.0-0.23.beta
+- Pulp rebuild
+
+* Tue Jun 24 2014 Randy Barlow <rbarlow@redhat.com> 2.4.0-0.22.beta
+- Pulp rebuild
+
 * Tue Jun 17 2014 Randy Barlow <rbarlow@redhat.com> 2.4.0-0.21.beta
 - Pulp rebuild
 
