@@ -216,11 +216,12 @@ class SynchronizeWithDirectory(object):
         Fetch all of the modules referenced in the manifest.
 
         :param manifest: A parsed PULP_MANIFEST. List of: (name,checksum,size).
-        :type manifest: list
+        :type  manifest: list
+
         :return: A list of paths to the fetched module files.
-        :rtype: list
+        :rtype:  list
         """
-        started = time()
+        self.started_fetch_modules = time()
 
         # report progress: started
         self.report.modules_state = constants.STATE_RUNNING
@@ -243,16 +244,11 @@ class SynchronizeWithDirectory(object):
             self.report.modules_state = constants.STATE_FAILED
             self.report.modules_error_count = len(failed_reports)
             self.report.modules_individual_errors = []
-        else:
-            self.report.modules_state = constants.STATE_SUCCESS
+
         for report in failed_reports:
             self.report.modules_individual_errors.append(report.error_msg)
+        self.report.update_progress()
 
-        # report succeeded
-        self.report.modules_execution_time = time() - started
-        self.report.modules_finished_count = len(succeeded_reports)
-
-        # return module paths
         return [r.destination for r in succeeded_reports]
 
     def _import_modules(self, inventory, module_paths):
@@ -273,10 +269,21 @@ class SynchronizeWithDirectory(object):
             puppet_manifest = self._extract_metadata(module_path)
             module = Module.from_json(puppet_manifest)
             if inventory.already_associated(module):
+                # Decrement the total number of modules we're importing
+                self.report.modules_total_count -= 1
                 continue
             _LOG.info(IMPORT_MODULE % dict(mod=module_path))
             imported_modules.append(module.unit_key())
             self._add_module(module_path, module)
+            self.report.modules_finished_count += 1
+            self.report.update_progress()
+
+        # Write the report, making sure we don't overwrite the a failure in _fetch_modules
+        if self.report.modules_state != constants.STATE_FAILED:
+            self.report.modules_state = constants.STATE_SUCCESS
+        self.report.modules_execution_time = time() - self.started_fetch_modules
+        self.report.update_progress()
+
         return imported_modules
 
     def _add_module(self, path, module):
@@ -341,10 +348,14 @@ class SynchronizeWithDirectory(object):
         try:
             inventory = Inventory(self.conduit)
             self._run(inventory)
-            return self.report
         finally:
+            # Update the progress report one last time
+            self.report.update_progress()
+
             shutil.rmtree(self.tmp_dir)
             self.tmp_dir = None
+
+        return self.report
 
 
 class DownloadListener(AggregatingEventListener):

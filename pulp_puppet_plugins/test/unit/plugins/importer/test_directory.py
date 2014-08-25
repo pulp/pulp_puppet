@@ -300,8 +300,10 @@ class TestSynchronizeWithDirectory(TestCase):
         self.assertEqual(module_paths[0], report_1.destination)
         self.assertEqual(module_paths[1], report_2.destination)
 
+        # Assert the progress report was updated and the report is still in the running state.
+        # The _import_modules method must be called to complete the task.
         self.assertTrue(method.report.update_progress.called)
-        self.assertEqual(method.report.modules_state, constants.STATE_SUCCESS)
+        self.assertEqual(method.report.modules_state, constants.STATE_RUNNING)
 
     @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._download')
     def test_fetch_modules_failures(self, mock_download):
@@ -422,6 +424,10 @@ class TestSynchronizeWithDirectory(TestCase):
 
         # test
         method = SynchronizeWithDirectory(conduit, config)
+        method.started_fetch_modules = 10
+        method.report = Mock()
+        method.report.modules_total_count = 3
+        method.report.modules_finished_count = 0
         imported_modules = method._import_modules(mock_inventory, module_paths)
 
         # validation
@@ -432,6 +438,11 @@ class TestSynchronizeWithDirectory(TestCase):
         self.assertEqual(len(imported_modules), 2)
         self.assertEqual(imported_modules[0], unit_keys[0])
         self.assertEqual(imported_modules[1], unit_keys[2])
+
+        # Check that the progress reporting was called as expected
+        self.assertEquals(3, method.report.update_progress.call_count)
+        self.assertEquals(2, method.report.modules_finished_count)
+        self.assertEquals(2, method.report.modules_total_count)
 
     @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._extract_metadata')
     def test_import_modules_cancelled(self, mock_extract):
@@ -449,6 +460,34 @@ class TestSynchronizeWithDirectory(TestCase):
 
         self.assertFalse(mock_extract.called)
         self.assertEqual(imported_modules, [])
+
+    def test_import_modules_failed(self):
+        """
+        Test that when there was some failure in a previous step, _import_modules does not
+        overwrite the failed state
+        """
+        config = {}
+        mock_conduit = Mock()
+
+        mock_inventory = Mock()
+        method = SynchronizeWithDirectory(mock_conduit, config)
+        method.started_fetch_modules = 0
+        method._extract_metadata = Mock(return_value={'name': 'j-p', 'author': 'J', 'version': '1.1'})
+        method.report = Mock()
+        method.report.modules_total_count = 1
+        method.report.modules_finished_count = 0
+        method.report.modules_state = constants.STATE_FAILED
+
+        # test
+        imported_modules = method._import_modules(mock_inventory, ['/path1'])
+
+        # validation
+        self.assertEquals(constants.STATE_FAILED, method.report.modules_state)
+        self.assertEquals(1, method.report.update_progress.call_count)
+        self.assertEquals(0, method.report.modules_total_count)
+        self.assertEquals(0, method.report.modules_finished_count)
+        self.assertEquals([], imported_modules)
+
 
     @patch('pulp_puppet.plugins.importers.directory.shutil')
     def test_add_module(self, mock_shutil):
