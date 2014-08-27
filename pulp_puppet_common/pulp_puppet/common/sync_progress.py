@@ -17,7 +17,7 @@ importer.
 """
 
 from pulp_puppet.common import reporting
-from pulp_puppet.common.constants import STATE_NOT_STARTED, STATE_SUCCESS
+from pulp_puppet.common.constants import STATE_NOT_STARTED, STATE_SUCCESS, STATE_CANCELED
 
 
 class SyncProgressReport(object):
@@ -136,6 +136,9 @@ class SyncProgressReport(object):
             report = self.conduit.build_success_report(summary, details)
         else:
             report = self.conduit.build_failure_report(summary, details)
+
+        if self.metadata_state == STATE_CANCELED:
+            report.canceled_flag = True
 
         return report
 

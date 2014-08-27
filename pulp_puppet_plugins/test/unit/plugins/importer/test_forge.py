@@ -274,6 +274,27 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
 
         self.assertEqual(pr.modules_state, constants.STATE_NOT_STARTED)
 
+    @mock.patch('pulp_puppet.plugins.importers.forge.SynchronizeWithPuppetForge._create_downloader')
+    def test_parse_metadata_retrieve_exception_canceled(self, mock_create):
+        # Setup
+        swpf = SynchronizeWithPuppetForge(self.repo, self.conduit, self.config)
+
+        def _side_effect(*args, **kwargs):
+            swpf.cancel()
+            raise Exception("some download error")
+
+        mock_create.side_effect = _side_effect
+
+        # Test
+        report = swpf().build_final_report()
+
+        # Verify
+        self.assertTrue(report.canceled_flag)
+
+        pr = swpf.progress_report
+        self.assertEqual(pr.metadata_state, constants.STATE_CANCELED)
+        self.assertEqual(pr.modules_state, constants.STATE_NOT_STARTED)
+
     @mock.patch('pulp_puppet.plugins.importers.downloaders.local.LocalDownloader.retrieve_metadata')
     def test_parse_metadata_parse_exception(self, mock_retrieve):
         # Setup
