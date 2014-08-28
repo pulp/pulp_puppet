@@ -22,7 +22,8 @@ from pulp.common.util import encode_unicode
 from pulp.plugins.conduits.mixins import UnitAssociationCriteria
 
 from pulp_puppet.common import constants
-from pulp_puppet.common.constants import (STATE_FAILED, STATE_RUNNING, STATE_SUCCESS)
+from pulp_puppet.common.constants import (STATE_FAILED, STATE_RUNNING,\
+                                          STATE_SUCCESS, STATE_CANCELED)
 from pulp_puppet.common.model import RepositoryMetadata, Module
 from pulp_puppet.common.sync_progress import SyncProgressReport
 from pulp_puppet.plugins.importers import metadata
@@ -123,6 +124,10 @@ class SynchronizeWithPuppetForge(object):
             metadata_json_docs = downloader.retrieve_metadata(self.progress_report)
 
         except Exception, e:
+            if self._canceled:
+                logger.warn('Exception occurred on canceled metadata download: %s' % e)
+                self.progress_report.metadata_state = STATE_CANCELED
+                return None
             logger.exception('Exception while retrieving metadata for repository <%s>' % self.repo.id)
             self.progress_report.metadata_state = STATE_FAILED
             self.progress_report.metadata_error_message = _('Error downloading metadata')
