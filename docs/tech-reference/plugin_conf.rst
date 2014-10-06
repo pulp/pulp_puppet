@@ -96,7 +96,11 @@ directory.
 
 ``install_path``
  Full path to the directory where modules should be installed. It is the user's
- responsibility to ensure that Pulp can write to this directory.
+ responsibility to ensure that Pulp can write to this directory. If you choose a path that begins
+ with ``/etc/puppet/``, Pulp's selinux policy includes a boolean that will allow Pulp to write to
+ that path that is disabled by default for safety. If you wish to use that path you will need
+ to grant the ``apache`` user filesystem permissions to that folder, and you will need to enable the
+ selinux boolean: ``sudo semanage boolean --on pulp_manage_puppet``.
 
 File Distributor
 -------------------
