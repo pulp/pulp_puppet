@@ -9,6 +9,7 @@ Contents:
    introduction
    release-notes/index
    installation
+   configuration
    quick-start
    recipes
    troubleshooting
