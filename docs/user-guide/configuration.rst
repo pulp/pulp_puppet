@@ -12,12 +12,6 @@ following key value pairs are supported by the importer below.
 
 .. _JSON: http://json.org/
 
-``proxy_url``: A string in the form of scheme://host, where scheme is either ``http`` or ``https``
+The importer supports the settings documented in Pulp's `importer config docs`_.
 
-``proxy_port``: An integer representing the port number to use when connecting to the proxy server
-
-``proxy_username``: If provided, Pulp will attempt to use basic auth with the proxy server using this
-                    as the username
-
-``proxy_password``: If provided, Pulp will attempt to use basic auth with the proxy server using this
-                    as the password
+.. _importer config docs: https://pulp-user-guide.readthedocs.org/en/latest/server.html#importers
