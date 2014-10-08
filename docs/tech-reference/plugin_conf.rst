@@ -95,12 +95,19 @@ directory.
 .. warning:: This distributor deletes all directories found in the ``install_path``!
 
 ``install_path``
- Full path to the directory where modules should be installed. It is the user's
- responsibility to ensure that Pulp can write to this directory. If you choose a path that begins
- with ``/etc/puppet/``, Pulp's selinux policy includes a boolean that will allow Pulp to write to
- that path that is disabled by default for safety. If you wish to use that path you will need
- to grant the ``apache`` user filesystem permissions to that folder, and you will need to enable the
- selinux boolean: ``sudo semanage boolean --on pulp_manage_puppet``.
+ This is a full path to the directory where modules should be installed. It is the user's
+ responsibility to ensure that Pulp can write to this directory. The web server user (for example,
+ ``apache``) must be granted filesystem permissions to write to this path. Additionally, the system
+ SELinux policy must permit Pulp to write to this directory. Pulp's SELinux policy includes a
+ ``pulp_manage_puppet`` boolean that allows Pulp to write to paths that have the ``puppet_etc_t``
+ label. You must ensure that the ``install_path`` has this label applied to it. This boolean is
+ disabled by default for safety. If you wish to enable it, you can do this::
+
+    $ sudo semanage boolean --on pulp_manage_puppet
+
+ ``/etc/puppet/`` has the ``puppet_etc_t`` label by default, so if you use this or a sub directory of
+ it as your ``install_path`` and you enable the ``pulp_manage_puppet`` boolean, SELinux will allow
+ Pulp to write to that path.
 
 File Distributor
 -------------------
