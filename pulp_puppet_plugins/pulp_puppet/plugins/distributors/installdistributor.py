@@ -309,7 +309,7 @@ class PuppetModuleInstallDistributor(Distributor):
                 pass  # ignored
             else:
                 raise e
-        return tempfile.mkdtemp(dir=basedir)
+        return tempfile.mkdtemp(prefix='pulp', dir=basedir)
 
     @staticmethod
     def _move_to_destination_directory(source, destination):
