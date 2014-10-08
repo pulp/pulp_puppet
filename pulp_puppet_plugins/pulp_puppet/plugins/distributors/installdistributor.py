@@ -21,6 +21,7 @@ import errno
 
 from pulp.plugins.distributor import Distributor
 from pulp.server.db.model.criteria import UnitAssociationCriteria
+from pulp.plugins.util.misc import get_parent_directory
 
 from pulp_puppet.common import constants
 
@@ -300,7 +301,7 @@ class PuppetModuleInstallDistributor(Distributor):
         :return: absolute path to temporary created directory
         :rtype: str
         """
-        basedir, moduledir = os.path.split(destination)
+        basedir = get_parent_directory(destination)
         try:
             os.makedirs(basedir, mode)
         except OSError, e:
@@ -308,7 +309,7 @@ class PuppetModuleInstallDistributor(Distributor):
                 pass  # ignored
             else:
                 raise e
-        return tempfile.mkdtemp(prefix=moduledir, dir=basedir)
+        return tempfile.mkdtemp(prefix='pulp', dir=basedir)
 
     @staticmethod
     def _move_to_destination_directory(source, destination):
