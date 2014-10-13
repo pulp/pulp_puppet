@@ -26,7 +26,7 @@
 # ---- Pulp (puppet) -----------------------------------------------------------
 
 Name: pulp-puppet
-Version: 2.4.1
+Version: 2.4.2
 Release: 1%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
@@ -293,6 +293,10 @@ A collection of tools used to manage puppet modules.
 
 
 %changelog
+* Mon Oct 13 2014 Chris Duryee <cduryee@redhat.com> 2.4.2-1
+- 1103232 - Reference Pulp docs for proxy settings. (rbarlow@redhat.com)
+- 1103232 - Document proxy settings. (rbarlow@redhat.com)
+
 * Tue Sep 23 2014 Randy Barlow <rbarlow@redhat.com> 2.4.1-1
 - Pulp rebuild
 
