@@ -1,7 +1,5 @@
-Pulp Puppet Support
-===================
-
-Contents:
+User Guide
+==========
 
 .. toctree::
    :maxdepth: 2
@@ -13,10 +11,3 @@ Contents:
    quick-start
    recipes
    troubleshooting
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`
-
