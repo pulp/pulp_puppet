@@ -294,6 +294,8 @@ A collection of tools used to manage puppet modules.
 
 %changelog
 * Sun Oct 12 2014 Chris Duryee <cduryee@redhat.com> 2.5.0-0.8.beta
+
+* Mon Oct 13 2014 Chris Duryee <cduryee@redhat.com> 2.4.2-1
 - 1103232 - Reference Pulp docs for proxy settings. (rbarlow@redhat.com)
 - 1103232 - Document proxy settings. (rbarlow@redhat.com)
 - 1149894 - Adjusts installdistributor to pick the correct temp dir
