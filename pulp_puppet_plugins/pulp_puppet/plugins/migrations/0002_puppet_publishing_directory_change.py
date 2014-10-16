@@ -28,24 +28,19 @@ def migrate(*args, **kwargs):
     Move files from old publish directories to the new location.
     """
     old_puppet_publish_dir = os.path.join(OLD_PUBLISH_ROOT_DIR, OLD_PUPPET_PUBLISH_DIR_NAME)
+    new_puppet_publish_dir = os.path.join(NEW_PUBLISH_ROOT_DIR, NEW_PUPPET_PUBLISH_DIR_NAME)
     if os.path.exists(old_puppet_publish_dir) and os.listdir(old_puppet_publish_dir):
-        # Copy contents of '/var/www/pulp_puppet' to '/var/lib/pulp/published/puppet'
-        move_directory_contents_and_rename(old_puppet_publish_dir,
-                                           NEW_PUBLISH_ROOT_DIR,
-                                           OLD_PUPPET_PUBLISH_DIR_NAME,
-                                           NEW_PUPPET_PUBLISH_DIR_NAME)
+        # Move contents of '/var/www/pulp_puppet' into '/var/lib/pulp/published/puppet'
+        move_directory_contents(old_puppet_publish_dir, new_puppet_publish_dir)
         _log.info("Migrated published puppet repositories to the new location")
 
 
-def move_directory_contents_and_rename(src_dir, dest_dir, old_dir_name, new_dir_name):
+def move_directory_contents(src_dir, dest_dir):
     """
-    Move directory src_dir to dest_dir and rename it to new_dir_name.
+    Move everything in src_dir to dest_dir
     """
-    shutil.move(src_dir, dest_dir)
-    new_puppet_publish_dir = os.path.join(dest_dir, new_dir_name)
-    if os.path.exists(new_puppet_publish_dir):
-        os.rmdir(new_puppet_publish_dir)
-
-    copied_pulp_puppet_directory = os.path.join(dest_dir, old_dir_name)
-    os.rename(copied_pulp_puppet_directory, new_puppet_publish_dir)
-
+    # perform the move. /var/lib/pulp/published/puppet already exists so we
+    # need to move like this (i.e, we can't use shutil.copytree). This should
+    # leave an empty /var/www/pulp_puppet dir.
+    for entry in os.listdir(src_dir):
+        shutil.move(os.path.join(src_dir, entry), os.path.join(dest_dir, entry))
