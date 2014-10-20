@@ -1,21 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# Copyright © 2010 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 import optparse
 import os
 import shutil
 import sys
+
+from pulp.devel import environment
+
 
 WARNING_COLOR = '\033[31m'
 WARNING_RESET = '\033[0m'
@@ -25,6 +17,8 @@ DIRS = (
     '/var/lib/pulp/published/puppet/https/repos',
     '/var/lib/pulp/published/puppet/files',
 )
+
+ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 #
 # Str entry assumes same src and dst relative path.
@@ -113,6 +107,9 @@ def getlinks():
 
 
 def install(opts):
+    # Install the packages in developer mode
+    environment.manage_setup_pys('install', ROOT_DIR)
+
     warnings = []
     create_dirs(opts)
     currdir = os.path.abspath(os.path.dirname(__file__))
@@ -135,6 +132,9 @@ def uninstall(opts):
             debug(opts, '%s does not exist, skipping' % dst)
             continue
         os.unlink(dst)
+
+    # Uninstall the packages
+    environment.manage_setup_pys('uninstall', ROOT_DIR)
 
     return os.EX_OK
 
