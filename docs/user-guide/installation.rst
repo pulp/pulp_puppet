@@ -43,13 +43,9 @@ Then run ``pulp-manage-db`` to initialize the new types in Pulp's database.
 
 ::
 
-  $ sudo pulp-manage-db
+  $ sudo -u apache pulp-manage-db
 
-Finally, restart Apache.
-
-::
-
-  $ sudo apachectl restart
+Then restart each pulp component, as documented in the `Pulp User Guide`_.
 
 Admin Client
 ------------
