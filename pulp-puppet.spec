@@ -14,13 +14,8 @@
 # ---- Pulp (puppet) -----------------------------------------------------------
 
 Name: pulp-puppet
-<<<<<<< HEAD
 Version: 2.5.0
-Release: 0.8.beta%{?dist}
-=======
-Version: 2.4.3
-Release: 1%{?dist}
->>>>>>> 2.4-dev
+Release: 0.9.beta%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -289,15 +284,15 @@ A collection of tools used to manage puppet modules.
 * Thu Oct 16 2014 Randy Barlow <rbarlow@redhat.com> 2.4.3-1
 - Pulp rebuild
 
-* Sun Oct 12 2014 Chris Duryee <cduryee@redhat.com> 2.5.0-0.8.beta
-- Pulp rebuild
-
 * Mon Oct 13 2014 Chris Duryee <cduryee@redhat.com> 2.4.2-1
 - 1103232 - Reference Pulp docs for proxy settings. (rbarlow@redhat.com)
 - 1103232 - Document proxy settings. (rbarlow@redhat.com)
 - 1149894 - Adjusts installdistributor to pick the correct temp dir
   (bmbouter@gmail.com)
 - 1009429 - Document the selinux boolean. (rbarlow@redhat.com)
+
+* Sun Oct 12 2014 Chris Duryee <cduryee@redhat.com> 2.5.0-0.8.beta
+- Pulp rebuild
 
 * Thu Oct 02 2014 Chris Duryee <cduryee@redhat.com> 2.5.0-0.7.beta
 - Pulp rebuild
