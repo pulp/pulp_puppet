@@ -73,13 +73,6 @@ class PuppetModuleInstallDistributor(Distributor):
             return True, None
         if not os.path.isabs(path):
             return False, _('install path is not absolute')
-        if os.path.exists(path):
-            if not os.path.isdir(path):
-                return False, _('install path exists but is not a directory')
-            # we need X to get directory listings
-            if not os.access(path, os.R_OK|os.W_OK|os.X_OK):
-                return False, _('the current user does not have permission to read '
-                                'and write files in the destination directory')
         return True, None
 
     def publish_repo(self, repo, publish_conduit, config):
