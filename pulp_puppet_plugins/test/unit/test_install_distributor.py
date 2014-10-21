@@ -1,16 +1,3 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
 from cStringIO import StringIO
 import os
 import tarfile
@@ -53,23 +40,6 @@ class TestValidateConfig(unittest.TestCase):
 
     def test_relative_path(self):
         config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: 'a/b/c'})
-
-        result, message = self.distributor.validate_config(self.repo, config, [])
-
-        self.assertFalse(result)
-        self.assertTrue(len(message) > 0)
-
-    def test_path_is_not_dir(self):
-        config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: __file__})
-
-        result, message = self.distributor.validate_config(self.repo, config, [])
-
-        self.assertFalse(result)
-        self.assertTrue(len(message) > 0)
-
-    def test_without_permission(self):
-        # you're not running your tests as root, RIGHT?
-        config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: '/root'})
 
         result, message = self.distributor.validate_config(self.repo, config, [])
 
