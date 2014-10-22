@@ -1,7 +1,5 @@
-Pulp Puppet Technical Reference
-===============================
-
-Contents:
+Technical Reference
+===================
 
 .. toctree::
    :maxdepth: 2
@@ -11,11 +9,3 @@ Contents:
    plugin_conf
    plugin_report
    forge_api
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
