@@ -103,7 +103,7 @@ directory.
  label. You must ensure that the ``install_path`` has this label applied to it. This boolean is
  disabled by default for safety. If you wish to enable it, you can do this::
 
-    $ sudo semanage boolean --on pulp_manage_puppet
+    $ sudo semanage boolean --modify --on pulp_manage_puppet
 
  ``/etc/puppet/`` has the ``puppet_etc_t`` label by default, so if you use this or a sub directory of
  it as your ``install_path`` and you enable the ``pulp_manage_puppet`` boolean, SELinux will allow
