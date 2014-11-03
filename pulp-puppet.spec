@@ -15,7 +15,7 @@
 
 Name: pulp-puppet
 Version: 2.5.0
-Release: 0.15.rc%{?dist}
+Release: 0.16.rc%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -281,6 +281,9 @@ A collection of tools used to manage puppet modules.
 
 
 %changelog
+* Mon Nov 03 2014 asmacdo <asmacdo@gmail.com> 2.5.0-0.16.rc
+- Pulp rebuild
+
 * Fri Oct 31 2014 Austin Macdonald <amacdona@redhat.com> 2.5.0-0.15.rc
 - 1009429 - Don't verify FS permissions with httpd. (rbarlow@redhat.com)
 - 1153072 - do not delete /var/www/pulp_puppet on upgrade (cduryee@redhat.com)
