@@ -222,17 +222,18 @@ def find_modules():
     :rtype: set
     """
     modules = set()
-    status, output = shell('find . -name init.pp')
-    for path in output.split('\n'):
-        _path = path.split('/')
-        if len(_path) < 3:
+    # Some old modules contain only 'Modulefile' metadata files, so find both. The set will remove duplicates.
+    modulefile_status, modulefile_output = shell('find . -name Modulefile')
+    metadata_status, metadata_output = shell('find . -name metadata.json')
+
+    paths = modulefile_output.strip().split('\n') + metadata_output.strip().split('\n')
+    for path in paths:
+        path = path.strip()
+        path_pieces = path.split('/')
+        # Puppet makes a PKG_DIR with a copy of the module when built, so don't include those
+        if len(path_pieces) >= 3 and path_pieces[-3] == PKG_DIR:
             continue
-        if _path[-2] != 'manifests':
-            continue
-        if len(_path) > 3 and _path[-4] == PKG_DIR:
-            continue
-        module_dir = '/'.join(_path[:-2])
-        modules.add(module_dir.strip())
+        modules.add(os.path.dirname(path))
     return modules
 
 
