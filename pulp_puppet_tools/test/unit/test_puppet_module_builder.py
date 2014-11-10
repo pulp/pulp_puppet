@@ -396,12 +396,11 @@ class TestBuilder(TestCase):
     @patch('pulp_puppet.tools.puppet_module_builder.shell')
     def test_find_modules(self, mock_shell):
         mock_shell.return_value = (0, """
-            module_1/tests/init.pp
-            module_1/manifests/init.pp
-            nested/module_2/tests/init.pp
-            nested/module_2/manifests/init.pp
-            module_3/pkg/module_3/manifests/init.pp
-            nothing/init.pp
+            module_1/Modulefile
+            module_1/metadata.json
+            nested/module_2/Modulefile
+            nested/module_3/metadata.json
+            nested/module_3/pkg/module_3/metadata.json
             """)
 
         # test
@@ -409,10 +408,8 @@ class TestBuilder(TestCase):
         modules = builder.find_modules()
 
         # validation
-
-        mock_shell.assert_called_with('find . -name init.pp')
-
-        self.assertEqual(sorted(list(modules)), sorted(['module_1', 'nested/module_2']))
+        self.assertEquals(2, mock_shell.call_count)
+        self.assertEqual(sorted(list(modules)), sorted(['module_1', 'nested/module_2', 'nested/module_3']))
 
     @patch('pulp_puppet.tools.puppet_module_builder.shell')
     def test_git_checkout_branch(self, mock_shell):
