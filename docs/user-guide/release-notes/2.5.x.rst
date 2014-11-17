@@ -14,5 +14,4 @@ Users upgrading from 2.3.x or earlier will need to manually delete the
 for puppet module publishing in Pulp 2.3 but is no longer used. The directory
 should be empty after the migration is complete.
 
-You can see the list of bugs fixed
-`here <https://bugzilla.redhat.com/buglist.cgi?bug_status=VERIFIED&bug_status=RELEASE_PENDING&bug_status=CLOSED&classification=Community&component=puppet-support&list_id=2768100&product=Pulp&query_format=advanced&target_release=2.5.0>`_.
+You can see the :fixedbugs:`list of bugs fixed<2.5.0>`.
