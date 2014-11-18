@@ -6,7 +6,7 @@ Pulp 2.4.1
 ==========
 
 The 2.4.1 release is a minor bugfix release. You can see the list of bugs fixed
-`here <https://bugzilla.redhat.com/buglist.cgi?bug_status=VERIFIED&bug_status=RELEASE_PENDING&bug_status=CLOSED&classification=Community&component=puppet-support&list_id=2768100&product=Pulp&query_format=advanced&target_release=2.4.1>`_.
+:fixedbugs:`here<2.4.1>`.
 
 
 Pulp 2.4.0
@@ -24,16 +24,17 @@ New Features
 API Changes
 -----------
 
-* The sync progress report's modules section has changed the way it reports errors with individual
-  modules. The ``modules`` sub-object has an ``individual_errors`` attribute that used to index a
-  JSON object, with module names (including version) as keys. Pulp stores this data structure in
-  MongoDB, which led to `bug #1072580 <https://bugzilla.redhat.com/show_bug.cgi?id=1072580>`_
-  because the module versions use periods which are illegal characters to use as document keys. The
-  ``individual_errors`` attribute now indexes a list of JSON objects, and each JSON object has these
-  keys: ``module`` (which is formatted as "name-version"), ``author``, ``exception``, and
-  ``traceback``. ``individual_errors`` used to be null when there weren't any errors, but would
-  be an object if there were errors. Now ``individual_errors`` will always be an array. It will be
-  empty when there are no errors.
+* The sync progress report's modules section has changed the way it reports
+  errors with individual modules. The ``modules`` sub-object has an
+  ``individual_errors`` attribute that used to index a JSON object, with module
+  names (including version) as keys. Pulp stores this data structure in
+  MongoDB, which led to :bz:`1072580` because the module versions use periods which are illegal
+  characters to use as document keys. The ``individual_errors`` attribute now
+  indexes a list of JSON objects, and each JSON object has these keys: ``module``
+  (which is formatted as "name-version"), ``author``, ``exception``, and
+  ``traceback``. ``individual_errors`` used to be null when there weren't any
+  errors, but would be an object if there were errors. Now ``individual_errors``
+  will always be an array. It will be empty when there are no errors.
 
 Notable Bugs Fixed
 ------------------
