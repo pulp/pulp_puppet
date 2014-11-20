@@ -14,7 +14,7 @@
 # ---- Pulp (puppet) -----------------------------------------------------------
 
 Name: pulp-puppet
-Version: 2.5.0
+Version: 2.6.0
 Release: 0.19.rc%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
