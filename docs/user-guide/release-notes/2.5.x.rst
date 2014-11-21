@@ -6,8 +6,15 @@ Pulp 2.5.0
 ==========
 
 The 2.5.0 release of ``pulp-puppet`` is a minor update release with bugfixes
-and one new feature. The ``--skip-dep`` and ``--modulepath`` flags are now
-supported during install and update operations.
+and two new features.
+
+    * The ``--skip-dep`` and ``--modulepath`` flags are now supported during install and update
+      operations.
+
+    * A new SELinux boolean named ``pulp_manage_puppet`` is introduced for the Install Distributor.
+      It works with the new SELinux policy introduced in Pulp Platform 2.5.0. Read more in the
+      Plugin Configuration section of the Pulp Puppet Technical Reference for more details on
+      this new boolean.
 
 Users upgrading from 2.3.x or earlier will need to manually delete the
 ``/var/www/pulp_puppet`` directory after upgrading. This is the old location
