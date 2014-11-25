@@ -56,7 +56,7 @@ class SynchronizeWithDirectory(object):
     multiple puppet built puppet modules.
 
     :ivar conduit: Provides access to relevant Pulp functionality.
-    :type conduit: pulp.plugins.conduits.unit_import.ImportUnitConduit
+    :type conduit: pulp.plugins.conduits.repo_sync.RepoSyncConduit
     :ivar config: Plugin configuration.
     :type config: pulp.plugins.config.PluginCallConfiguration
     :ivar report: An import report.
@@ -94,7 +94,7 @@ class SynchronizeWithDirectory(object):
     def __init__(self, conduit, config):
         """
         :param conduit: Provides access to relevant Pulp functionality.
-        :type conduit: pulp.plugins.conduits.unit_import.ImportUnitConduit
+        :type conduit: pulp.plugins.conduits.repo_sync.RepoSyncConduit
         :param config: Plugin configuration.
         :type config: pulp.plugins.config.PluginCallConfiguration
         """
@@ -121,21 +121,6 @@ class SynchronizeWithDirectory(object):
         Cancel puppet module import.
         """
         self.canceled = True
-
-    def _run(self, inventory):
-        """
-        Perform the synchronization using the supplied inventory.
-
-        :param inventory: An inventory object.
-        :type inventory: Inventory
-        """
-        manifest = self._fetch_manifest()
-        if manifest is None:
-            # fetch manifest failed
-            return
-        module_paths = self._fetch_modules(manifest)
-        imported_modules = self._import_modules(inventory, module_paths)
-        self._purge_unwanted_modules(inventory, imported_modules)
 
     def _download(self, urls):
         """
@@ -251,47 +236,69 @@ class SynchronizeWithDirectory(object):
 
         return [r.destination for r in succeeded_reports]
 
-    def _import_modules(self, inventory, module_paths):
+    def _import_modules(self, module_paths):
         """
-        Import the puppet modules (tarballs) at the specified paths.
+        Import the puppet modules (tarballs) at the specified paths. This will also handle
+        removing any modules in the local repository if they are no longer present on remote
+        repository and the 'remove_missing' config value is True.
 
-        :param inventory: A module inventory object.
-        :type inventory: Inventory
         :param module_paths: A list of paths to puppet module files.
         :type module_paths: list
-        :return: A list of the imported module unit keys.
-        :rtype: list
         """
-        imported_modules = []
+        criteria = UnitAssociationCriteria(type_ids=[constants.TYPE_PUPPET_MODULE],
+                                           unit_fields=Module.UNIT_KEY_NAMES)
+        local_units = self.conduit.get_units(criteria=criteria)
+        local_unit_keys = [unit.unit_key for unit in local_units]
+        remote_unit_keys = []
+
         for module_path in module_paths:
             if self.canceled:
-                return []
+                return
             puppet_manifest = self._extract_metadata(module_path)
             module = Module.from_json(puppet_manifest)
-            if inventory.already_associated(module):
-                # Decrement the total number of modules we're importing
+            remote_unit_keys.append(module.unit_key())
+
+            # Even though we've already basically processed this unit, not doing this makes the
+            # progress reporting confusing because it shows Pulp always importing all the modules.
+            if module.unit_key() in local_unit_keys:
                 self.report.modules_total_count -= 1
                 continue
-            _LOG.info(IMPORT_MODULE % dict(mod=module_path))
-            imported_modules.append(module.unit_key())
+            _LOG.debug(IMPORT_MODULE % dict(mod=module_path))
             self._add_module(module_path, module)
             self.report.modules_finished_count += 1
             self.report.update_progress()
 
-        # Write the report, making sure we don't overwrite the a failure in _fetch_modules
-        if self.report.modules_state != constants.STATE_FAILED:
+        # Write the report, making sure we don't overwrite a failure in _fetch_modules
+        if self.report.modules_state not in constants.COMPLETE_STATES:
             self.report.modules_state = constants.STATE_SUCCESS
         self.report.modules_execution_time = time() - self.started_fetch_modules
         self.report.update_progress()
 
-        return imported_modules
+        remove_missing = self.config.get_boolean(constants.CONFIG_REMOVE_MISSING)
+        if remove_missing is None:
+            remove_missing = constants.DEFAULT_REMOVE_MISSING
+        if remove_missing:
+            self._remove_missing(local_units, remote_unit_keys)
+
+    def _remove_missing(self, local_units, remote_unit_keys):
+        """
+        Removes units from the local repository if they are missing from the remote repository.
+
+        :param local_units:         A list of units associated with the current repository
+        :type  local_units:         list of AssociatedUnit
+        :param remote_unit_keys:    a list of all the unit keys in the remote repository
+        :type  remote_unit_keys:    list of dict
+        """
+        for missing in [unit for unit in local_units if unit.unit_key not in remote_unit_keys]:
+            if self.canceled:
+                return
+            self.conduit.remove_unit(missing)
 
     def _add_module(self, path, module):
         """
-        Add the specified module to Pulp using the conduit.
-        This will both create the module and associate it to a repository.
-        The module tarball is copied to the *storage path* only if it does
-        not already exist at the *storage path*.
+        Add the specified module to Pulp using the conduit. This will both create the module
+        and associate it to a repository. The module tarball is copied to the *storage path*
+        only if it does not already exist at the *storage path*.
 
         :param path: The path to the downloaded module tarball.
         :type path: str
@@ -306,30 +313,6 @@ class SynchronizeWithDirectory(object):
         if not os.path.exists(unit.storage_path):
             shutil.copy(path, unit.storage_path)
         self.conduit.save_unit(unit)
-
-    def _purge_unwanted_modules(self, inventory, imported_modules):
-        """
-        Purge unwanted puppet modules.
-        Unwanted modules are those modules associated with the repository but
-        not imported during this operation.  Skipped when the configuration does
-        not specify do perform it.  The inventory is used to determine which
-        modules should be removed.
-
-        :param inventory: A module inventory object.
-        :type inventory: Inventory
-        :param imported_modules: List of modules import.  List of: Module.
-        :type imported_modules: list
-        """
-        purge_option = self.config.get_boolean(constants.CONFIG_REMOVE_MISSING)
-        if purge_option is None:
-            purge_option = constants.DEFAULT_REMOVE_MISSING
-        if not purge_option:
-            # no purge requested
-            return
-        for unit_key in inventory.unwanted_modules(imported_modules):
-            if self.canceled:
-                return
-            self.conduit.remove_unit(unit_key)
 
     def __call__(self, repository):
         """
@@ -346,8 +329,10 @@ class SynchronizeWithDirectory(object):
         self.report = SyncProgressReport(self.conduit)
         self.tmp_dir = mkdtemp(dir=repository.working_dir)
         try:
-            inventory = Inventory(self.conduit)
-            self._run(inventory)
+            manifest = self._fetch_manifest()
+            if manifest is not None:
+                module_paths = self._fetch_modules(manifest)
+                self._import_modules(module_paths)
         finally:
             # Update the progress report one last time
             self.report.update_progress()
@@ -391,74 +376,3 @@ class DownloadListener(AggregatingEventListener):
         """
         if self.synchronizer.canceled:
             self.downloader.cancel()
-
-
-class Inventory(object):
-    """
-    Represents the Pulp inventory of puppet modules currently
-    associated to a directory.  Retrieves the inventory and provides useful
-    methods for working with it.
-
-    :ivar associated: A set of puppet module unit keys associated with a repository.
-    :type associated: set
-    """
-
-    @staticmethod
-    def _associated(conduit):
-        """
-        Retrieve the modules associated with a repository, build a set containing
-        the unit_key for each and return it.
-
-        :param conduit: Provides access to relevant Pulp functionality.
-        :type conduit: pulp.plugins.conduits.unit_import.ImportUnitConduit
-        :return: The set of unit keys.
-        :rtype: set
-        """
-        key_set = set()
-        criteria = UnitAssociationCriteria(
-            type_ids=[constants.TYPE_PUPPET_MODULE], unit_fields=Module.UNIT_KEY_NAMES)
-        units = conduit.get_units(criteria=criteria, as_generator=True)
-        for unit in units:
-            module = Module.from_unit(unit)
-            key_set.add(tuple(module.unit_key().items()))
-        return key_set
-
-    def __init__(self, conduit):
-        """
-        :param conduit: Provides access to relevant Pulp functionality.
-        :type conduit: pulp.plugins.conduits.unit_import.ImportUnitConduit
-        """
-        self.associated = Inventory._associated(conduit)
-
-    def already_associated(self, module):
-        """
-        Get whether the specified module is already associated with the
-        inventory of modules associated with a repository.
-
-        :param module: A puppet module.
-        :type module: Module
-        :return: True if already associated.
-        :rtype: bool
-        """
-        return tuple(module.unit_key().items()) in self.associated
-
-    def unwanted_modules(self, wanted_modules):
-        """
-        Get a set of unit keys for those modules that are deemed to
-        be *unwanted*.  Unwanted modules are those modules that are
-        associated with a repository but not included in the specified
-        list of *wanted* modules.  The *wanted* modules are those that
-        should be associated with the repository.  Thus, any modules associated
-        with the inventory that are not included in the *wanted* list are
-        deemed *unwanted*.
-        :param wanted_modules: A list of module unit keys.
-        :type wanted_modules: list
-        :return: A list of unwanted module unit keys.
-        :rtype: list
-        """
-        wanted_set = set()
-        for unit_key in wanted_modules:
-            wanted_set.add(tuple(unit_key.items()))
-        unwanted = [dict(k) for k in self.associated - wanted_set]
-        return unwanted
-
