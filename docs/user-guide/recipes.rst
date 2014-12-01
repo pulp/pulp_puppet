@@ -164,7 +164,7 @@ Note that the following command requires root privileges.
 
 ::
 
-    $ sudo pulp-consumer -u admin register --consumer-id=fred
+    $ sudo pulp-consumer register --consumer-id=fred
     Enter password:
     Consumer [fred] successfully registered
 
