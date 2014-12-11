@@ -288,15 +288,6 @@ A collection of tools used to manage puppet modules.
   (jcline@redhat.com)
 - 1153072 - do not delete /var/www/pulp_puppet on upgrade (cduryee@redhat.com)
 
-* Mon Nov 17 2014 asmacdo <asmacdo@gmail.com> 2.5.0-0.19.rc
-- Pulp rebuild
-
-* Mon Nov 10 2014 asmacdo <asmacdo@gmail.com> 2.5.0-0.18.rc
-- Pulp rebuild
-
-* Thu Nov 06 2014 asmacdo <asmacdo@gmail.com> 2.5.0-0.17.rc
-- Pulp rebuild
-
 * Fri Oct 31 2014 Austin Macdonald <amacdona@redhat.com> 2.5.0-0.15.rc
 - 1009429 - Don't verify FS permissions with httpd. (rbarlow@redhat.com)
 - 1153072 - do not delete /var/www/pulp_puppet on upgrade (cduryee@redhat.com)
@@ -310,9 +301,6 @@ A collection of tools used to manage puppet modules.
   republish. (bcourt@redhat.com)
 - 1123446 - Syncing against a directory uses 'modulename' rather than
   'authorname-modulename' as the module name (jcline@redhat.com)
-
-* Thu Oct 16 2014 Randy Barlow <rbarlow@redhat.com> 2.4.3-1
-- Pulp rebuild
 
 * Mon Oct 13 2014 Chris Duryee <cduryee@redhat.com> 2.4.2-1
 - 1103232 - Reference Pulp docs for proxy settings. (rbarlow@redhat.com)
