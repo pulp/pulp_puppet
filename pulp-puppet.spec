@@ -15,7 +15,7 @@
 
 Name: pulp-puppet
 Version: 2.6.0
-Release: 0.1.alpha%{?dist}
+Release: 0.2.beta%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -281,6 +281,10 @@ A collection of tools used to manage puppet modules.
 
 
 %changelog
+* Tue Dec 23 2014 Chris Duryee <cduryee@redhat.com> 2.6.0-0.2.beta
+- 1145719 - Puppet directory import now respects the 'remove_missing'
+  configuration setting. (jcline@redhat.com)
+
 * Fri Nov 21 2014 Chris Duryee <cduryee@redhat.com> 2.6.0-0.1.alpha
 - 1145713 - add python-pulp-puppet-common as dep to tools rpm
   (cduryee@redhat.com)
