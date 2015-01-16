@@ -14,6 +14,7 @@
 import base64
 import json
 import re
+import urllib
 
 from pulp.server.db import connection
 import web
@@ -30,10 +31,15 @@ post_33_urls = (
     '/([^/]+)/([^/]+)/api/v1/releases.json', 'Releases',
 )
 
+post_36_urls = (
+    '/releases', 'ReleasesPost36',
+)
+
 pre_33_app = web.application(pre_33_urls, globals())
 post_33_app = web.application(post_33_urls, globals())
+post_36_app = web.application(post_36_urls, globals())
 
-MODULE_PATTERN = re.compile('^[a-zA-Z0-9]+/[a-zA-Z0-9_]+$')
+MODULE_PATTERN = re.compile('(^[a-zA-Z0-9]+)(/|-)([a-zA-Z0-9_]+)$')
 
 
 class Releases(object):
@@ -72,8 +78,28 @@ class Releases(object):
             return web.badrequest()
         version = web.input().get('version')
 
+        data = self.get_releases(*credentials, module_name=module_name, version=version)
+        return self.format_results(data)
+
+    def get_releases(self, *args, **kwargs):
+        """
+        Get the list of matching releases
+
+        :return: The matching modules
+        :rtype: dict
+        """
+        return releases.view(*args, **kwargs)
+
+    def format_results(self, data):
+        """
+        Format the results and begin streaming out to the caller
+
+        :param data: The module data to stream back to the caller
+        :type data: dict
+        :return: the body of what should be streamed out to the caller
+        :rtype: str
+        """
         web.header('Content-Type', 'application/json')
-        data = releases.view(*credentials, module_name=module_name, version=version)
         return json.dumps(data)
 
     @staticmethod
@@ -98,9 +124,117 @@ class Releases(object):
         :return: name of the module being requested, or None if not found or invalid
         """
         module_name = web.input().get('module', '')
-        if MODULE_PATTERN.match(module_name):
-            return module_name
+        match = MODULE_PATTERN.match(module_name)
+        if match:
+            normalized_name = u'%s/%s' % (match.group(1), match.group(3))
+            return normalized_name
 
+
+class ReleasesPost36(Releases):
+
+    @staticmethod
+    def _format_query_string(base_url, module_name, module_version, offset, limit):
+        """
+        Build the query string to be used for creating
+
+        :param base_url: The context root to sue when generating a releases query.
+        :type base_url: str
+        :param module_name: The module name to add to the query string
+        :type module_name: str
+        :param module_version: The version of the module to encode in the query string
+        :type module_version: str
+        :param offset: The offset to encode for pagination
+        :type offset: int
+        :param limit: The max number of items to show on a page
+        :type limit: int
+        :return: The encoded URL for the specified query arguments
+        :rtype: str
+        """
+        query_args = {'module': module_name,
+                      'offset': offset,
+                      'limit': limit}
+        if module_version:
+            query_args['version'] = module_version
+
+        return '%s?%s' % (base_url, urllib.urlencode(query_args))
+
+    def get_releases(self, *args, **kwargs):
+        """
+        Get the list of matching releases
+
+        :return: The matching modules
+        :rtype: dict
+        """
+        return releases.view(*args, recurse_deps=False, view_all_matching=True, **kwargs)
+
+    def format_results(self, data):
+        """
+        Format the results and begin streaming out to the caller for the v3 API
+
+        :param data: The module data to stream back to the caller
+        :type data: dict
+        :return: the body of what should be streamed out to the caller
+        :rtype: str
+        """
+        web.header('Content-Type', 'application/json')
+        limit = int(web.input().get('limit', 20))
+        current_offset = int(web.input().get('offset', 0))
+        module_name = web.input().get('module', '')
+        module_version = web.input().get('version', None)
+        base_url_string = '/v3%s' % web.ctx.path
+
+        first_path = self._format_query_string(base_url_string, module_name, module_version,
+                                               0, limit)
+        current_path = self._format_query_string(base_url_string, module_name, module_version,
+                                                 current_offset, limit)
+        if current_offset > 0:
+            previous_path = self._format_query_string(base_url_string, module_name, module_version,
+                                                      current_offset - limit, limit)
+        else:
+            previous_path = None
+
+        formatted_results = {
+            'pagination': {
+                'limit': limit,
+                'offset': current_offset,
+                'first': first_path,
+                'previous': previous_path,
+                'current': current_path,
+                'next': None,
+                'total': 1
+            },
+            'results': []
+        }
+        module_list = data.get(self._get_module_name())
+        total_count = len(module_list)
+
+        for module in module_list[current_offset: (current_offset + limit)]:
+            formatted_dependencies = []
+            for dep in module.get('dependencies', []):
+                formatted_dependencies.append({
+                    'name': dep[0],
+                    'version_requirement': dep[1]
+                })
+            module_data = {
+                'metadata': {
+                    'name': module_name,
+                    'version': module.get('version'),
+                    'dependencies': formatted_dependencies
+                },
+                'file_uri': module.get('file'),
+                'file_md5': module.get('file_md5')
+            }
+
+            formatted_results['results'].append(module_data)
+
+        formatted_results['pagination']['total'] = total_count
+
+        if total_count > (current_offset + limit):
+            next_path = self._format_query_string(base_url_string, module_name, module_version,
+                                                  current_offset + limit, limit)
+            formatted_results['pagination']['next'] = next_path
+
+        return json.dumps(formatted_results)
 
 if __name__ == '__main__':
     # run this app stand-alone, useful for testing

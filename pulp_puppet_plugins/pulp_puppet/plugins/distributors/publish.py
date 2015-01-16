@@ -13,6 +13,7 @@
 
 import copy
 from   datetime import datetime
+import hashlib
 import gdbm
 from   gettext import gettext as _
 import json
@@ -312,7 +313,17 @@ class PuppetModulePublishRun(object):
                 version = module.unit_key['version']
                 deps = module.metadata.get('dependencies', [])
                 path = os.path.join(self._repo_path, self._build_relative_path(module))
-                value = {'file' : path, 'version' : version, 'dependencies' : deps}
+                # calculate the checksum
+                with open(module.storage_path) as file_handle:
+                    file_hash = hashlib.md5()
+                    while True:
+                        content = file_handle.read(128)
+                        if not content:
+                            break
+                        file_hash.update(content)
+                    md5_sum = file_hash.hexdigest()
+                value = {'file': path, 'version': version, 'dependencies': deps,
+                         'file_md5': md5_sum}
 
                 name = module.unit_key['name']
                 author = module.unit_key['author']

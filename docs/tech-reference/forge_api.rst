@@ -1,11 +1,16 @@
 Forge API
 =========
 
-Puppet Forge implements a basic API that is not currently documented. The
-challenging aspect of re-implementing the API is that prior to puppet version
+Puppet Forge implements a basic API that prior to Puppet 3.6 was not documented.
+After version 3.6 the documentation for the Forge API can be found at
+https://forgeapi.puppetlabs.com/.
+
+The challenging aspect of re-implementing the API is that prior to puppet version
 3.3, the ``puppet module`` tool used hard-coded absolute paths, so the API must
 exist at the root of the web server. This also prevents the inclusion of a
-repository ID in the URL.
+repository ID in the URL. After puppet version 3.5 the use of hard-coded paths
+was reintroduced so the methods of specifying the repository or consumer outlined
+here apply.
 
 Search
 ------

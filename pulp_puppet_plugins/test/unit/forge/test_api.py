@@ -13,6 +13,7 @@
 
 import json
 import unittest
+import urlparse
 
 import mock
 from pulp.server.db.connection import initialize
@@ -67,9 +68,8 @@ class TestAppPre33(unittest.TestCase):
         result = self.app.request(self.make_path('foo/bar', '1.0.0'))
 
         self.assertEqual(result.status, '200 OK')
-        mock_view.assert_called_once_with('consumer1', 'repo1', module_name='foo/bar', version='1.0.0')
-
-
+        mock_view.assert_called_once_with('consumer1', 'repo1', module_name='foo/bar',
+                                          version='1.0.0')
 
 
 class TestAppPost33(unittest.TestCase):
@@ -181,19 +181,20 @@ class TestGET(unittest.TestCase):
         result = api.Releases().GET()
         self.assertEqual(result, json.dumps({}))
 
-        mock_view.assert_called_once_with('consumer1', 'repo1', module_name='foo/bar', version='1.0.0')
+        mock_view.assert_called_once_with('consumer1', 'repo1', module_name='foo/bar',
+                                          version='1.0.0')
 
 
 class TestGetCredentials(unittest.TestCase):
     @mock.patch('web.ctx')
     def test_normal(self, mock_ctx):
-        mock_ctx.env = {'HTTP_AUTHORIZATION' : 'Basic aGV5aXRzbWU6bGV0bWVpbg=='}
+        mock_ctx.env = {'HTTP_AUTHORIZATION': 'Basic aGV5aXRzbWU6bGV0bWVpbg=='}
         result = api.Releases._get_credentials()
         self.assertEqual(result, ('heyitsme', 'letmein'))
 
     @mock.patch('web.ctx')
     def test_invalid_string(self, mock_ctx):
-        mock_ctx.env = {'HTTP_AUTHORIZATION' : 'Basic notreallyencoded'}
+        mock_ctx.env = {'HTTP_AUTHORIZATION': 'Basic notreallyencoded'}
         result = api.Releases._get_credentials()
         self.assertTrue(result is None)
 
@@ -205,7 +206,7 @@ class TestGetCredentials(unittest.TestCase):
 
 
 class TestGetModuleName(unittest.TestCase):
-    @mock.patch('web.input', autospec=True, return_value={'module':'foo/bar'})
+    @mock.patch('web.input', autospec=True, return_value={'module': 'foo/bar'})
     def test_normal(self, mock_input):
         result = api.Releases._get_module_name()
 
@@ -218,3 +219,138 @@ class TestGetModuleName(unittest.TestCase):
 
         self.assertTrue(result is None)
         mock_input.assert_called_once_with()
+
+
+class TestPost36(unittest.TestCase):
+
+    @mock.patch('pulp_puppet.forge.api.releases.view')
+    def test_get_releases(self, mock_view):
+        release = api.ReleasesPost36()
+        release.get_releases()
+        mock_view.assert_called_once_with(recurse_deps=False,
+                                          view_all_matching=True)
+
+    def test_format_query_string_no_version(self):
+        result = api.ReleasesPost36._format_query_string(
+            base_url='https://foo.com/api/v3/',
+            module_name='modulename', module_version=None,
+            offset=5, limit=2
+        )
+
+        data = urlparse.urlparse(result)
+        self.assertEquals('https', data.scheme)
+        self.assertEquals('foo.com', data.netloc)
+        self.assertEquals('/api/v3/', data.path)
+
+        query = urlparse.parse_qs(data.query)
+        self.assertEquals(['modulename'], query['module'])
+        self.assertEquals(['2'], query['limit'])
+        self.assertEquals(['5'], query['offset'])
+        self.assertTrue('version' not in query)
+
+    def test_format_query_string_with_version(self):
+        result = api.ReleasesPost36._format_query_string(
+            base_url='https://foo.com/api/v3/',
+            module_name='modulename', module_version='3.5',
+            offset=5, limit=2
+        )
+        data = urlparse.urlparse(result)
+        query = urlparse.parse_qs(data.query)
+        self.assertEquals(['3.5'], query['version'])
+
+    @mock.patch('web.ctx')
+    @mock.patch('web.header')
+    @mock.patch('web.input', autospec=True, return_value={'module': 'foo/bar'})
+    def test_format_results_pagination_defaults(self, mock_input, mock_hdr, mock_ctx):
+        release = api.ReleasesPost36()
+        mock_ctx.path = 'releases/'
+        result_str = release.format_results({'foo/bar': []})
+        result = json.loads(result_str)
+
+        self.assertEquals(20, result['pagination']['limit'])
+        self.assertEquals(0, result['pagination']['offset'])
+        self.assertEquals(0, result['pagination']['total'])
+        self.assertEquals(u'/v3releases/?limit=20&module=foo%2Fbar&offset=0',
+                          result['pagination']['first'])
+        self.assertEquals(u'/v3releases/?limit=20&module=foo%2Fbar&offset=0',
+                          result['pagination']['current'])
+        self.assertEquals(None, result['pagination']['previous'])
+        self.assertEquals(None, result['pagination']['next'])
+
+    @mock.patch('web.ctx')
+    @mock.patch('web.header')
+    @mock.patch('web.input', autospec=True, return_value={'module': 'foo/bar',
+                                                          'limit': '1',
+                                                          'offset': '1'})
+    def test_format_results_pagination_middle_page(self, mock_input, mock_hdr, mock_ctx):
+        release = api.ReleasesPost36()
+        mock_ctx.path = 'releases/'
+        result_str = release.format_results({'foo/bar': [
+            {'dependencies': [], 'version': '1.0', 'file': 'foo', 'file_md5': 'bar'},
+            {'dependencies': [], 'version': '2.0', 'file': 'foo', 'file_md5': 'bar'},
+            {'dependencies': [], 'version': '3.0', 'file': 'foo', 'file_md5': 'bar'},
+        ]})
+        result = json.loads(result_str)
+
+        self.assertEquals(1, result['pagination']['limit'])
+        self.assertEquals(1, result['pagination']['offset'])
+        self.assertEquals(3, result['pagination']['total'])
+        self.assertEquals(u'/v3releases/?limit=1&module=foo%2Fbar&offset=0',
+                          result['pagination']['first'])
+        self.assertEquals(u'/v3releases/?limit=1&module=foo%2Fbar&offset=0',
+                          result['pagination']['previous'])
+        self.assertEquals(u'/v3releases/?limit=1&module=foo%2Fbar&offset=1',
+                          result['pagination']['current'])
+        self.assertEquals(u'/v3releases/?limit=1&module=foo%2Fbar&offset=2',
+                          result['pagination']['next'])
+        self.assertEquals(1, len(result['results']))
+        self.assertEquals('2.0', result['results'][0]['metadata']['version'])
+
+    @mock.patch('web.ctx')
+    @mock.patch('web.header')
+    @mock.patch('web.input', autospec=True, return_value={'module': 'foo/bar',
+                                                          'limit': '1',
+                                                          'offset': '2'})
+    def test_format_results_pagination_last_page(self, mock_input, mock_hdr, mock_ctx):
+        release = api.ReleasesPost36()
+        mock_ctx.path = 'releases/'
+        result_str = release.format_results({'foo/bar': [
+            {'dependencies': [], 'version': '1.0', 'file': 'foo', 'file_md5': 'bar'},
+            {'dependencies': [], 'version': '2.0', 'file': 'foo', 'file_md5': 'bar'},
+            {'dependencies': [], 'version': '3.0', 'file': 'foo', 'file_md5': 'bar'},
+        ]})
+        result = json.loads(result_str)
+
+        self.assertEquals(1, result['pagination']['limit'])
+        self.assertEquals(2, result['pagination']['offset'])
+        self.assertEquals(3, result['pagination']['total'])
+        self.assertEquals(u'/v3releases/?limit=1&module=foo%2Fbar&offset=0',
+                          result['pagination']['first'])
+        self.assertEquals(u'/v3releases/?limit=1&module=foo%2Fbar&offset=1',
+                          result['pagination']['previous'])
+        self.assertEquals(u'/v3releases/?limit=1&module=foo%2Fbar&offset=2',
+                          result['pagination']['current'])
+        self.assertEquals(None, result['pagination']['next'])
+        self.assertEquals(1, len(result['results']))
+        self.assertEquals('3.0', result['results'][0]['metadata']['version'])
+
+    @mock.patch('web.ctx')
+    @mock.patch('web.header')
+    @mock.patch('web.input', autospec=True, return_value={'module': 'foo/bar'})
+    def test_format_results_render_module(self, mock_input, mock_hdr, mock_ctx):
+        release = api.ReleasesPost36()
+        mock_ctx.path = 'releases/'
+        result_str = release.format_results({'foo/bar': [
+            {'dependencies': [('apple', '42.5')],
+             'version': '1.0', 'file': 'foo', 'file_md5': 'bar'},
+        ]})
+        result = json.loads(result_str)
+
+        module_data = result['results'][0]
+        self.assertEquals('foo/bar', module_data['metadata']['name'])
+        self.assertEquals('1.0', module_data['metadata']['version'])
+        self.assertEquals('foo', module_data['file_uri'])
+        self.assertEquals('bar', module_data['file_md5'])
+        dependencies = module_data['metadata']['dependencies']
+        self.assertEquals('apple', dependencies[0]['name'])
+        self.assertEquals('42.5', dependencies[0]['version_requirement'])
