@@ -281,13 +281,7 @@ A collection of tools used to manage puppet modules.
 
 
 %changelog
-* Fri Jan 16 2015 Chris Duryee <cduryee@redhat.com> 2.6.0-0.5.beta
-- Pulp rebuild
-
-* Tue Jan 13 2015 Chris Duryee <cduryee@redhat.com> 2.6.0-0.4.beta
-- Pulp rebuild
-
-* Mon Jan 12 2015 Chris Duryee <cduryee@redhat.com> 2.6.0-0.3.beta
+* Mon Jan 19 2015 Dennis Kliban <dkliban@redhat.com> 2.5.2-1
 - Pulp rebuild
 
 * Tue Dec 23 2014 Chris Duryee <cduryee@redhat.com> 2.6.0-0.2.beta
@@ -301,7 +295,7 @@ A collection of tools used to manage puppet modules.
   (jcline@redhat.com)
 - 1153072 - do not delete /var/www/pulp_puppet on upgrade (cduryee@redhat.com)
 
-* Fri Oct 31 2014 Austin Macdonald <amacdona@redhat.com> 2.5.0-0.15.rc
+* Fri Nov 21 2014 Austin Macdonald <amacdona@redhat.com> 2.5.0-1
 - 1009429 - Don't verify FS permissions with httpd. (rbarlow@redhat.com)
 - 1153072 - do not delete /var/www/pulp_puppet on upgrade (cduryee@redhat.com)
 - 1150297 - Change all 2.4.x versions to 2.5.0. (rbarlow@redhat.com)
