@@ -1,36 +1,23 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2012 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
+from datetime import datetime
+from gettext import gettext as _
 import copy
-from   datetime import datetime
 import gdbm
-from   gettext import gettext as _
 import json
 import logging
 import os
 import shutil
 import sys
 
-from pulp.plugins.conduits.mixins import UnitAssociationCriteria
+from pulp.server.db.model.criteria import UnitAssociationCriteria
 
 from pulp_puppet.common import constants
 from pulp_puppet.common.constants import (STATE_FAILED, STATE_RUNNING, STATE_SUCCESS, STATE_SKIPPED)
 from pulp_puppet.common.model import RepositoryMetadata, Module
 from pulp_puppet.common.publish_progress import PublishProgressReport
 
-_LOG = logging.getLogger(__name__)
 
-# -- public classes -----------------------------------------------------------
+_logger = logging.getLogger(__name__)
+
 
 class PuppetModulePublishRun(object):
     """
@@ -72,7 +59,7 @@ class PuppetModulePublishRun(object):
         :return: the report object to return to Pulp from the publish call
         :rtype:  pulp.plugins.model.PublishReport
         """
-        _LOG.info('Beginning publish for repository <%s>' % self.repo.id)
+        _logger.info('Beginning publish for repository <%s>' % self.repo.id)
 
         try:
             modules = self._modules_step()
@@ -107,7 +94,7 @@ class PuppetModulePublishRun(object):
             modules = self._retrieve_repo_modules()
             self._symlink_modules(modules)
         except Exception, e:
-            _LOG.exception('Exception during modules step for repository <%s>' % self.repo.id)
+            _logger.exception('Exception during modules step for repository <%s>' % self.repo.id)
 
             self.progress_report.modules_state = STATE_FAILED
             self.progress_report.modules_error_message = _('Error assembling modules')
@@ -151,7 +138,7 @@ class PuppetModulePublishRun(object):
             self._copy_to_published()
             self._cleanup_build_dir()
         except Exception, e:
-            _LOG.exception('Exception during metadata generation step for repository <%s>' % self.repo.id)
+            _logger.exception('Exception during metadata generation step for repository <%s>' % self.repo.id)
             self.progress_report.metadata_state = STATE_FAILED
             self.progress_report.metadata_error_message = _('Error generating repository metadata')
             self.progress_report.metadata_exception = e
@@ -181,7 +168,7 @@ class PuppetModulePublishRun(object):
         prior to making it live. If this directory already exists from a
         previous partial run, it will be deleted.
         """
-        _LOG.info('Initializing build directory for repository <%s>' % self.repo.id)
+        _logger.info('Initializing build directory for repository <%s>' % self.repo.id)
 
         build_dir = self._build_dir()
         if os.path.exists(build_dir):
@@ -193,7 +180,7 @@ class PuppetModulePublishRun(object):
         """
         Deletes the build directory after a successful publish.
         """
-        _LOG.info('Cleaning up build directory for repository <%s>' % self.repo.id)
+        _logger.info('Cleaning up build directory for repository <%s>' % self.repo.id)
 
         build_dir = self._build_dir()
         shutil.rmtree(build_dir)
@@ -218,7 +205,7 @@ class PuppetModulePublishRun(object):
 
         :type modules: list of pulp.plugins.model.AssociatedUnit
         """
-        _LOG.info('Creating symlinks for modules in repository <%s>' % self.repo.id)
+        _logger.info('Creating symlinks for modules in repository <%s>' % self.repo.id)
 
         build_dir = self._build_dir()
 
@@ -237,7 +224,7 @@ class PuppetModulePublishRun(object):
                     os.makedirs(symlink_dir)
                 os.symlink(module.storage_path, symlink_path)
                 self.progress_report.modules_finished_count += 1
-            except Exception, e:
+            except Exception:
                 self.progress_report.add_failed_module(module, sys.exc_info()[2])
 
             self.progress_report.update_progress()
@@ -272,7 +259,7 @@ class PuppetModulePublishRun(object):
 
         :type modules: list of pulp.plugins.model.AssociatedUnit
         """
-        _LOG.info('Generating metadata for repository <%s>' % self.repo.id)
+        _logger.info('Generating metadata for repository <%s>' % self.repo.id)
 
         # Convert the Pulp data types into the local model
         metadata = RepositoryMetadata()
@@ -304,7 +291,7 @@ class PuppetModulePublishRun(object):
         :type modules: list of pulp.plugins.model.AssociatedUnit
         """
         filename = os.path.join(self._build_dir(), constants.REPO_DEPDATA_FILENAME)
-        _LOG.debug('generating dependency metadata in file %s' % filename)
+        _logger.debug('generating dependency metadata in file %s' % filename)
         # opens a new file for writing and overwrites any existing file
         db = gdbm.open(filename, 'n')
         try:
@@ -312,13 +299,13 @@ class PuppetModulePublishRun(object):
                 version = module.unit_key['version']
                 deps = module.metadata.get('dependencies', [])
                 path = os.path.join(self._repo_path, self._build_relative_path(module))
-                value = {'file' : path, 'version' : version, 'dependencies' : deps}
+                value = {'file': path, 'version': version, 'dependencies': deps}
 
                 name = module.unit_key['name']
                 author = module.unit_key['author']
                 key = '%s/%s' % (author, name)
 
-                if db.has_key(key):
+                if key in db:
                     module_list = json.loads(db[key])
                 else:
                     module_list = []
@@ -333,7 +320,7 @@ class PuppetModulePublishRun(object):
         hosted. If a directory is found at the destination, it will be deleted
         first.
         """
-        _LOG.info('Making newly built repository live for repository <%s>' % self.repo.id)
+        _logger.info('Making newly built repository live for repository <%s>' % self.repo.id)
 
         build_dir = self._build_dir()
 
