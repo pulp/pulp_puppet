@@ -15,10 +15,12 @@ import json
 import unittest
 
 import mock
+from pulp.server.db.connection import initialize
 import web
 
 from pulp_puppet.forge import api
 
+initialize(name='pulp_unittest')
 
 class TestAppPre33(unittest.TestCase):
     app = api.pre_33_app
