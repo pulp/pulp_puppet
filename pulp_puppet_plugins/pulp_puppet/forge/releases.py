@@ -12,6 +12,7 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 import gdbm
+import json
 import logging
 import os.path
 
@@ -25,7 +26,32 @@ from pulp_puppet.forge.unit import Unit
 _LOGGER = logging.getLogger(__name__)
 
 
-def view(consumer_id, repo_id, module_name, version=None):
+def unit_generator(dbs, module_name):
+    """
+    Generator to produce all units visible to the API caller
+
+    :param dbs: The list of repo gdm files available to query for data
+    :type dbs: dict
+    :param module_name: The module name to search for
+    :type module_name: str
+    """
+    host = get_host_and_protocol()['host']
+    for repo_id, data in dbs.iteritems():
+        protocol = data['protocol']
+        db = data['db']
+        try:
+            json_data = db[module_name]
+        except KeyError:
+            _LOGGER.debug('module %s not found in repo %s' % (module_name, repo_id))
+            continue
+        units = json.loads(json_data)
+        for unit in units:
+            yield Unit(name=module_name, db=db, repo_id=repo_id, host=host, protocol=protocol,
+                       **unit)
+
+
+def view(consumer_id, repo_id, module_name, version=None, recurse_deps=True,
+         view_all_matching=False):
     """
     produces data for the "releases.json" view
 
@@ -37,12 +63,19 @@ def view(consumer_id, repo_id, module_name, version=None):
     :type  module_name: str
     :param version:     optional version
     :type  version:     str
+    :param recurse_deps: Whether or not a module should have it's full dependency chain
+                         recursively added to it's own
+    :type recurse_deps: bool
+    :param view_all_matching: whether or not all matching modules should be returned or just
+                              just the first one
+    :type view_all_matching: bool
 
     :return:    data structure defining dependency data for the given module and
                 its download path, identical to what the puppet forge v1 API
                 generates, except this structure is not yet JSON serialized
     :rtype:     dict
     """
+    # Build the list of repositories that should be queried
     if repo_id == constants.FORGE_NULL_AUTH_VALUE:
         if consumer_id == constants.FORGE_NULL_AUTH_VALUE:
             # must provide either consumer ID or repo ID
@@ -50,24 +83,63 @@ def view(consumer_id, repo_id, module_name, version=None):
         repo_ids = get_bound_repos(consumer_id)
     else:
         repo_ids = [repo_id]
-    if version:
-        unit = find_version(repo_ids, module_name, version)
-    else:
-        unit = find_newest(repo_ids, module_name)
-    if not unit:
-        raise web.NotFound()
+
+    dbs = None
+    return_data = None
     try:
-        data = unit.build_dep_metadata()
+        # Get the list of database files to query
+        dbs = get_repo_data(repo_ids)
+
+        # Build list of units to return
+        ret = []
+        # If a version was specified filter by that specific version of the module
+        if version:
+            for unit in unit_generator(dbs, module_name):
+                if unit.version == version:
+                    ret.append(unit)
+                    break
+        else:
+            units = list(unit_generator(dbs, module_name))
+            # if view_all_matching then return all modules matching the query, otherwise
+            # only return the first matching module (for forge v1 & v2 api compliance)
+            if view_all_matching:
+                ret = units
+            else:
+                if units:
+                    ret.append(max(units))
+
+        # calculate dependencies for the units being returned & build the return structure
+        return_data = {}
+        for unit in ret:
+            populated_unit = unit.build_dep_metadata(recurse_deps)
+            for unit_name, unit_details in populated_unit.iteritems():
+                return_data.setdefault(unit_name, []).extend(unit_details)
+
+        if not return_data:
+            raise web.NotFound()
+
     finally:
-        unit.db.close()
-    return data
+        # Close all the database files. If closing one raises an error we still need to
+        # close the others so that file handles aren't left open.
+        if dbs:
+            error_raised = None
+            for repo_id, dbs_data in dbs.iteritems():
+                try:
+                    dbs_data['db'].close()
+                except Exception, e:
+                    error_raised = e
+
+            if error_raised:
+                raise error_raised
+
+    return return_data
 
 
 # this just provides a convenient way to access each config key and value from
 # the following function
 PROTOCOL_CONFIG_KEYS = {
-    'http' : (constants.CONFIG_HTTP_DIR, constants.DEFAULT_HTTP_DIR),
-    'https' : (constants.CONFIG_HTTPS_DIR, constants.DEFAULT_HTTPS_DIR),
+    'http': (constants.CONFIG_HTTP_DIR, constants.DEFAULT_HTTP_DIR),
+    'https': (constants.CONFIG_HTTPS_DIR, constants.DEFAULT_HTTPS_DIR),
 }
 
 
@@ -94,7 +166,8 @@ def get_repo_data(repo_ids):
         try:
             ret[repo_id] = {'db': gdbm.open(db_path, 'r'), 'protocol': publish_protocol}
         except gdbm.error:
-            _LOGGER.error('failed to find dependency database for repo %s. re-publish to fix.' % repo_id)
+            _LOGGER.error('failed to find dependency database for repo %s. re-publish to fix.' %
+                          repo_id)
     return ret
 
 
@@ -122,72 +195,6 @@ def _get_protocol_from_distributor(distributor):
         return 'http'
 
 
-def find_version(repo_ids, module_name, version):
-    """
-    Find a particular version of the requested module
-
-    :param repo_ids:    IDs of repos to search in
-    :type  repo_ids:    list
-    :param module_name: name of module in form "author/title"
-    :type  module_name: str
-    :param version:     version to search for
-    :type  version:     str
-
-    :return:    Unit instance
-    :rtype:     puppet.forge.unit.Unit
-    """
-    dbs = get_repo_data(repo_ids)
-    host = get_host_and_protocol()['host']
-    ret = None
-    try:
-        for repo_id, data in dbs.iteritems():
-            units = Unit.units_from_json(module_name, data['db'], repo_id, host, data['protocol'])
-            for unit in units:
-                if unit.version == version:
-                    ret = unit
-                    break
-
-    finally:
-        # close database files we don't need to use
-        if ret:
-            del dbs[ret.repo_id]
-        for data in dbs.itervalues():
-            data['db'].close()
-
-    return ret
-
-
-def find_newest(repo_ids, module_name):
-    """
-    Find the newest version of the requested module
-
-    :param repo_ids:    IDs of repos to search in
-    :type  repo_ids:    list
-    :param module_name: name of module in form "author/title"
-    :type  module_name: str
-
-    :return:    Unit instance, or None if not found
-    :rtype:     puppet.forge.unit.Unit
-    """
-    dbs = get_repo_data(repo_ids)
-    host = get_host_and_protocol()['host']
-    ret = None
-    try:
-        for repo_id, data in dbs.iteritems():
-            units = Unit.units_from_json(module_name, data['db'], repo_id, host, data['protocol'])
-            if units:
-                repo_max = max(units)
-                if ret is None or repo_max > ret:
-                    ret = repo_max
-    finally:
-        # close database files we don't need to use
-        if ret:
-            del dbs[ret.repo_id]
-        for data in dbs.itervalues():
-            data['db'].close()
-    return ret
-
-
 def get_host_and_protocol():
     """
     Get host and protocol from the web request and return them
@@ -196,8 +203,8 @@ def get_host_and_protocol():
     :rtype:     dict
     """
     return {
-        'host' : web.ctx.host,
-        'protocol' : web.ctx.protocol
+        'host': web.ctx.host,
+        'protocol': web.ctx.protocol
     }
 
 
@@ -210,5 +217,7 @@ def get_bound_repos(consumer_id):
     :rtype:     list
     """
     bindings = BindManager().find_by_consumer(consumer_id)
-    repos = [binding['repo_id'] for binding in bindings if binding['distributor_id'] == constants.DISTRIBUTOR_TYPE_ID]
+    repos = [binding['repo_id']
+             for binding in bindings
+             if binding['distributor_id'] == constants.DISTRIBUTOR_TYPE_ID]
     return repos

@@ -13,11 +13,11 @@
 
 import json
 import logging
-import urlparse
 
 import semantic_version
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class Unit(object):
     """
@@ -125,7 +125,8 @@ class Unit(object):
     }
     """
 
-    def __init__(self, name, version, file, dependencies, db, repo_id, host, protocol):
+    def __init__(self, name, version, file, dependencies, db, repo_id, host, protocol,
+                 file_md5=None):
         """
 
         :param name:        name in form "author/title"
@@ -147,6 +148,8 @@ class Unit(object):
         :type  host:        str
         :param protocol:    protocol used for this web request, such as "http"
         :type  protocol:    str
+        :param file_md5:    the md5 checksum for the file
+        :type  file_md5:    str
         """
         self.name = name
         self.version = version
@@ -156,6 +159,7 @@ class Unit(object):
         self.repo_id = repo_id
         self.host = host
         self.protocol = protocol
+        self.file_md5 = file_md5
 
     @classmethod
     def units_from_json(cls, name, db, repo_id, host, protocol):
@@ -190,9 +194,13 @@ class Unit(object):
             for unit in units
         ]
 
-    def build_dep_metadata(self):
+    def build_dep_metadata(self, recurse_deps=True):
         """
         Builds and returns the dependency metadata for this unit
+
+        :param recurse_deps: Whether or not a module should have it's full dependency chain
+                         recursively added to it's own
+        :type recurse_deps: bool
 
         :return:    data structure defining dependency data for the given module and
                     its download path, identical to what the puppet forge v1 API
@@ -201,10 +209,10 @@ class Unit(object):
         """
         root = {self.name: [self.to_dict()]}
         for dep in self.dependencies:
-            self._add_dep_to_metadata(dep['name'], root)
+            self._add_dep_to_metadata(dep['name'], root, recurse_deps=recurse_deps)
         return root
 
-    def _add_dep_to_metadata(self, name, root):
+    def _add_dep_to_metadata(self, name, root, recurse_deps=True):
         """
         Given a dependency metadata structure, add a new dependency to it. This
         will recursively add dependencies of the current dependency being added.
@@ -213,6 +221,10 @@ class Unit(object):
         :type  name:    str
         :param root:    existing dependency data structure
         :type  root:    dict
+        :param recurse_deps: Whether or not a module should have it's full dependency chain
+                             recursively added to it's own, Forge v1 & v2 requires the recursive
+                             deps list while v3 does not.
+        :type recurse_deps: bool
 
         :return:    None
         """
@@ -221,7 +233,8 @@ class Unit(object):
             root[name] = [unit.to_dict() for unit in units]
             for unit in units:
                 for dep in unit.dependencies:
-                    self._add_dep_to_metadata(dep['name'], root)
+                    if recurse_deps:
+                        self._add_dep_to_metadata(dep['name'], root)
 
     @property
     def _deps_as_list(self):
@@ -233,7 +246,8 @@ class Unit(object):
                     expression
         :rtype:     list
         """
-        return [[dep['name'], dep.get('version_requirement', '>= 0.0.0') ] for dep in self.dependencies]
+        return [[dep['name'], dep.get('version_requirement', '>= 0.0.0')]
+                for dep in self.dependencies]
 
     def to_dict(self):
         """
@@ -243,9 +257,10 @@ class Unit(object):
         :rtype: dict
         """
         return {
-            'file' :  self.file,
-            'version' : self.version,
-            'dependencies' : self._deps_as_list,
+            'file': self.file,
+            'version': self.version,
+            'dependencies': self._deps_as_list,
+            'file_md5': self.file_md5
         }
 
     def __cmp__(self, other):

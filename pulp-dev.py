@@ -34,6 +34,7 @@ LINKS = (
     ('pulp_puppet_plugins/etc/pulp/vhosts80/puppet.conf', '/etc/pulp/vhosts80/puppet.conf'),
     ('pulp_puppet_plugins/srv/pulp/puppet_forge_pre33_api.wsgi', '/srv/pulp/puppet_forge_pre33_api.wsgi'),
     ('pulp_puppet_plugins/srv/pulp/puppet_forge_post33_api.wsgi', '/srv/pulp/puppet_forge_post33_api.wsgi'),
+    ('pulp_puppet_plugins/srv/pulp/puppet_forge_post36_api.wsgi', '/srv/pulp/puppet_forge_post36_api.wsgi'),
     # Puppet Support Plugins
     ('pulp_puppet_plugins/pulp_puppet/plugins/types/puppet.json', DIR_PLUGINS + '/types/puppet.json'),
     # Puppet Support Admin Extensions

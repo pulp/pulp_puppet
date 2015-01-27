@@ -14,7 +14,6 @@
 import functools
 import json
 import unittest
-import urlparse
 
 import mock
 
@@ -22,9 +21,9 @@ from pulp_puppet.forge.unit import Unit
 
 
 unit_generator = functools.partial(
-    Unit, name='me/mymodule', file='/path/to/file', db={}, repo_id='repo1',
+    Unit, name='me/mymodule', file='/path/to/file', file_md5='foo', db={}, repo_id='repo1',
     host='localhost', protocol='http', version='1.0.0',
-    dependencies = [{'name':'you/yourmodule', 'version_requirement': '>= 2.1.0'}]
+    dependencies=[{'name': 'you/yourmodule', 'version_requirement': '>= 2.1.0'}]
 )
 
 
@@ -73,7 +72,18 @@ class TestBuildDepMetadata(unittest.TestCase):
         result = unit.build_dep_metadata()
 
         self.assertEqual(result, {unit.name: [unit.to_dict()]})
-        mock_add_dep.assert_called_once_with('you/yourmodule', {unit.name: [unit.to_dict()]})
+        mock_add_dep.assert_called_once_with('you/yourmodule', {unit.name: [unit.to_dict()]},
+                                             recurse_deps=True)
+
+    @mock.patch.object(Unit, '_add_dep_to_metadata', spec=unit_generator()._add_dep_to_metadata)
+    def test_with_dep_no_recurse(self, mock_add_dep):
+        unit = unit_generator()
+
+        result = unit.build_dep_metadata(recurse_deps=False)
+
+        self.assertEqual(result, {unit.name: [unit.to_dict()]})
+        mock_add_dep.assert_called_once_with('you/yourmodule', {unit.name: [unit.to_dict()]},
+                                             recurse_deps=False)
 
 
 class TestAddDepToMetadata(unittest.TestCase):
@@ -139,10 +149,11 @@ class TestToDict(unittest.TestCase):
         unit = unit_generator()
         result = unit.to_dict()
 
-        self.assertEqual(len(result), 3)
+        self.assertEqual(len(result), 4)
         self.assertEqual(result['version'], unit.version)
         self.assertEqual(result['file'], unit.file)
         self.assertEqual(result['dependencies'], unit._deps_as_list)
+        self.assertEqual(result['file_md5'], unit.file_md5)
 
     def test_file_url(self):
         unit = unit_generator(host='localhost')

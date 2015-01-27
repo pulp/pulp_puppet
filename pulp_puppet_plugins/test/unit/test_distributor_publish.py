@@ -12,6 +12,7 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 import gdbm
+import hashlib
 import json
 import os
 import shutil
@@ -101,17 +102,22 @@ class PublishRunTests(unittest.TestCase):
             def close(self):
                 self.close_called = True
         mock_open.return_value = FakeDB()
+        file_to_test = os.path.join(DATA_DIR, 'simple', 'xinetd-1.2.0.tar.gz')
+        with open(file_to_test, 'r') as file_handle:
+            content = file_handle.read()
+            md5_sum = hashlib.md5(content).hexdigest()
 
         units = [
             Unit(constants.TYPE_PUPPET_MODULE,
-                 {'name':'foo', 'version':'1.0.3', 'author':'me'},
-                 {'dependencies':[]}, '/tmp'),
+                 {'name': 'foo', 'version': '1.0.3', 'author': 'me'},
+                 {'dependencies': []}, file_to_test),
             Unit(constants.TYPE_PUPPET_MODULE,
-                {'name':'foo', 'version':'1.1.0', 'author':'me'},
-                {'dependencies':[]}, '/tmp'),
+                 {'name': 'foo', 'version': '1.1.0', 'author': 'me'},
+                 {'dependencies': []}, file_to_test),
             Unit(constants.TYPE_PUPPET_MODULE,
-                {'name':'bar', 'version':'1.0.0', 'author':'me'},
-                {'dependencies': [{'name':'me/foo', 'version_requirement': '>= 1.0.0'}]}, '/tmp'),
+                 {'name': 'bar', 'version': '1.0.0', 'author': 'me'},
+                 {'dependencies': [{'name': 'me/foo', 'version_requirement': '>= 1.0.0'}]},
+                 file_to_test),
         ]
         self.run._generate_dependency_data(units)
 
@@ -125,6 +131,7 @@ class PublishRunTests(unittest.TestCase):
         self.assertEqual(len(bar_data), 1)
         self.assertEqual(bar_data[0]['dependencies'][0]['name'], 'me/foo')
         self.assertEqual(bar_data[0]['dependencies'][0]['version_requirement'], '>= 1.0.0')
+        self.assertEqual(bar_data[0]['file_md5'], md5_sum)
 
     def test_perform_publish(self):
         # Test
