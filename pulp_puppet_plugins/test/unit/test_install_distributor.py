@@ -75,6 +75,9 @@ class TestPublishRepo(unittest.TestCase):
 
 
     @mock.patch.object(installdistributor.PuppetModuleInstallDistributor,
+                       '_ensure_destination_dir',
+                       return_value=None)
+    @mock.patch.object(installdistributor.PuppetModuleInstallDistributor,
                        '_move_to_destination_directory',
                        return_value=None)
     @mock.patch.object(installdistributor.PuppetModuleInstallDistributor,
@@ -90,7 +93,8 @@ class TestPublishRepo(unittest.TestCase):
     @mock.patch.object(installdistributor.PuppetModuleInstallDistributor,
                        '_check_for_unsafe_archive_paths',
                        return_value=None)
-    def test_workflow(self, mock_check_paths, mock_mkdir, mock_clear, mock_open, mock_rename, mock_move):
+    def test_workflow(self, mock_check_paths, mock_mkdir, mock_clear, mock_open, mock_rename,
+                      mock_move, mock_ensure_destination):
         config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: self.puppet_dir})
         mock_open.return_value.getnames.return_value = ['a/b', 'a/c']
 
@@ -111,7 +115,7 @@ class TestPublishRepo(unittest.TestCase):
 
         mock_mkdir.assert_called_once_with(self.puppet_dir)
         mock_clear.assert_called_once_with(self.puppet_dir)
-
+        mock_ensure_destination.assert_called_once_with(self.puppet_dir)
         mock_check_paths.assert_called_once_with(self.units, self.puppet_dir)
 
         self.assertEqual(mock_move.call_count, 1)
@@ -551,3 +555,28 @@ class TestDetailReport(unittest.TestCase):
 
     def test_report_is_dict(self):
         self.assertTrue(isinstance(self.report.report, dict))
+
+
+class TestEnsureDestinationDir(unittest.TestCase):
+    def setUp(self):
+        self.distributor = installdistributor.PuppetModuleInstallDistributor()
+
+    @mock.patch('os.makedirs')
+    def test_succeeded(self, fake_mkdir):
+        path = 'path-123'
+        self.distributor._ensure_destination_dir(path)
+        fake_mkdir.assert_called_once_with(path)
+
+    @mock.patch('os.makedirs')
+    def test_already_exists(self, fake_mkdir):
+        path = 'path-123'
+        self.distributor._ensure_destination_dir(path)
+        fake_mkdir.assert_called_once_with(path)
+        fake_mkdir.side_effect = OSError(errno.EEXIST, path)
+
+    @mock.patch('os.makedirs')
+    def test_other_exception(self, fake_mkdir):
+        path = 'path-123'
+        self.distributor._ensure_destination_dir(path)
+        fake_mkdir.side_effect = OSError(errno.EPERM, path)
+        self.assertRaises(OSError, self.distributor._ensure_destination_dir, path)

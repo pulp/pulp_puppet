@@ -113,6 +113,7 @@ class PuppetModuleInstallDistributor(Distributor):
 
         # ensure the destination directory exists
         try:
+            self._ensure_destination_dir(destination)
             temporarydestination = self._create_temporary_destination_directory(destination)
         except OSError, e:
             return publish_conduit.build_failure_report(
@@ -216,6 +217,20 @@ class PuppetModuleInstallDistributor(Distributor):
         before = os.path.join(destination, dir_names.pop())
         after = os.path.join(destination, unit.unit_key['name'])
         shutil.move(before, after)
+
+    def _ensure_destination_dir(self, destination):
+        """
+        Ensure that the directory specified by destination exists
+
+        :param destination: The full path to the directory to create
+        :type destination: str
+        """
+        # In 2.6 plus this should use pulp.plugins.util.mkdir
+        try:
+            os.makedirs(destination)
+        except OSError, e:
+            if e.errno != errno.EEXIST:
+                raise
 
     def _check_for_unsafe_archive_paths(self, units, destination):
         """
