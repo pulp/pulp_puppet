@@ -21,7 +21,7 @@ import errno
 
 from pulp.plugins.distributor import Distributor
 from pulp.server.db.model.criteria import UnitAssociationCriteria
-from pulp.plugins.util.misc import get_parent_directory
+from pulp.plugins.util.misc import get_parent_directory, mkdir
 
 from pulp_puppet.common import constants
 
@@ -225,12 +225,7 @@ class PuppetModuleInstallDistributor(Distributor):
         :param destination: The full path to the directory to create
         :type destination: str
         """
-        # In 2.6 plus this should use pulp.plugins.util.mkdir
-        try:
-            os.makedirs(destination)
-        except OSError, e:
-            if e.errno != errno.EEXIST:
-                raise
+        mkdir(destination)
 
     def _check_for_unsafe_archive_paths(self, units, destination):
         """
