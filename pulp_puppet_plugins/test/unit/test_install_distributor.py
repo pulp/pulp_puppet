@@ -561,22 +561,9 @@ class TestEnsureDestinationDir(unittest.TestCase):
     def setUp(self):
         self.distributor = installdistributor.PuppetModuleInstallDistributor()
 
-    @mock.patch('os.makedirs')
-    def test_succeeded(self, fake_mkdir):
+    @mock.patch('pulp_puppet.plugins.distributors.installdistributor.mkdir')
+    def test_calls_mkdir(self, fake_mkdir):
+        # Ensure we are calling the platform util method properly
         path = 'path-123'
         self.distributor._ensure_destination_dir(path)
         fake_mkdir.assert_called_once_with(path)
-
-    @mock.patch('os.makedirs')
-    def test_already_exists(self, fake_mkdir):
-        path = 'path-123'
-        self.distributor._ensure_destination_dir(path)
-        fake_mkdir.assert_called_once_with(path)
-        fake_mkdir.side_effect = OSError(errno.EEXIST, path)
-
-    @mock.patch('os.makedirs')
-    def test_other_exception(self, fake_mkdir):
-        path = 'path-123'
-        self.distributor._ensure_destination_dir(path)
-        fake_mkdir.side_effect = OSError(errno.EPERM, path)
-        self.assertRaises(OSError, self.distributor._ensure_destination_dir, path)
