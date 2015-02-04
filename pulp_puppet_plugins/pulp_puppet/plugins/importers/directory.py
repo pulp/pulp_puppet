@@ -1,41 +1,28 @@
-# Copyright (c) 2014 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
-import os
-import logging
-import shutil
-import tarfile
-import json
-
-from time import time
+from contextlib import closing
 from gettext import gettext as _
-from urlparse import urlparse, urljoin
 from StringIO import StringIO
 from tempfile import mkdtemp
-from contextlib import closing
+from time import time
+from urlparse import urlparse, urljoin
+import json
+import logging
+import os
+import shutil
+import tarfile
 
 from nectar.downloaders.local import LocalFileDownloader
 from nectar.downloaders.threaded import HTTPThreadedDownloader
 from nectar.listener import AggregatingEventListener
 from nectar.request import DownloadRequest
-
 from pulp.plugins.util.nectar_config import importer_config_to_nectar_config
-from pulp.plugins.conduits.mixins import UnitAssociationCriteria
+from pulp.server.db.model.criteria import UnitAssociationCriteria
 
 from pulp_puppet.common import constants
 from pulp_puppet.common.model import Module
 from pulp_puppet.common.sync_progress import SyncProgressReport
 
 
-_LOG = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 URL_TO_DOWNLOADER = {
@@ -148,9 +135,9 @@ class SynchronizeWithDirectory(object):
         nectar_config.finalize()
 
         for report in listener.succeeded_reports:
-            _LOG.info(FETCH_SUCCEEDED % dict(url=report.url, dst=report.destination))
+            _logger.info(FETCH_SUCCEEDED % dict(url=report.url, dst=report.destination))
         for report in listener.failed_reports:
-            _LOG.error(FETCH_FAILED % dict(url=report.url, msg=report.error_msg))
+            _logger.error(FETCH_FAILED % dict(url=report.url, msg=report.error_msg))
 
         return listener.succeeded_reports, listener.failed_reports
 
@@ -263,7 +250,7 @@ class SynchronizeWithDirectory(object):
             if module.unit_key() in local_unit_keys:
                 self.report.modules_total_count -= 1
                 continue
-            _LOG.debug(IMPORT_MODULE % dict(mod=module_path))
+            _logger.debug(IMPORT_MODULE % dict(mod=module_path))
             self._add_module(module_path, module)
             self.report.modules_finished_count += 1
             self.report.update_progress()
