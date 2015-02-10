@@ -15,7 +15,7 @@
 
 Name: pulp-puppet
 Version: 2.6.0
-Release: 0.6.beta%{?dist}
+Release: 0.7.beta%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -281,6 +281,9 @@ A collection of tools used to manage puppet modules.
 
 
 %changelog
+* Tue Feb 10 2015 Chris Duryee <cduryee@redhat.com> 2.6.0-0.7.beta
+- Pulp rebuild
+
 * Tue Feb 10 2015 Chris Duryee <cduryee@redhat.com> 2.6.0-0.6.beta
 - 1186445 - Ensure that the install distributor install_path already exists
   before we start working with it (bcourt@redhat.com)
