@@ -283,13 +283,21 @@ A collection of tools used to manage puppet modules.
 
 
 %changelog
-* Wed Jan 28 2015 Chris Duryee <cduryee@redhat.com> 2.5.3-0.2.rc
+* Tue Feb 10 2015 Chris Duryee <cduryee@redhat.com> 2.6.0-0.7.beta
 - Pulp rebuild
 
-* Tue Jan 20 2015 Barnaby Court <bcourt@redhat.com> 2.5.3-0.1.beta
+* Tue Feb 10 2015 Chris Duryee <cduryee@redhat.com> 2.6.0-0.6.beta
+- 1186445 - Ensure that the install distributor install_path already exists
+  before we start working with it (bcourt@redhat.com)
+- 1184187 - Causes all tests to use pulp_unittest (bmbouter@gmail.com)
+
+* Fri Jan 16 2015 Chris Duryee <cduryee@redhat.com> 2.6.0-0.5.beta
 - Pulp rebuild
 
-* Mon Jan 19 2015 Dennis Kliban <dkliban@redhat.com> 2.5.2-1
+* Tue Jan 13 2015 Chris Duryee <cduryee@redhat.com> 2.6.0-0.4.beta
+- Pulp rebuild
+
+* Mon Jan 12 2015 Chris Duryee <cduryee@redhat.com> 2.6.0-0.3.beta
 - Pulp rebuild
 
 * Tue Dec 23 2014 Chris Duryee <cduryee@redhat.com> 2.6.0-0.2.beta
