@@ -88,20 +88,24 @@ the contents of a repository to exactly be the collection of modules installed
 in a puppet environment. This allows you to use Pulp's repository management
 features to manage which modules are installed in puppet.
 
-This distributor starts by deleting every directory it finds in the
-``install_path``, and then it extracts each module in the repository to that
-directory.
+This distributor performs these operations in the following order:
+ 1. Creates a temporary directory in the parent directory of ``install_path``.
+ 2. Extracts each module in the repository to that temporary directory.
+ 3. Deletes every directory it finds in the ``install_path``.
+ 4. Moves the content of temporary directory into the ``install_path``.
+ 5. Removes the temporary directory.
 
 .. warning:: This distributor deletes all directories found in the ``install_path``!
 
 ``install_path``
  This is a full path to the directory where modules should be installed. It is the user's
  responsibility to ensure that Pulp can write to this directory. The web server user (for example,
- ``apache``) must be granted filesystem permissions to write to this path. Additionally, the system
- SELinux policy must permit Pulp to write to this directory. Pulp's SELinux policy includes a
- ``pulp_manage_puppet`` boolean that allows Pulp to write to paths that have the ``puppet_etc_t``
- label. You must ensure that the ``install_path`` has this label applied to it. This boolean is
- disabled by default for safety. If you wish to enable it, you can do this::
+ ``apache``) must be granted filesystem permissions to write to this path and the parent directory.
+ Additionally, the system SELinux policy must permit Pulp to write to this directory. Pulp's SELinux
+ policy includes a ``pulp_manage_puppet`` boolean that allows Pulp to write to paths that have the
+ ``puppet_etc_t`` label. You must ensure that the ``install_path`` and its parent directory have this
+ label applied to it. This boolean is disabled by default for safety. If you wish to enable it, you
+ can do this::
 
     $ sudo semanage boolean --modify --on pulp_manage_puppet
 
