@@ -84,8 +84,6 @@ class PuppetStatusRendererTests(base_cli.ExtensionTests):
         super(PuppetStatusRendererTests, self).setUp()
         self.renderer = PuppetStatusRenderer(self.context)
 
-        self.config['logging'] = {'filename' : 'test-extension-status.log'}
-
         self.sync_report = SyncProgressReport.from_progress_dict(IMPORTER_REPORT)
         self.publish_report = PublishProgressReport.from_progress_dict(DISTRIBUTOR_REPORT)
 
