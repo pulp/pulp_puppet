@@ -279,8 +279,8 @@ class PuppetStatusRenderer(StatusRenderer):
 
     def _render_error(self, error_message, exception, traceback):
         msg = _('The following error was encountered during the previous '
-                'step. More information can be found in %(log)s')
-        self.prompt.render_failure_message(msg % {'log' : self.context.config['logging']['filename']})
+                'step. More information can be found by passing -v flag one or more times')
+        self.prompt.render_failure_message(msg)
         self.prompt.render_spacer()
         self.prompt.render_failure_message('  %s' % error_message)
 
