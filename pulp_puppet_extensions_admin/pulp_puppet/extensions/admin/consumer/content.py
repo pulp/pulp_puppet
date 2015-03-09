@@ -1,20 +1,7 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
 from gettext import gettext as _
 
+from okaara import parsers as okaara_parsers
 from pulp.client.commands.consumer import content
-from pulp.client import parsers
 from pulp.client.extensions.extensions import PulpCliOption, PulpCliCommand
 
 from pulp_puppet.common import constants
@@ -83,7 +70,7 @@ OPTION_SKIP_DEP = PulpCliOption(
     _('if "true", skip installing any modules required by this module'),
     required=False,
     aliases=['-s'],
-    parse_func=parsers.parse_boolean
+    parse_func=okaara_parsers.parse_boolean
 )
 
 OPTION_MODULEPATH = PulpCliOption(
@@ -92,6 +79,7 @@ OPTION_MODULEPATH = PulpCliOption(
     required=False,
     aliases=['-m'],
 )
+
 
 class ContentMixin(PulpCliCommand):
     def add_content_options(self):
@@ -254,7 +242,7 @@ class UpdateCommand(ContentMixin, content.ConsumerContentUpdateCommand):
 class UninstallCommand(ContentMixin, content.ConsumerContentUninstallCommand):
     def add_uninstall_options(self):
         self.add_option(OPTION_MODULEPATH)
-  
+
     def get_uninstall_options(self, kwargs):
         """
         Looks for the --modulepath option and returns an corresponding "options"
