@@ -214,9 +214,10 @@ class PuppetModuleInstallDistributor(Distributor):
         if len(dir_names) != 1:
             raise ValueError('too many directories extracted')
 
-        before = os.path.join(destination, dir_names.pop())
-        after = os.path.join(destination, unit.unit_key['name'])
-        shutil.move(before, after)
+        before = os.path.normpath(os.path.join(destination, dir_names.pop()))
+        after = os.path.normpath(os.path.join(destination, unit.unit_key['name']))
+        if before != after:
+            shutil.move(before, after)
 
     def _ensure_destination_dir(self, destination):
         """

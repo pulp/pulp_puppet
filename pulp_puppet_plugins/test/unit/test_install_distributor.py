@@ -382,6 +382,12 @@ class TestRenameDirectory(unittest.TestCase):
 
         mock_move.assert_called_once_with('/tmp/a', '/tmp/stdlib')
 
+    @mock.patch('shutil.move', autospec=True)
+    def test_same_dir(self, mock_move):
+        self.method(self.unit, '/tmp', ['stdlib'])
+
+        self.assertFalse(mock_move.called)
+
 
 class TestCheckForUnsafeArchivePaths(unittest.TestCase):
     def setUp(self):
