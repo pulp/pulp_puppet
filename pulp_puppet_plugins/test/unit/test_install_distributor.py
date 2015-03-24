@@ -567,3 +567,23 @@ class TestEnsureDestinationDir(unittest.TestCase):
         path = 'path-123'
         self.distributor._ensure_destination_dir(path)
         fake_mkdir.assert_called_once_with(path)
+
+
+class TestDistributorRemoved(unittest.TestCase):
+    def setUp(self):
+        self.distributor = installdistributor.PuppetModuleInstallDistributor()
+        self.repo = Repository('repo1', '', '')
+        self.path = '/a/b/c/'
+        self.config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: self.path})
+
+    def test_calls_clear_dest(self):
+        with mock.patch.object(self.distributor, '_clear_destination_directory') as mock_clear:
+            self.distributor.distributor_removed(self.repo, self.config)
+
+        mock_clear.assert_called_once_with(self.path)
+
+    def test_without_configured_path(self):
+        with mock.patch.object(self.distributor, '_clear_destination_directory') as mock_clear:
+            self.distributor.distributor_removed(self.repo, PluginCallConfiguration({}, {}))
+
+        self.assertEqual(mock_clear.call_count, 0)

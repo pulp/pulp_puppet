@@ -92,6 +92,9 @@ This distributor starts by deleting every directory it finds in the
 ``install_path``, and then it extracts each module in the repository to that
 directory.
 
+When this distributor gets removed from a repository, such as when the repository
+gets deleted, all directories found in ``install_path`` will be deleted.
+
 .. warning:: This distributor deletes all directories found in the ``install_path``!
 
 ``install_path``

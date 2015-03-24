@@ -159,6 +159,21 @@ class PuppetModuleInstallDistributor(Distributor):
         else:
             return publish_conduit.build_success_report('success', self.detail_report.report)
 
+    def distributor_removed(self, repo, config):
+        """
+        Removed installed modules from the environment this is configured to use.
+
+        :param repo:    metadata describing the repository
+        :type  repo:    pulp.plugins.model.Repository
+        :param config:  plugin configuration
+        :type  config:  pulp.plugins.config.PluginCallConfiguration
+        """
+        destination = config.get(constants.CONFIG_INSTALL_PATH)
+        if destination:
+            _LOGGER.info(_('removing installed modules from environment at %(directory)s' %
+                           {'directory': destination}))
+            self._clear_destination_directory(destination)
+
     @staticmethod
     def _find_duplicate_names(units):
         """
