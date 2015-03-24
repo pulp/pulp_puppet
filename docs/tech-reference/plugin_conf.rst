@@ -77,6 +77,8 @@ at one FQDN.
  Boolean indicating if the repository should be served over HTTPS. Defaults to ``False``.
 
 
+.. _install-distributor:
+
 Install Distributor
 -------------------
 
