@@ -316,7 +316,8 @@ class PuppetModulePublishRun(object):
                 author = module.unit_key['author']
                 key = '%s/%s' % (author, name)
 
-                if key in db:
+                # db is not a dictionary as assumed by flake8
+                if db.has_key(key): # noqa
                     module_list = json.loads(db[key])
                 else:
                     module_list = []
