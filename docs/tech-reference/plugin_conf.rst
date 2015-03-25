@@ -95,6 +95,9 @@ This distributor performs these operations in the following order:
  4. Moves the content of temporary directory into the ``install_path``.
  5. Removes the temporary directory.
 
+When this distributor gets removed from a repository, such as when the repository
+gets deleted, all directories found in ``install_path`` will be deleted.
+
 .. warning:: This distributor deletes all directories found in the ``install_path``!
 
 ``install_path``
