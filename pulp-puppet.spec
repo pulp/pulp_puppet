@@ -102,9 +102,7 @@ mkdir -p %{buildroot}/%{_var}/lib/pulp/published/puppet/https
 cp -R pulp_puppet_plugins/etc/httpd %{buildroot}/%{_sysconfdir}
 cp pulp_puppet_plugins/etc/pulp/vhosts80/puppet.conf %{buildroot}/%{_sysconfdir}/pulp/vhosts80/
 # WSGI app
-cp -R pulp_puppet_plugins/srv/pulp/puppet_forge_post33_api.wsgi %{buildroot}/srv/pulp/
-cp -R pulp_puppet_plugins/srv/pulp/puppet_forge_pre33_api.wsgi %{buildroot}/srv/pulp/
-cp -R pulp_puppet_plugins/srv/pulp/puppet_forge_post36_api.wsgi %{buildroot}/srv/pulp/
+cp -R pulp_puppet_plugins/srv/pulp/puppet_forge.wsgi %{buildroot}/srv/pulp/
 # Types
 cp -R pulp_puppet_plugins/pulp_puppet/plugins/types/* %{buildroot}/%{_usr}/lib/pulp/plugins/types/
 %endif # End pulp_server if block
@@ -185,9 +183,7 @@ to provide Puppet specific support.
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/pulp_puppet.conf
 %{_usr}/lib/pulp/plugins/types/puppet.json
 %{python_sitelib}/pulp_puppet_plugins*.egg-info
-/srv/pulp/puppet_forge_post33_api.wsgi
-/srv/pulp/puppet_forge_pre33_api.wsgi
-/srv/pulp/puppet_forge_post36_api.wsgi
+/srv/pulp/puppet_forge.wsgi
 
 %defattr(-,apache,apache,-)
 %{_var}/lib/pulp/published/puppet/

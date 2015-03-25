@@ -6,7 +6,6 @@ import unittest
 
 import mock
 from pulp.server.managers.consumer.bind import BindManager
-import web
 
 from pulp_puppet.common import constants
 from pulp_puppet.forge import releases
@@ -38,14 +37,13 @@ class FooException(Exception):
     pass
 
 
-@mock.patch.object(releases, 'get_host_and_protocol', return_value={'host': 'bar'})
 class TestUnitGenerator(unittest.TestCase):
 
-    def test_empty_dbs(self, mock_get_host):
-        self.assertEquals([], list(releases.unit_generator({}, 'foo')))
+    def test_empty_dbs(self):
+        self.assertEquals([], list(releases.unit_generator({}, 'foo', 'host')))
 
     @mock.patch('pulp_puppet.forge.releases.json.loads', autospec=True)
-    def test_module_in_second_db(self, mock_load, mock_get_host):
+    def test_module_in_second_db(self, mock_load):
         dbs = {
             'repo1': {'db': {}, 'protocol': 'http'},
             'repo2': {'db': {'foo': False}, 'protocol': 'http'},
@@ -53,11 +51,11 @@ class TestUnitGenerator(unittest.TestCase):
 
         mock_load.return_value = [UNIT_DICT_FROM_DB]
 
-        results = list(releases.unit_generator(dbs, 'foo'))
+        results = list(releases.unit_generator(dbs, 'foo', 'host'))
         self.assertEquals(1, len(results))
 
     @mock.patch('pulp_puppet.forge.releases.json.loads', autospec=True)
-    def test_module_not_found(self, mock_load, mock_get_host):
+    def test_module_not_found(self, mock_load):
         dbs = {
             'repo1': {'db': {}, 'protocol': 'http'},
             'repo2': {'db': {}, 'protocol': 'http'},
@@ -65,22 +63,22 @@ class TestUnitGenerator(unittest.TestCase):
 
         mock_load.return_value = [UNIT_DICT_FROM_DB]
 
-        results = list(releases.unit_generator(dbs, 'foo'))
+        results = list(releases.unit_generator(dbs, 'foo', 'host'))
         self.assertEquals(0, len(results))
 
     @mock.patch('pulp_puppet.forge.releases.json.loads', autospec=True)
-    def test_two_modules_in_one_db(self, mock_load, mock_get_host):
+    def test_two_modules_in_one_db(self, mock_load):
         dbs = {
             'repo1': {'db': {'foo': True}, 'protocol': 'http'},
         }
 
         mock_load.return_value = [UNIT_DICT_FROM_DB, UNIT_DICT_FROM_DB]
 
-        results = list(releases.unit_generator(dbs, 'foo'))
+        results = list(releases.unit_generator(dbs, 'foo', 'host'))
         self.assertEquals(2, len(results))
 
     @mock.patch('pulp_puppet.forge.releases.json.loads', autospec=True)
-    def test_four_modules_in_two_db(self, mock_load, mock_get_host):
+    def test_four_modules_in_two_db(self, mock_load):
         dbs = {
             'repo1': {'db': {'foo': True}, 'protocol': 'http'},
             'repo2': {'db': {'foo': True}, 'protocol': 'http'},
@@ -88,25 +86,21 @@ class TestUnitGenerator(unittest.TestCase):
 
         mock_load.return_value = [UNIT_DICT_FROM_DB, UNIT_DICT_FROM_DB]
 
-        results = list(releases.unit_generator(dbs, 'foo'))
+        results = list(releases.unit_generator(dbs, 'foo', 'host'))
         self.assertEquals(4, len(results))
 
 
-@mock.patch.object(releases, 'get_host_and_protocol', return_value=MOCK_HOST_PROTOCOL)
 class TestView(unittest.TestCase):
 
-    # Mock the ctx so that the web.Unauthorized exception can be created properly
-    @mock.patch('web.webapi.ctx')
-    def test_null_auth(self, mock_ctx, mock_host):
-        self.assertRaises(
-            web.Unauthorized, releases.view, constants.FORGE_NULL_AUTH_VALUE,
-            constants.FORGE_NULL_AUTH_VALUE, 'foo/bar')
+    def test_null_auth(self):
+        data = releases.view(constants.FORGE_NULL_AUTH_VALUE, constants.FORGE_NULL_AUTH_VALUE, 'foo/bar')
+        self.assertEqual(data.status_code, 401)
 
     @mock.patch.object(releases, 'unit_generator', autospec=True)
     @mock.patch.object(releases, 'get_repo_data', autospec=True)
     @mock.patch.object(releases, 'get_bound_repos', autospec=True)
     def test_repo_ids_from_consumer(self, mock_get_bounds, mock_get_data,
-                                    mock_unit_generator, mock_host):
+                                    mock_unit_generator):
         mock_get_bounds.return_value = ['apple', 'pear']
         mock_get_data.return_value = {
             'repo1': {'db': mock.MagicMock(), 'protocol': 'http'}
@@ -120,7 +114,7 @@ class TestView(unittest.TestCase):
 
     @mock.patch.object(releases, 'unit_generator', autospec=True)
     @mock.patch.object(releases, 'get_repo_data', autospec=True)
-    def test_repo_ids_from_query_string(self, mock_get_data, mock_unit_generator, mock_host):
+    def test_repo_ids_from_query_string(self, mock_get_data, mock_unit_generator):
         mock_get_data.return_value = {
             'repo1': {'db': mock.MagicMock(), 'protocol': 'http'},
         }
@@ -132,7 +126,7 @@ class TestView(unittest.TestCase):
 
     @mock.patch.object(releases, 'unit_generator', autospec=True)
     @mock.patch.object(releases, 'get_repo_data', autospec=True)
-    def test_db_closing(self, mock_get_data, mock_unit_generator, mock_host):
+    def test_db_closing(self, mock_get_data, mock_unit_generator):
         mock_get_data.return_value = {
             'repo1': {'db': mock.MagicMock(), 'protocol': 'http'},
             'repo2': {'db': mock.MagicMock(), 'protocol': 'http'},
@@ -143,25 +137,23 @@ class TestView(unittest.TestCase):
         mock_get_data.return_value['repo1']['db'].close.assert_called_once_with()
         mock_get_data.return_value['repo2']['db'].close.assert_called_once_with()
 
-    @mock.patch('web.NotFound', return_value=FooException())
     @mock.patch.object(releases, 'unit_generator', autospec=True)
     @mock.patch.object(releases, 'get_repo_data', autospec=True)
-    def test_db_closing_with_exception(self, mock_get_data, mock_unit_generator, mock_not_found,
-                                       mock_host):
+    def test_db_closing_with_exception(self, mock_get_data, mock_unit_generator):
         mock_get_data.return_value = {
             'repo1': {'db': mock.MagicMock(), 'protocol': 'http'},
             'repo2': {'db': mock.MagicMock(), 'protocol': 'http'},
         }
         mock_unit_generator.return_value = []
 
-        self.assertRaises(FooException, releases.view, constants.FORGE_NULL_AUTH_VALUE,
-                          'repo_foo', 'me/mymodule')
+        data = releases.view(constants.FORGE_NULL_AUTH_VALUE, 'repo_foo', 'me/mymodule')
+        self.assertEqual(data.status_code, 404)
         mock_get_data.return_value['repo1']['db'].close.assert_called_once_with()
         mock_get_data.return_value['repo2']['db'].close.assert_called_once_with()
 
     @mock.patch.object(releases, 'unit_generator', autospec=True)
     @mock.patch.object(releases, 'get_repo_data', autospec=True)
-    def test_db_closing_first_close_raises(self, mock_get_data, mock_unit_generator, mock_host):
+    def test_db_closing_first_close_raises(self, mock_get_data, mock_unit_generator):
         mock_get_data.return_value = {
             'repo1': {'db': mock.MagicMock(), 'protocol': 'http'},
             'repo2': {'db': mock.MagicMock(), 'protocol': 'http'},
@@ -177,7 +169,7 @@ class TestView(unittest.TestCase):
 
     @mock.patch.object(releases, 'unit_generator', autospec=True)
     @mock.patch.object(releases, 'get_repo_data', autospec=True)
-    def test_calculating_deps_default(self, mock_get_data, mock_unit_generator, mock_host):
+    def test_calculating_deps_default(self, mock_get_data, mock_unit_generator):
         mock_get_data.return_value = {
             'repo1': {'db': mock.MagicMock(), 'protocol': 'http'},
         }
@@ -191,7 +183,7 @@ class TestView(unittest.TestCase):
 
     @mock.patch.object(releases, 'unit_generator', autospec=True)
     @mock.patch.object(releases, 'get_repo_data', autospec=True)
-    def test_calculating_deps_recurse_false(self, mock_get_data, mock_unit_generator, mock_host):
+    def test_calculating_deps_recurse_false(self, mock_get_data, mock_unit_generator):
         mock_get_data.return_value = {
             'repo1': {'db': mock.MagicMock(), 'protocol': 'http'},
         }
@@ -206,7 +198,7 @@ class TestView(unittest.TestCase):
 
     @mock.patch.object(releases, 'unit_generator', autospec=True)
     @mock.patch.object(releases, 'get_repo_data', autospec=True)
-    def test_filtering_version(self, mock_get_data, mock_unit_generator, mock_host):
+    def test_filtering_version(self, mock_get_data, mock_unit_generator):
         mock_get_data.return_value = {
             'repo1': {'db': mock.MagicMock(), 'protocol': 'http'},
         }
@@ -222,7 +214,7 @@ class TestView(unittest.TestCase):
 
     @mock.patch.object(releases, 'unit_generator', autospec=True)
     @mock.patch.object(releases, 'get_repo_data', autospec=True)
-    def test_filtering_view_all_true(self, mock_get_data, mock_unit_generator, mock_host):
+    def test_filtering_view_all_true(self, mock_get_data, mock_unit_generator):
         mock_get_data.return_value = {
             'repo1': {'db': mock.MagicMock(), 'protocol': 'http'},
         }
@@ -237,7 +229,7 @@ class TestView(unittest.TestCase):
 
     @mock.patch.object(releases, 'unit_generator', autospec=True)
     @mock.patch.object(releases, 'get_repo_data', autospec=True)
-    def test_filtering_view_all_false(self, mock_get_data, mock_unit_generator, mock_host):
+    def test_filtering_view_all_false(self, mock_get_data, mock_unit_generator):
         mock_get_data.return_value = {
             'repo1': {'db': mock.MagicMock(), 'protocol': 'http'},
         }
@@ -254,11 +246,9 @@ class TestView(unittest.TestCase):
 
 
 class TestGetRepoData(unittest.TestCase):
-    @mock.patch('web.ctx')
     @mock.patch('pulp.server.managers.repo.distributor.RepoDistributorManager.find_by_repo_list')
     @mock.patch('gdbm.open', autospec=True)
-    def test_single_repo(self, mock_open, mock_find, mock_ctx):
-        mock_ctx.protocol = 'http'
+    def test_single_repo(self, mock_open, mock_find):
         mock_find.return_value = [{'repo_id':'repo1', 'config':{}}]
 
         result = releases.get_repo_data(['repo1'])
@@ -269,11 +259,9 @@ class TestGetRepoData(unittest.TestCase):
         mock_open.assert_called_once_with('/var/lib/pulp/published/puppet/http/repos/repo1/.dependency_db',
                                           'r')
 
-    @mock.patch('web.ctx')
     @mock.patch('pulp.server.managers.repo.distributor.RepoDistributorManager.find_by_repo_list')
     @mock.patch('gdbm.open', autospec=True)
-    def test_multiple_repos(self, mock_open, mock_find, mock_ctx):
-        mock_ctx.protocol = 'http'
+    def test_multiple_repos(self, mock_open, mock_find):
         mock_find.return_value = [
             {'repo_id':'repo1', 'config':{}},
             {'repo_id':'repo2', 'config':{}}
@@ -284,11 +272,9 @@ class TestGetRepoData(unittest.TestCase):
         self.assertTrue('repo1' in result)
         self.assertTrue('repo2' in result)
 
-    @mock.patch('web.ctx')
     @mock.patch('pulp.server.managers.repo.distributor.RepoDistributorManager.find_by_repo_list')
     @mock.patch('gdbm.open', autospec=True)
-    def test_configured_publish_dir(self, mock_open, mock_find, mock_ctx):
-        mock_ctx.protocol = 'http'
+    def test_configured_publish_dir(self, mock_open, mock_find):
         mock_find.return_value = [
             {'repo_id':'repo1',
              'config':{constants.CONFIG_HTTP_DIR: '/var/lib/pulp/published/puppet/foo'}}
@@ -298,11 +284,9 @@ class TestGetRepoData(unittest.TestCase):
 
         mock_open.assert_called_once_with('/var/lib/pulp/published/puppet/foo/repo1/.dependency_db', 'r')
 
-    @mock.patch('web.ctx')
     @mock.patch('pulp.server.managers.repo.distributor.RepoDistributorManager.find_by_repo_list')
     @mock.patch('gdbm.open', autospec=True)
-    def test_db_open_error(self, mock_open, mock_find, mock_ctx):
-        mock_ctx.protocol = 'http'
+    def test_db_open_error(self, mock_open, mock_find):
         mock_find.return_value = [{'repo_id':'repo1', 'config':{}}]
         mock_open.side_effect = gdbm.error
 
@@ -335,19 +319,6 @@ class TestGetProtocol(unittest.TestCase):
         result = releases._get_protocol_from_distributor(distributor)
 
         self.assertEqual(result, 'https')
-
-
-class TestGetHostAndProtocol(unittest.TestCase):
-    @mock.patch('web.ctx', autospec=True)
-    def test_normal(self, mock_ctx):
-        mock_ctx.host = 'localhost'
-        mock_ctx.protocol = 'http'
-
-        result = releases.get_host_and_protocol()
-
-        self.assertEqual(set(result.keys()), set(['host', 'protocol']))
-        self.assertEqual(result['host'], 'localhost')
-        self.assertEqual(result['protocol'], 'http')
 
 
 class TestGetBoundRepos(unittest.TestCase):

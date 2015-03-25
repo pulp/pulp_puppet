@@ -18,7 +18,7 @@ import os.path
 
 from pulp.server.managers.consumer.bind import BindManager
 from pulp.server.managers.repo.distributor import RepoDistributorManager
-import web
+from django.http import HttpResponseNotFound, HttpResponse
 
 from pulp_puppet.common import constants
 from pulp_puppet.forge.unit import Unit
@@ -26,7 +26,7 @@ from pulp_puppet.forge.unit import Unit
 _LOGGER = logging.getLogger(__name__)
 
 
-def unit_generator(dbs, module_name):
+def unit_generator(dbs, module_name, hostname):
     """
     Generator to produce all units visible to the API caller
 
@@ -34,8 +34,9 @@ def unit_generator(dbs, module_name):
     :type dbs: dict
     :param module_name: The module name to search for
     :type module_name: str
+    :param hostname: The hostname of server serving modules
+    :type hostname: str
     """
-    host = get_host_and_protocol()['host']
     for repo_id, data in dbs.iteritems():
         protocol = data['protocol']
         db = data['db']
@@ -46,12 +47,12 @@ def unit_generator(dbs, module_name):
             continue
         units = json.loads(json_data)
         for unit in units:
-            yield Unit(name=module_name, db=db, repo_id=repo_id, host=host, protocol=protocol,
+            yield Unit(name=module_name, db=db, repo_id=repo_id, host=hostname, protocol=protocol,
                        **unit)
 
 
 def view(consumer_id, repo_id, module_name, version=None, recurse_deps=True,
-         view_all_matching=False):
+         view_all_matching=False, hostname=None):
     """
     produces data for the "releases.json" view
 
@@ -79,7 +80,7 @@ def view(consumer_id, repo_id, module_name, version=None, recurse_deps=True,
     if repo_id == constants.FORGE_NULL_AUTH_VALUE:
         if consumer_id == constants.FORGE_NULL_AUTH_VALUE:
             # must provide either consumer ID or repo ID
-            raise web.Unauthorized()
+            return HttpResponse('Unauthorized', status=401)
         repo_ids = get_bound_repos(consumer_id)
     else:
         repo_ids = [repo_id]
@@ -94,12 +95,12 @@ def view(consumer_id, repo_id, module_name, version=None, recurse_deps=True,
         ret = []
         # If a version was specified filter by that specific version of the module
         if version:
-            for unit in unit_generator(dbs, module_name):
+            for unit in unit_generator(dbs, module_name, hostname):
                 if unit.version == version:
                     ret.append(unit)
                     break
         else:
-            units = list(unit_generator(dbs, module_name))
+            units = list(unit_generator(dbs, module_name, hostname))
             # if view_all_matching then return all modules matching the query, otherwise
             # only return the first matching module (for forge v1 & v2 api compliance)
             if view_all_matching:
@@ -116,7 +117,7 @@ def view(consumer_id, repo_id, module_name, version=None, recurse_deps=True,
                 return_data.setdefault(unit_name, []).extend(unit_details)
 
         if not return_data:
-            raise web.NotFound()
+            return HttpResponseNotFound()
 
     finally:
         # Close all the database files. If closing one raises an error we still need to
@@ -193,19 +194,6 @@ def _get_protocol_from_distributor(distributor):
         return 'https'
     elif constants.DEFAULT_SERVE_HTTP:
         return 'http'
-
-
-def get_host_and_protocol():
-    """
-    Get host and protocol from the web request and return them
-
-    :return:    dict with keys "host" and "protocol"
-    :rtype:     dict
-    """
-    return {
-        'host': web.ctx.host,
-        'protocol': web.ctx.protocol
-    }
 
 
 def get_bound_repos(consumer_id):

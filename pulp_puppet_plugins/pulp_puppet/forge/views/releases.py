@@ -1,52 +1,22 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
 import base64
-import json
 import re
 import urllib
 
-from pulp.server.db import connection
-import web
+from django.http import HttpResponseNotFound, HttpResponse, HttpResponseBadRequest
+from django.views.generic import View
 
 from pulp_puppet.forge import releases
-
-# This is all that is required to start using Manager classes
-connection.initialize()
-
-pre_33_urls = (
-    '/releases.json', 'Releases',
-)
-post_33_urls = (
-    '/([^/]+)/([^/]+)/api/v1/releases.json', 'Releases',
-)
-
-post_36_urls = (
-    '/releases', 'ReleasesPost36',
-)
-
-pre_33_app = web.application(pre_33_urls, globals())
-post_33_app = web.application(post_33_urls, globals())
-post_36_app = web.application(post_36_urls, globals())
+from pulp.server.webservices.views.util import generate_json_response
 
 MODULE_PATTERN = re.compile('(^[a-zA-Z0-9]+)(/|-)([a-zA-Z0-9_]+)$')
 
 
-class Releases(object):
+class ReleasesView(View):
+
     REPO_RESOURCE = 'repository'
     CONSUMER_RESOURCE = 'consumer'
 
-    def GET(self, resource_type=None, resource=None):
+    def get(self, request, resource_type=None, resource=None):
         """
         Credentials here are not actually used for authorization, but instead
         are used to identify:
@@ -58,28 +28,30 @@ class Releases(object):
         command has hard-coded absolute paths, so we cannot put consumer or
         repository IDs in the URL's path.
         """
+        hostname = request.get_host()
         if resource_type is not None:
             if resource_type == self.REPO_RESOURCE:
                 credentials = ('.', resource)
             elif resource_type == self.CONSUMER_RESOURCE:
                 credentials = (resource, '.')
             else:
-                return web.notfound()
+                return HttpResponseNotFound()
 
         else:
-            credentials = self._get_credentials()
+            credentials = self._get_credentials(request.META)
             if not credentials:
-                return web.unauthorized()
+                return HttpResponse('Unauthorized', status=401)
 
-        module_name = self._get_module_name()
+        module_name = self._get_module_name(request.GET)
         if not module_name:
-            # apparently our version of web.py, 0.36, doesn't take a message
-            # parameter for error handlers like this one. Ugh.
-            return web.badrequest()
-        version = web.input().get('version')
+            return HttpResponseBadRequest('Module name is missing.')
+        version = request.GET.get('version')
 
-        data = self.get_releases(*credentials, module_name=module_name, version=version)
-        return self.format_results(data)
+        data = self.get_releases(*credentials, module_name=module_name, version=version,
+                                 hostname=hostname)
+        if isinstance(data, HttpResponse):
+            return data
+        return self.format_results(data, request.GET, request.path_info)
 
     def get_releases(self, *args, **kwargs):
         """
@@ -90,25 +62,26 @@ class Releases(object):
         """
         return releases.view(*args, **kwargs)
 
-    def format_results(self, data):
+    def format_results(self, data, get_dict, path):
         """
         Format the results and begin streaming out to the caller
 
         :param data: The module data to stream back to the caller
         :type data: dict
+        :param get_dict: The GET parameters
+        :type get_dict: dict
         :return: the body of what should be streamed out to the caller
         :rtype: str
         """
-        web.header('Content-Type', 'application/json')
-        return json.dumps(data)
+        return generate_json_response(data)
 
     @staticmethod
-    def _get_credentials():
+    def _get_credentials(headers):
         """
         :return: username and password provided as basic auth credentials
         :rtype:  str, str
         """
-        auth = web.ctx.env.get('HTTP_AUTHORIZATION')
+        auth = headers.get('HTTP_AUTHORIZATION')
         if auth:
             encoded_credentials = re.sub('^Basic ', '', auth)
             try:
@@ -119,18 +92,18 @@ class Releases(object):
             return username, password
 
     @staticmethod
-    def _get_module_name():
+    def _get_module_name(get_dict):
         """
         :return: name of the module being requested, or None if not found or invalid
         """
-        module_name = web.input().get('module', '')
+        module_name = get_dict.get('module', '')
         match = MODULE_PATTERN.match(module_name)
         if match:
             normalized_name = u'%s/%s' % (match.group(1), match.group(3))
             return normalized_name
 
 
-class ReleasesPost36(Releases):
+class ReleasesPost36View(ReleasesView):
 
     @staticmethod
     def _format_query_string(base_url, module_name, module_version, offset, limit):
@@ -167,28 +140,30 @@ class ReleasesPost36(Releases):
         """
         return releases.view(*args, recurse_deps=False, view_all_matching=True, **kwargs)
 
-    def format_results(self, data):
+    def format_results(self, data, get_dict, path):
         """
         Format the results and begin streaming out to the caller for the v3 API
 
         :param data: The module data to stream back to the caller
         :type data: dict
+        :param get_dict: The GET parameters
+        :type get_dict: dict
+        :param path: The path starting with parameters
+        :type get_dict: dict
         :return: the body of what should be streamed out to the caller
         :rtype: str
         """
-        web.header('Content-Type', 'application/json')
-        limit = int(web.input().get('limit', 20))
-        current_offset = int(web.input().get('offset', 0))
-        module_name = web.input().get('module', '')
-        module_version = web.input().get('version', None)
-        base_url_string = '/v3%s' % web.ctx.path
+        limit = int(get_dict.get('limit', 20))
+        current_offset = int(get_dict.get('offset', 0))
+        module_name = get_dict.get('module', '')
+        module_version = get_dict.get('version', None)
 
-        first_path = self._format_query_string(base_url_string, module_name, module_version,
+        first_path = self._format_query_string(path, module_name, module_version,
                                                0, limit)
-        current_path = self._format_query_string(base_url_string, module_name, module_version,
+        current_path = self._format_query_string(path, module_name, module_version,
                                                  current_offset, limit)
         if current_offset > 0:
-            previous_path = self._format_query_string(base_url_string, module_name, module_version,
+            previous_path = self._format_query_string(path, module_name, module_version,
                                                       current_offset - limit, limit)
         else:
             previous_path = None
@@ -205,7 +180,7 @@ class ReleasesPost36(Releases):
             },
             'results': []
         }
-        module_list = data.get(self._get_module_name())
+        module_list = data.get(self._get_module_name(get_dict))
         total_count = len(module_list)
 
         for module in module_list[current_offset: (current_offset + limit)]:
@@ -230,12 +205,8 @@ class ReleasesPost36(Releases):
         formatted_results['pagination']['total'] = total_count
 
         if total_count > (current_offset + limit):
-            next_path = self._format_query_string(base_url_string, module_name, module_version,
+            next_path = self._format_query_string(path, module_name, module_version,
                                                   current_offset + limit, limit)
             formatted_results['pagination']['next'] = next_path
 
-        return json.dumps(formatted_results)
-
-if __name__ == '__main__':
-    # run this app stand-alone, useful for testing
-    post_33_app.run()
+        return generate_json_response(formatted_results)
