@@ -20,7 +20,7 @@ Notable Bugs Fixed
 ------------------
 
 -  Full `semantic versions <http://semver.org>`_ were
-   :bz:`not supported <946966>`
+   `not supported <https://bugzilla.redhat.com/show_bug.cgi?id=946966>`_
    by the upload process, despite being supported by Puppet Forge and other
    puppet tools.
 
@@ -29,7 +29,9 @@ All Bugs
 --------
 
 You can see the complete list of over 100 bugs that were
-:fixedbugs:`fixed in Pulp 2.3.0 <2.3.0>`.
+`fixed in Pulp 2.3.0 <https://bugzilla.redhat.com/buglist.cgi?bug_status=VERIFIED
+&bug_status=RELEASE_PENDING&bug_status=CLOSED&classification=Community&component=
+puppet-support&list_id=3357735&product=Pulp&query_format=advanced&target_release=2.3.0>`_.
 
 
 Pulp 2.3.1
@@ -38,8 +40,8 @@ Pulp 2.3.1
 Bugs Fixed
 ----------
 
-- :bz:`Uploading puppet modules <1040958>`
+- `Uploading puppet modules <https://bugzilla.redhat.com/show_bug.cgi?id=1040958>`_
   resulted in ``pulp-admin`` exiting with an unhelpful error message.
 
-- :bz:`Installing puppet modules on consumers <1037693>`
+- `Installing puppet modules on consumers <https://bugzilla.redhat.com/show_bug.cgi?id=1037693>`_
   also resulted in ``pulp-admin`` exiting with an unhelpful error message.
