@@ -248,9 +248,11 @@ texinfo_documents = [
 intersphinx_mapping = {'pylang': ('http://docs.python.org/2.7/', None),
                        'platform': ("http://pulp.readthedocs.org/en/latest/", None)}
 
-extlinks = {'bz': ('https://bugzilla.redhat.com/show_bug.cgi?id=%s', 'RHBZ #'),
-            'fixedbugs': ('https://bugzilla.redhat.com/buglist.cgi?bug_status=VERIFIED'\
-                          '&bug_status=RELEASE_PENDING&bug_status=CLOSED&classificatio'\
-                          'n=Community&component=puppet-support&list_id=3011801&produc'\
-                          't=Pulp&query_format=advanced&target_release=%s', None)}
+extlinks = {'redmine': ('https://pulp.plan.io/issues/%s', '#'),
+            'fixedbugs': ('https://pulp.plan.io/projects/pulp_puppet/issues?utf8=%%E2%%9C%%93&set'
+                          '_filter=1&f%%5B%%5D=cf_4&op%%5Bcf_4%%5D=%%3D&v%%5Bcf_4%%5D%%5B%%5D=%s&'
+                          'f%%5B%%5D=tracker_id&op%%5Btracker_id%%5D=%%3D&v%%5Btracker_id%%5D%%5B'
+                          '%%5D=1&f%%5B%%5D=&c%%5B%%5D=tracker&c%%5B%%5D=status&c%%5B%%5D=priorit'
+                          'y&c%%5B%%5D=cf_5&c%%5B%%5D=subject&c%%5B%%5D=author&c%%5B%%5D=assigned'
+                          '_to&c%%5B%%5D=cf_3&group_by=', 'bugs fixed in ')}
 
