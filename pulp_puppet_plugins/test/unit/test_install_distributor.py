@@ -65,8 +65,8 @@ class TestPublishRepo(unittest.TestCase):
         self.uk1 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.2.0'}
         self.uk2 = {'author': 'puppetlabs', 'name': 'java', 'version': '1.3.1'}
         self.units = [
-            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk1, {}, '/a/b/x', '', '', '', ''),
-            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk2, {}, '/a/b/y', '', '', '', ''),
+            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk1, {}, '/a/b/x', '', ''),
+            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk2, {}, '/a/b/y', '', ''),
         ]
         self.conduit.get_units = mock.MagicMock(return_value=self.units, spec_set=self.conduit.get_units)
 
@@ -135,7 +135,7 @@ class TestPublishRepo(unittest.TestCase):
     def test_duplicate_unit_names(self):
         config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: self.puppet_dir})
         uk3 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.3.1'}
-        unit3 = AssociatedUnit(constants.TYPE_PUPPET_MODULE, uk3, {}, '/a/b/z', '', '', '', '')
+        unit3 = AssociatedUnit(constants.TYPE_PUPPET_MODULE, uk3, {}, '/a/b/z', '', '')
         self.units.append(unit3)
 
         report = self.distributor.publish_repo(self.repo, self.conduit, config)
@@ -289,10 +289,10 @@ class TestFindDuplicateNames(unittest.TestCase):
         self.uk1 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.2.0'}
         self.uk2 = {'author': 'puppetlabs', 'name': 'java', 'version': '1.3.1'}
         self.uk3 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.3.1'}
-        self.unit3 = AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk3, {}, '/a/b/z', '', '', '', '')
+        self.unit3 = AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk3, {}, '/a/b/z', '', '')
         self.units = [
-            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk1, {}, '/a/b/x', '', '', '', ''),
-            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk2, {}, '/a/b/y', '', '', '', ''),
+            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk1, {}, '/a/b/x', '', ''),
+            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk2, {}, '/a/b/y', '', ''),
         ]
         self.method = installdistributor.PuppetModuleInstallDistributor._find_duplicate_names
 
@@ -346,7 +346,7 @@ class TestMoveToDestinationDirectory(unittest.TestCase):
 class TestRenameDirectory(unittest.TestCase):
     def setUp(self):
         uk = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.2.0'}
-        self.unit = AssociatedUnit(constants.TYPE_PUPPET_MODULE, uk, {}, '/a/b/x', '', '', '', '')
+        self.unit = AssociatedUnit(constants.TYPE_PUPPET_MODULE, uk, {}, '/a/b/x', '', '')
         self.method = installdistributor.PuppetModuleInstallDistributor._rename_directory
 
     @mock.patch('shutil.move', autospec=True)
@@ -395,8 +395,8 @@ class TestCheckForUnsafeArchivePaths(unittest.TestCase):
         self.uk1 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.2.0'}
         self.uk2 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.2.1'}
         self.units = [
-            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk1, {}, '/a/b/x', '', '', '', ''),
-            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk2, {}, '/a/b/y', '', '', '', ''),
+            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk1, {}, '/a/b/x', '', ''),
+            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk2, {}, '/a/b/y', '', ''),
         ]
 
     def test_does_not_exist(self):
