@@ -45,10 +45,8 @@ SAMPLE_RESPONSE_BODY =[
         "name": "apache_httpd"
     },
     "unit_type_id": "puppet_module",
-    "owner_type": "importer",
     "_id": {"$oid": "503e61eb8a905b3cc5000034"},
-    "id": "503e61eb8a905b3cc5000034",
-    "owner_id": "puppet_importer"
+    "id": "503e61eb8a905b3cc5000034"
     },
         {
         "updated": "2012-08-29T14:39:39",
@@ -75,10 +73,8 @@ SAMPLE_RESPONSE_BODY =[
             "name": "apache_httpd"
         },
         "unit_type_id": "puppet_module",
-        "owner_type": "importer",
         "_id": {"$oid": "503e61eb8a905b3cc5000034"},
-        "id": "503e61eb8a905b3cc5000034",
-        "owner_id": "puppet_importer"
+        "id": "503e61eb8a905b3cc5000034"
     }
 ]
 

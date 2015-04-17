@@ -50,8 +50,7 @@ class TestInstallUnits(unittest.TestCase):
         ]
         self.conduit = mock.MagicMock(spec=ProfilerConduit())
         self.conduit.get_units.return_value = [
-            AssociatedUnit(constants.TYPE_PUPPET_MODULE, unit['unit_key'],
-                           {}, '', '', '', '', '')
+            AssociatedUnit(constants.TYPE_PUPPET_MODULE, unit['unit_key'], {}, '', '', '')
             for unit in self.units
         ]
 
