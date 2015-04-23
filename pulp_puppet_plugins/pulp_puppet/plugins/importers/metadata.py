@@ -1,25 +1,12 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
 """
 Functionality around parsing the metadata within a packaged module (.tar.gz).
 """
 
+import hashlib
 import os
 import shutil
 import sys
 import tarfile
-import hashlib
 import tempfile
 
 from pulp.common.compat import json
@@ -127,13 +114,13 @@ def _extract_json(module, filename, temp_dir):
 
     try:
         tgz = tarfile.open(name=filename)
-    except Exception, e:
+    except Exception:
         raise InvalidTarball(filename), None, sys.exc_info()[2]
 
     try:
         tgz.extract(metadata_file_path, path=temp_dir)
         tgz.close()
-    except Exception, e:
+    except Exception:
         tgz.close()
         raise MissingModuleFile(filename), None, sys.exc_info()[2]
 
@@ -169,20 +156,22 @@ def _extract_non_standard_json(filename, temp_dir):
         tgz = tarfile.open(name=filename)
         tgz.extractall(path=extraction_dir)
         tgz.close()
-    except Exception, e:
+    except Exception:
         raise InvalidTarball(filename), None, sys.exc_info()[2]
 
     try:
-        # Recursively look for the metadata file
-        metadata_file_dir = _find_file_in_dir(extraction_dir, constants.MODULE_METADATA_FILENAME)
-
-        if metadata_file_dir is None:
+        # Attempt to find the metadata in the Puppet module's main directory
+        # It is expected the .tar.gz file will contain exactly one Puppet module
+        try:
+            module_dir = os.listdir(extraction_dir)[0]
+        except IndexError:
+            raise MissingModuleFile(filename)
+        metadata_filename = constants.MODULE_METADATA_FILENAME
+        metadata_full_path = os.path.join(extraction_dir, module_dir, metadata_filename)
+        if not os.path.isfile(metadata_full_path):
             raise MissingModuleFile(filename)
 
-        metadata_filename = os.path.join(metadata_file_dir, constants.MODULE_METADATA_FILENAME)
-        contents = _read_contents(metadata_filename)
-
-        return contents
+        return _read_contents(metadata_full_path)
     finally:
         # Delete the entire extraction directory
         shutil.rmtree(extraction_dir)
@@ -204,26 +193,3 @@ def _read_contents(filename):
     finally:
         # Clean up the temporary file
         os.remove(filename)
-
-
-def _find_file_in_dir(dir, filename):
-    """
-    Recursively checks the directory for the presence of a file with the given
-    name.
-
-    :param dir:
-    :param filename:
-    :return:
-    """
-    for found in os.listdir(dir):
-        file_or_dir = os.path.join(dir, found)
-        if os.path.isfile(file_or_dir):
-            if found == filename:
-                return dir
-        else:
-            sub_dir = _find_file_in_dir(file_or_dir, filename)
-
-            if sub_dir is not None:
-                return os.path.join(dir, sub_dir)
-    else:
-        return None
