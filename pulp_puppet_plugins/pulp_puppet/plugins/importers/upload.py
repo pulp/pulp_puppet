@@ -44,13 +44,8 @@ def handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path, conduit):
     if type_id != constants.TYPE_PUPPET_MODULE:
         raise NotImplementedError()
 
-    # Create a module with unit_key if supplied
-    initial_module = None
-    if unit_key:
-        initial_module = Module.from_dict(unit_key)
-
     # Extract the metadata from the module
-    extracted_data = metadata_parser.extract_metadata(file_path, repo.working_dir, initial_module)
+    extracted_data = metadata_parser.extract_metadata(file_path, repo.working_dir)
     checksum = metadata_parser.calculate_checksum(file_path)
 
     # Create a module from the metadata

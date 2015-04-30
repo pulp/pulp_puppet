@@ -32,7 +32,7 @@ Metadata
  and a key ``version_requirement`` which describes what versions are acceptable
  to satisfy this dependency. This is an empty list if there are no dependencies.
  The format for this value is described in detail in Puppet Labs' own
- `documentation <http://docs.puppetlabs.com/puppet/2.7/reference/modules_publishing.html>`_.
+ `documentation <http://docs.puppetlabs.com/puppet/latest/reference/modules_publishing.html#write-a-metadatajson-file>`_.
 
 ``description``
  Longer description of the module.

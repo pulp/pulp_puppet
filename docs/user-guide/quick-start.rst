@@ -253,6 +253,51 @@ a result of the above sync.
   Result:      Incomplete
   Task Id:     54459b2f-6ed9-4918-94c9-63e2b3370554
 
+Upload a module
+---------------
+
+Assuming we have a repository with repo-id `repo1` we can upload an archive containing a Puppet
+module. This operation does not auto publish the repository.
+
+ ::
+
+   $ pulp-admin puppet repo uploads upload --file puppetlabs-apache-1.4.0.tar.gz --repo-id repo1
+     +----------------------------------------------------------------------+
+                                   Unit Upload
+     +----------------------------------------------------------------------+
+
+     Extracting necessary metadata for each request...
+     [==================================================] 100%
+     Analyzing: puppetlabs-apache-1.4.0.tar.gz
+     ... completed
+
+     Creating upload requests on the server...
+     [==================================================] 100%
+     Initializing: puppetlabs-apache-1.4.0.tar.gz
+     ... completed
+
+     Starting upload of selected units. If this process is stopped through ctrl+c,
+     the uploads will be paused and may be resumed later using the resume command or
+     cancelled entirely using the cancel command.
+
+     Uploading: puppetlabs-apache-1.4.0.tar.gz
+     [==================================================] 100%
+     147426/147426 bytes
+     ... completed
+
+     Importing into the repository...
+     This command may be exited via ctrl+c without affecting the request.
+
+
+     [\]
+     Running...
+
+     Task Succeeded
+
+
+     Deleting the upload request...
+     ... completed
+
 Publish a Repository
 --------------------
 
