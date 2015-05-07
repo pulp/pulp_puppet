@@ -11,4 +11,14 @@ New Features
 - Support for using the Puppet Forge v3 API for installing modules
 - The :ref:`install-distributor` cleans up published modules on repo delete
 
+API Changes
+-----------
+
+- The `unit_key` parameter is ignored by the API when uploading puppet modules. The unit key is
+  always determined through inspection of metadata.json in the top level directory. The parameter
+  `unit key` is still required by the Pulp platform, but its value is ignored for Puppet content.
+
+Bugs Fixed
+----------
+
 You can see the :fixedbugs:`list of bugs fixed<2.7.0>`.

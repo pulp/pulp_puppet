@@ -61,3 +61,23 @@ install`` tool is able to verify the server's SSL certificate with a trusted CA.
 Details on how to install a new trusted CA are outside the scope of this
 document.
 
+Missing metadata.json file
+--------------------------
+
+If uploading a puppet module results in `MissingModuleFile` error, one possible problem is that the
+tar.gz file being uploaded does not contain `metadata.json` file. Another possible problem is
+presence of more than one directory (Puppet module) inside the archive.
+
+Solution
+^^^^^^^^
+
+Modules must adhere to the `3.6+ metadata guidlines
+<https://docs.puppetlabs.com/puppet/latest/reference/modules_publishing.html#publishing-modules-on-the-puppet-forge>`_.
+Also ensure that an uploaded archive contains only one Puppet module.
+
+Incorrect Puppet module metadata
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If metadata for a Puppet module in a Pulp repository doesn't match metadata in the `metadata.json`
+module, the tar.gz archive contains multiple Puppet modules. Ensure that an
+uploaded tar.gz file contains only one Puppet module.
