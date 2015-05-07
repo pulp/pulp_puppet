@@ -40,17 +40,7 @@ class UploadModuleCommandTests(base_cli.ExtensionTests):
         key = self.command.generate_unit_key(self.filename)
 
         # Verify
-        expected_key = Module.generate_unit_key('valid', '1.0.0', 'jdob')
-        self.assertEqual(key, expected_key)
-
-    def test_generate_unit_key_complex_version(self):
-        filename = os.path.join(MODULES_DIR, 'jdob-valid-1.0.0-rc1.tar.gz')
-
-        # Test
-        key = self.command.generate_unit_key(filename)
-
-        # Verify
-        expected_key = Module.generate_unit_key('valid', '1.0.0-rc1', 'jdob')
+        expected_key = ""
         self.assertEqual(key, expected_key)
 
     def test_determine_type_id(self):

@@ -35,7 +35,7 @@ class SuccessfulMetadataTests(unittest.TestCase):
         filename = os.path.join(self.module_dir, self.module.filename())
 
         # Test
-        metadata_json = metadata.extract_metadata(filename, self.tmp_dir, self.module)
+        metadata_json = metadata.extract_metadata(filename, self.tmp_dir)
         self.module = Module.from_json(metadata_json)
 
         # Verify
@@ -55,7 +55,7 @@ class SuccessfulMetadataTests(unittest.TestCase):
         mkdtemp.return_value = extraction_dir
 
         # Test
-        metadata_json = metadata.extract_metadata(filename, self.tmp_dir, self.module)
+        metadata_json = metadata.extract_metadata(filename, self.tmp_dir)
         self.module.update_from_dict(metadata_json)
 
         # Verify - contains the same module as jdob-valid-1.0.0, so this is safe
@@ -144,7 +144,7 @@ class NegativeMetadataTests(unittest.TestCase):
 
         # Test
         try:
-            metadata.extract_metadata(filename, self.tmp_dir, self.module)
+            metadata.extract_metadata(filename, self.tmp_dir)
             self.fail()
         except metadata.ExtractionException, e:
             self.assertEqual(e.module_filename, filename)
@@ -158,7 +158,7 @@ class NegativeMetadataTests(unittest.TestCase):
 
         # Test
         try:
-            metadata._extract_non_standard_json(filename, self.tmp_dir)
+            metadata._extract_json(filename, self.tmp_dir)
             self.fail()
         except metadata.ExtractionException, e:
             self.assertEqual(e.module_filename, filename)
