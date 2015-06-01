@@ -19,7 +19,7 @@ from pulp_puppet.common import constants
 from pulp_puppet.extensions.admin.repo import units_display
 
 
-DESC_REMOVE = _('remove copied or uploaded modules from a repository')
+DESC_REMOVE = _('remove modules from a repository')
 
 
 class RemoveCommand(UnitRemoveCommand):
