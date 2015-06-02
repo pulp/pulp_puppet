@@ -2,6 +2,11 @@
 Pulp 2.6 Release Notes
 ======================
 
+Pulp 2.6.2
+==========
+
+List of :fixedbugs:`2.6.2`.
+
 Pulp 2.6.1
 ==========
 
