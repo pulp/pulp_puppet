@@ -9,7 +9,7 @@ New Features
 ------------
 
 - Support for using the Puppet Forge v3 API for installing modules
-- The :ref:`install-distributor` cleans up published modules on repo delete
+- The :ref:`install-distributor` removes the environment directory on repo delete
 
 API Changes
 -----------

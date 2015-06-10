@@ -98,14 +98,15 @@ This distributor performs these operations in the following order:
  5. Removes the temporary directory.
 
 When this distributor gets removed from a repository, such as when the repository
-gets deleted, all directories found in ``install_path`` will be deleted.
+gets deleted, the ``install_path`` and everything in it will be deleted.
 
-.. warning:: This distributor deletes all directories found in the ``install_path``!
+.. warning:: This distributor deletes everything in the ``install_path``!
 
 ``install_path``
  This is a full path to the directory where modules should be installed. It is the user's
  responsibility to ensure that Pulp can write to this directory. The web server user (for example,
  ``apache``) must be granted filesystem permissions to write to this path and the parent directory.
+ If the directory does not exist, it will be created.
  Additionally, the system SELinux policy must permit Pulp to write to this directory. Pulp's SELinux
  policy includes a ``pulp_manage_puppet`` boolean that allows Pulp to write to paths that have the
  ``puppet_etc_t`` label. You must ensure that the ``install_path`` and its parent directory have this
