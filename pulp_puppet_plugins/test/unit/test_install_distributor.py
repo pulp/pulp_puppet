@@ -575,6 +575,10 @@ class TestEnsureDestinationDir(unittest.TestCase):
         fake_mkdir.assert_called_once_with(path)
 
 
+class TestException(Exception):
+    pass
+
+
 class TestDistributorRemoved(unittest.TestCase):
     def setUp(self):
         self.distributor = installdistributor.PuppetModuleInstallDistributor()
@@ -582,14 +586,21 @@ class TestDistributorRemoved(unittest.TestCase):
         self.path = '/a/b/c/'
         self.config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: self.path})
 
-    def test_calls_clear_dest(self):
-        with mock.patch.object(self.distributor, '_clear_destination_directory') as mock_clear:
-            self.distributor.distributor_removed(self.repo, self.config)
+    @mock.patch('shutil.rmtree', spec_set=True)
+    def test_calls_rmtree(self, mock_rmtree):
+        self.distributor.distributor_removed(self.repo, self.config)
 
-        mock_clear.assert_called_once_with(self.path)
+        mock_rmtree.assert_called_once_with(self.path)
 
-    def test_without_configured_path(self):
-        with mock.patch.object(self.distributor, '_clear_destination_directory') as mock_clear:
-            self.distributor.distributor_removed(self.repo, PluginCallConfiguration({}, {}))
+    @mock.patch.object(installdistributor._LOGGER, 'error', spec_set=True)
+    @mock.patch('shutil.rmtree', spec_set=True, side_effect=TestException)
+    def test_rmtree_exception(self, mock_rmtree, mock_error):
+        self.assertRaises(TestException, self.distributor.distributor_removed, self.repo, self.config)
+        # make sure the error was logged
+        self.assertEqual(mock_error.call_count, 1)
 
-        self.assertEqual(mock_clear.call_count, 0)
+    @mock.patch('shutil.rmtree', spec_set=True)
+    def test_without_configured_path(self, mock_rmtree):
+        self.distributor.distributor_removed(self.repo, PluginCallConfiguration({}, {}))
+
+        self.assertEqual(mock_rmtree.call_count, 0)
