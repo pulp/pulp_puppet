@@ -1,16 +1,3 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2012 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
 """
 Contains classes and functions related to tracking the progress of a puppet
 distributor.
@@ -27,7 +14,35 @@ class PublishProgressReport(object):
     the update_progress call. Once the publish is finished, this object should
     be used to produce the final report to return to Pulp to describe the
     result of the operation.
+
+    :ivar conduit: The repository conduit used by the publisher.
+    :type conduit: pulp.plugins.conduits.repo_publish.RepoPublishConduit
     """
+
+    def __init__(self, conduit):
+        self.conduit = conduit
+
+        # Modules symlink step
+        self.modules_state = STATE_NOT_STARTED
+        self.modules_execution_time = None
+        self.modules_total_count = None
+        self.modules_finished_count = None
+        self.modules_error_count = None
+        self.modules_individual_errors = None # mapping of module to its error
+        self.modules_error_message = None # overall execution error
+        self.modules_exception = None
+        self.modules_traceback = None
+
+        # Metadata generation
+        self.metadata_state = STATE_NOT_STARTED
+        self.metadata_execution_time = None
+        self.metadata_error_message = None
+        self.metadata_exception = None
+        self.metadata_traceback = None
+
+        # Publishing
+        self.publish_http = STATE_NOT_STARTED
+        self.publish_https = STATE_NOT_STARTED
 
     @classmethod
     def from_progress_dict(cls, report):
@@ -43,6 +58,7 @@ class PublishProgressReport(object):
 
         :param report: progress report retrieved from the server's task
         :type  report: dict
+
         :return: instance populated with the state in the report
         :rtype:  PublishProgressReport
         """
@@ -72,31 +88,6 @@ class PublishProgressReport(object):
         r.publish_https = m['https']
 
         return r
-
-    def __init__(self, conduit):
-        self.conduit = conduit
-
-        # Modules symlink step
-        self.modules_state = STATE_NOT_STARTED
-        self.modules_execution_time = None
-        self.modules_total_count = None
-        self.modules_finished_count = None
-        self.modules_error_count = None
-        self.modules_individual_errors = None # mapping of module to its error
-        self.modules_error_message = None # overall execution error
-        self.modules_exception = None
-        self.modules_traceback = None
-
-        # Metadata generation
-        self.metadata_state = STATE_NOT_STARTED
-        self.metadata_execution_time = None
-        self.metadata_error_message = None
-        self.metadata_exception = None
-        self.metadata_traceback = None
-
-        # Publishing
-        self.publish_http = STATE_NOT_STARTED
-        self.publish_https = STATE_NOT_STARTED
 
     def update_progress(self):
         """
@@ -156,17 +147,25 @@ class PublishProgressReport(object):
         Updates the progress report that a module failed to be built to the
         repository.
 
-        :param unit: Pulp representation of the module
-        :type  unit: pulp.plugins.model.AssociatedUnit
+        :param unit: puppet module
+        :type  unit: pulp_puppet.plugins.db.models.Module
+        :param traceback: the traceback associated with the module failure
+        :type traceback: traceback
         """
         self.modules_error_count += 1
         self.modules_individual_errors = self.modules_individual_errors or {}
-        error_key = '%s-%s-%s' % (unit.unit_key['name'], unit.unit_key['version'], unit.unit_key['author'])
+        error_key = '%s-%s-%s' % (unit.name, unit.version, unit.author)
         self.modules_individual_errors[error_key] = reporting.format_traceback(traceback)
 
 # -- report creation methods ----------------------------------------------
 
     def _modules_section(self):
+        """
+        Builds the "modules" section of the progress report.
+
+        :return: The "modules" section of the progress report.
+        :rtype: dict
+        """
         modules_report = {
             'state' : self.modules_state,
             'execution_time' : self.modules_execution_time,
@@ -181,6 +180,12 @@ class PublishProgressReport(object):
         return modules_report
 
     def _metadata_section(self):
+        """
+        Builds the "metadata" section of the progress report.
+
+        :return: The "metadata" section of the progress report.
+        :rtype: dict
+        """
         metadata_report = {
             'state' : self.metadata_state,
             'execution_time' : self.metadata_execution_time,
@@ -191,6 +196,12 @@ class PublishProgressReport(object):
         return metadata_report
 
     def _publishing_section(self):
+        """
+        Builds the "publishing" section of the progress report.
+
+        :return: The "publishing" section of the progress report.
+        :rtype: dict
+        """
         publishing_report = {
             'http' : self.publish_http,
             'https' : self.publish_https,

@@ -1,17 +1,3 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2012 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
-
 class BaseDownloader(object):
     """
     Base class all downloaders should extend. The factory will pass the
@@ -32,10 +18,10 @@ class BaseDownloader(object):
         downloads take place.
 
         :param progress_report: used to communicate the progress of this operation
-        :type  progress_report: pulp_puppet.importer.sync_progress.ProgressReport
+        :type progress_report: pulp_puppet.importer.sync_progress.ProgressReport
 
         :return: list of JSON documents describing all modules to import
-        :rtype:  list
+        :rtype: list
         """
         raise NotImplementedError()
 
@@ -49,13 +35,13 @@ class BaseDownloader(object):
 
         :param progress_report: used if any updates need to be made as the
                download runs
-        :type  progress_report: pulp_puppet.importer.sync_progress.ProgressReport
+        :type progress_report: pulp_puppet.importer.sync_progress.ProgressReport
 
         :param module: module to download
-        :type  module: pulp_puppet.common.model.Module
+        :type module: pulp_puppet.common.model.Module
 
         :return: full path to the temporary location where the module file is
-        :rtype:  str
+        :rtype: str
         """
         raise NotImplementedError()
 
@@ -65,13 +51,13 @@ class BaseDownloader(object):
 
         :param progress_report: used if any updates need to be made as the
                download runs
-        :type  progress_report: pulp_puppet.importer.sync_progress.ProgressReport
+        :type progress_report: pulp_puppet.importer.sync_progress.ProgressReport
 
         :param module_list: list of modules to be downloaded
-        :type  module_list: iterable
+        :type module_list: iterable
 
         :return: list of full paths to the temporary locations where the modules are
-        :rtype:  list
+        :rtype: list
         """
         raise NotImplementedError()
 
@@ -88,6 +74,6 @@ class BaseDownloader(object):
         deleting any temporary copies of the file).
 
         :param module: module to clean up
-        :type  module: pulp_puppet.common.model.Module
+        :type module: pulp_puppet.common.model.Module
         """
         raise NotImplementedError()

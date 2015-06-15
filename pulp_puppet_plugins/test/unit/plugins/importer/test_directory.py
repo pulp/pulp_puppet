@@ -1,14 +1,3 @@
-# Copyright (c) 2014 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
 import os
 
 from uuid import uuid4
@@ -26,12 +15,13 @@ from pulp_puppet.common.sync_progress import SyncProgressReport
 class TestSynchronizeWithDirectory(TestCase):
 
     def test_constructor(self):
+        mock_repo = Mock()
         conduit = Mock()
         config = {}
 
         # testing
 
-        method = SynchronizeWithDirectory(conduit, config)
+        method = SynchronizeWithDirectory(mock_repo, conduit, config)
 
         # validation
 
@@ -40,24 +30,26 @@ class TestSynchronizeWithDirectory(TestCase):
 
     def test_feed_url(self):
         feed_url = 'http://abc.com/repository'
+        mock_repo = Mock()
         conduit = Mock()
         config = {constants.CONFIG_FEED: feed_url}
 
         # testing
 
-        method = SynchronizeWithDirectory(conduit, config)
+        method = SynchronizeWithDirectory(mock_repo, conduit, config)
 
         # validation
 
         self.assertEqual(method.feed_url(), feed_url + '/')
 
     def test_cancel(self):
+        mock_repo = Mock()
         conduit = Mock()
         config = {}
 
         # testing
 
-        method = SynchronizeWithDirectory(conduit, config)
+        method = SynchronizeWithDirectory(mock_repo, conduit, config)
         method.cancel()
 
         # validation
@@ -74,6 +66,7 @@ class TestSynchronizeWithDirectory(TestCase):
                   mock_import_modules, mock_remove_missing):
         mock_fetch_manifest.return_value = 'manifest_destiny'
         mock_fetch_modules.return_value = 'some modules'
+        mock_repo = Mock()
         conduit = Mock()
         config = {constants.CONFIG_FEED: 'http://host/root/PULP_MANAFEST'}
         repository = Mock()
@@ -81,8 +74,8 @@ class TestSynchronizeWithDirectory(TestCase):
         mock_mkdtemp.return_value = '/abc'
 
         # testing
-        method = SynchronizeWithDirectory(conduit, config)
-        report = method(repository)
+        method = SynchronizeWithDirectory(mock_repo, conduit, config)
+        report = method()
 
         # validation
         self.assertEqual(1, mock_fetch_manifest.call_count)
@@ -92,7 +85,7 @@ class TestSynchronizeWithDirectory(TestCase):
         self.assertFalse(method.canceled)
         self.assertTrue(isinstance(method.report, SyncProgressReport))
         self.assertTrue(isinstance(report, SyncProgressReport))
-        mock_mkdtemp.assert_called_with(dir=repository.working_dir)
+        mock_mkdtemp.assert_called_with(dir=mock_repo.working_dir)
         mock_rmtree.assert_called_with(os.path.join(repository.working_dir, mock_mkdtemp()))
 
     @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._import_modules')
@@ -102,6 +95,7 @@ class TestSynchronizeWithDirectory(TestCase):
     @patch('pulp_puppet.plugins.importers.directory.mkdtemp')
     def test_call_no_manifest(self, mock_mkdtemp, mock_rmtree, mock_fetch_manifest, *mocks):
         mock_fetch_manifest.return_value = None
+        mock_repo = Mock()
         conduit = Mock()
         config = {constants.CONFIG_FEED: 'http://host/root/PULP_MANAFEST'}
         repository = Mock()
@@ -109,8 +103,8 @@ class TestSynchronizeWithDirectory(TestCase):
         mock_mkdtemp.return_value = '/abc'
 
         # testing
-        method = SynchronizeWithDirectory(conduit, config)
-        report = method(repository)
+        method = SynchronizeWithDirectory(mock_repo, conduit, config)
+        report = method()
 
         # validation
         self.assertEqual(1, mock_fetch_manifest.call_count)
@@ -119,7 +113,7 @@ class TestSynchronizeWithDirectory(TestCase):
         self.assertFalse(method.canceled)
         self.assertTrue(isinstance(method.report, SyncProgressReport))
         self.assertTrue(isinstance(report, SyncProgressReport))
-        mock_mkdtemp.assert_called_with(dir=repository.working_dir)
+        mock_mkdtemp.assert_called_with(dir=mock_repo.working_dir)
         mock_rmtree.assert_called_with(os.path.join(repository.working_dir, mock_mkdtemp()))
 
     @patch('pulp_puppet.plugins.importers.directory.URL_TO_DOWNLOADER')
@@ -132,6 +126,7 @@ class TestSynchronizeWithDirectory(TestCase):
         mock_http_class = Mock(return_value=mock_http_downloader)
         mock_downloader_mapping.__getitem__.return_value = mock_http_class
 
+        mock_repo = Mock()
         conduit = Mock()
         config = Mock()
         config.get = Mock(side_effect={constants.CONFIG_FEED: 'http://host/root/PULP_MANAFEST'})
@@ -150,7 +145,7 @@ class TestSynchronizeWithDirectory(TestCase):
 
         # test
 
-        method = SynchronizeWithDirectory(conduit, config)
+        method = SynchronizeWithDirectory(mock_repo, conduit, config)
         succeeded_reports, failed_reports = method._download(urls)
 
         # validation
@@ -183,6 +178,7 @@ class TestSynchronizeWithDirectory(TestCase):
     def test_fetch_manifest(self, mock_download, mock_get_value):
         feed_url = 'http://host/root/'
 
+        mock_repo = Mock()
         conduit = Mock()
         config = {constants.CONFIG_FEED: feed_url}
         succeeded_report = Mock()
@@ -192,7 +188,7 @@ class TestSynchronizeWithDirectory(TestCase):
 
         # test
 
-        method = SynchronizeWithDirectory(conduit, config)
+        method = SynchronizeWithDirectory(mock_repo, conduit, config)
         method.report = Mock()
         manifest = method._fetch_manifest()
 
@@ -213,6 +209,7 @@ class TestSynchronizeWithDirectory(TestCase):
     def test_fetch_manifest_failed(self, mock_download):
         feed_url = 'http://host/root/'
 
+        mock_repo = Mock()
         conduit = Mock()
         config = {constants.CONFIG_FEED: feed_url}
         failed_report = Mock()
@@ -222,7 +219,7 @@ class TestSynchronizeWithDirectory(TestCase):
 
         # test
 
-        method = SynchronizeWithDirectory(conduit, config)
+        method = SynchronizeWithDirectory(mock_repo, conduit, config)
         method.report = Mock()
         manifest = method._fetch_manifest()
 
@@ -242,6 +239,7 @@ class TestSynchronizeWithDirectory(TestCase):
         tmp_dir = '/tmp/puppet-testing'
         feed_url = 'http://host/root/'
 
+        mock_repo = Mock()
         conduit = Mock()
         config = {constants.CONFIG_FEED: feed_url}
 
@@ -255,7 +253,7 @@ class TestSynchronizeWithDirectory(TestCase):
 
         # test
 
-        method = SynchronizeWithDirectory(conduit, config)
+        method = SynchronizeWithDirectory(mock_repo, conduit, config)
         method.report = Mock()
         method.tmp_dir = '/tmp/puppet-testing'
         module_paths = method._fetch_modules(manifest)
@@ -282,6 +280,7 @@ class TestSynchronizeWithDirectory(TestCase):
         tmp_dir = '/tmp/puppet-testing'
         feed_url = 'http://host/root/'
 
+        mock_repo = Mock()
         conduit = Mock()
         config = {constants.CONFIG_FEED: feed_url}
 
@@ -296,7 +295,7 @@ class TestSynchronizeWithDirectory(TestCase):
 
         # test
 
-        method = SynchronizeWithDirectory(conduit, config)
+        method = SynchronizeWithDirectory(mock_repo, conduit, config)
         method.report = Mock()
         method.tmp_dir = '/tmp/puppet-testing'
         module_paths = method._fetch_modules(manifest)
@@ -361,214 +360,6 @@ class TestSynchronizeWithDirectory(TestCase):
         mock_open.assert_called_with(os.path.join(mock_mkdtemp(), members[6].name))
         mock_json.load.assert_called_with(mock_fp)
         mock_shutil.rmtree.assert_called_with(mock_mkdtemp())
-
-    @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._remove_missing')
-    @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._add_module')
-    @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._extract_metadata')
-    def test_import_modules(self, mock_extract, mock_add, mock_remove_missing):
-        # These manifests represent the parsed metadata.json file. These contain a 'name'
-        # field, where we retrieve both the unit key's 'name' and 'author' field.
-        manifests = [
-            {'name': 'john-pulp1', 'author': 'Johnathon', 'version': '1.0'},
-            {'name': 'john-pulp2', 'author': 'Johnathon', 'version': '2.0'},
-            {'name': 'john/pulp3', 'author': 'Johnathon', 'version': '3.0'},
-        ]
-        mock_extract.side_effect = manifests
-        unit_keys = [
-            {'name': 'pulp1', 'author': 'john', 'version': '1.0'},
-            {'name': 'pulp2', 'author': 'john', 'version': '2.0'},
-            {'name': 'pulp3', 'author': 'john', 'version': '3.0'},
-        ]
-        module_paths = [
-            '/tmp/module_1',
-            '/tmp/module_2',
-            '/tmp/module_3',
-        ]
-        mock_pulp2 = Mock()
-        mock_pulp2.unit_key = unit_keys[1]
-        conduit = Mock()
-        conduit.get_units.return_value = [mock_pulp2]
-        config = Mock()
-        config.get_boolean.return_value = False
-
-        # test
-        method = SynchronizeWithDirectory(conduit, config)
-        method.started_fetch_modules = 10
-        method.report = Mock()
-        method.report.modules_total_count = 3
-        method.report.modules_finished_count = 0
-        method._import_modules(module_paths)
-
-        # validation
-        self.assertEqual(3, mock_extract.call_count)
-        self.assertEqual(mock_extract.mock_calls[0][1][0], module_paths[0])
-        self.assertEqual(mock_extract.mock_calls[1][1][0], module_paths[1])
-        self.assertEqual(mock_extract.mock_calls[2][1][0], module_paths[2])
-
-        self.assertEqual(2, mock_add.call_count)
-        self.assertEqual(mock_add.mock_calls[0][1][0], module_paths[0])
-        self.assertEqual(mock_add.mock_calls[1][1][0], module_paths[2])
-
-        config.get_boolean.assert_called_once_with(constants.CONFIG_REMOVE_MISSING)
-        self.assertEqual(0, mock_remove_missing.call_count)
-
-        # Check that the progress reporting was called as expected
-        self.assertEquals(3, method.report.update_progress.call_count)
-        self.assertEquals(2, method.report.modules_finished_count)
-        self.assertEquals(2, method.report.modules_total_count)
-
-    @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._remove_missing')
-    @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._add_module')
-    @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._extract_metadata')
-    def test_import_modules(self, mock_extract, mock_add, mock_remove_missing):
-        # These manifests represent the parsed metadata.json file. These contain a 'name'
-        # field, where we retrieve both the unit key's 'name' and 'author' field.
-        manifest = [{'name': 'john-pulp1', 'author': 'Johnathon', 'version': '1.0'}]
-        mock_extract.side_effect = manifest
-        module_paths = ['/tmp/module_1']
-        mock_pulp1, mock_pulp2 = (Mock(), Mock())
-        mock_pulp1.unit_key = {'name': 'pulp1', 'author': 'john', 'version': '1.0'}
-        mock_pulp2.unit_key = {'name': 'pulp2', 'author': 'john', 'version': '2.0'}
-        conduit = Mock()
-        conduit.get_units.return_value = [mock_pulp1, mock_pulp2]
-        config = Mock()
-        config.get_boolean.return_value = True
-
-        # test
-        method = SynchronizeWithDirectory(conduit, config)
-        method.started_fetch_modules = 10
-        method.report = Mock()
-        method.report.modules_total_count = 2
-        method.report.modules_finished_count = 0
-        method._import_modules(module_paths)
-
-        # validation
-        config.get_boolean.assert_called_once_with(constants.CONFIG_REMOVE_MISSING)
-        mock_remove_missing.assert_called_once_with([mock_pulp1, mock_pulp2], [mock_pulp1.unit_key])
-
-    @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._extract_metadata')
-    def test_import_modules_cancelled(self, mock_extract):
-        config = {}
-        mock_conduit = Mock()
-        mock_conduit.get_units.return_value = []
-
-        # test
-        method = SynchronizeWithDirectory(mock_conduit, config)
-        method.canceled = True
-        method._import_modules(['/path1', '/path2'])
-
-        # validation
-        self.assertFalse(mock_extract.called)
-
-    @patch('pulp_puppet.common.model.Module.from_json')
-    @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._add_module')
-    @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._extract_metadata')
-    def test_import_modules_failed(self, *mocks):
-        """
-        Test that when there was some failure in a previous step, _import_modules does not
-        overwrite the failed state
-        """
-        mock_conduit = Mock()
-        mock_conduit.get_units.return_value = []
-
-        method = SynchronizeWithDirectory(mock_conduit, Mock())
-        method.started_fetch_modules = 0
-        metadata = {'name': 'j-p', 'author': 'J', 'version': '1.1'}
-        method._extract_metadata = Mock(return_value=metadata)
-        method.report = Mock()
-        method.report.modules_total_count = 1
-        method.report.modules_finished_count = 0
-        method.report.modules_state = constants.STATE_FAILED
-
-        # test
-        method._import_modules(['/path1'])
-
-        # validation
-        self.assertEquals(constants.STATE_FAILED, method.report.modules_state)
-        self.assertEquals(2, method.report.update_progress.call_count)
-        self.assertEquals(1, method.report.modules_total_count)
-        self.assertEquals(1, method.report.modules_finished_count)
-
-    def test_remove_missing(self):
-        """
-        Test that when there are units to remove, the conduit is called correctly.
-        """
-        mock_unit = Mock()
-        mock_conduit = Mock()
-        method = SynchronizeWithDirectory(mock_conduit, {})
-
-        method._remove_missing([mock_unit], [])
-        mock_conduit.remove_unit.assert_called_once_with(mock_unit)
-
-    def test_remove_missing_canceled(self):
-        """
-        Test that when the sync is canceled, no units are removed.
-        """
-        mock_unit = Mock()
-        mock_conduit = Mock()
-        method = SynchronizeWithDirectory(mock_conduit, {})
-        method.canceled = True
-
-        method._remove_missing([mock_unit], [])
-        self.assertEqual(0, mock_conduit.remove_unit.call_count)
-
-    @patch('pulp_puppet.plugins.importers.directory.shutil')
-    def test_add_module(self, mock_shutil):
-        module_path = '/tmp/mod.tar.gz'
-        feed_url = 'http://host/root/PULP_MANAFEST'
-        unit_key = {'name': 'puppet-module'}
-        unit_metadata = {'A': 1, 'B': 2}
-        unit = Mock()
-        unit.storage_path = '/tmp/%s' % uuid4()
-
-        mock_conduit = Mock()
-        mock_conduit.init_unit = Mock(return_value=unit)
-
-        config = {constants.CONFIG_FEED: feed_url}
-
-        mock_module = Mock()
-        mock_module.unit_key = Mock(return_value=unit_key)
-        mock_module.unit_metadata = Mock(return_value=unit_metadata)
-        mock_module.filename = Mock(return_value='puppet-module')
-
-        # test
-
-        method = SynchronizeWithDirectory(mock_conduit, config)
-        method._add_module(module_path, mock_module)
-
-        # validation
-
-        mock_conduit.init_unit.assert_called_with(
-            constants.TYPE_PUPPET_MODULE, unit_key, unit_metadata, mock_module.filename())
-        mock_shutil.copy.assert_called_with(module_path, unit.storage_path)
-
-    @patch('pulp_puppet.plugins.importers.directory.shutil')
-    def test_add_module_not_copied(self, mock_shutil):
-        module_path = '/tmp/mod.tar.gz'
-        feed_url = 'http://host/root/PULP_MANAFEST'
-        unit_key = {'name': 'puppet-module'}
-        unit_metadata = {'A': 1, 'B': 2}
-        unit = Mock()
-        unit.storage_path = os.path.join(os.getcwd(), __file__)
-
-        mock_conduit = Mock()
-        mock_conduit.init_unit = Mock(return_value=unit)
-
-        config = {constants.CONFIG_FEED: feed_url}
-
-        mock_module = Mock()
-        mock_module.unit_key = Mock(return_value=unit_key)
-        mock_module.unit_metadata = Mock(return_value=unit_metadata)
-        mock_module.filename = Mock(return_value='puppet-module')
-
-        # test
-
-        method = SynchronizeWithDirectory(mock_conduit, config)
-        method._add_module(module_path, mock_module)
-
-        # validation
-
-        self.assertFalse(mock_shutil.copy.called)
 
 
 class TestListener(TestCase):

@@ -1,17 +1,5 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
 import gdbm
+from gettext import gettext as _
 import json
 import logging
 import os.path
@@ -22,6 +10,7 @@ from django.http import HttpResponseNotFound, HttpResponse
 
 from pulp_puppet.common import constants
 from pulp_puppet.forge.unit import Unit
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,6 +25,9 @@ def unit_generator(dbs, module_name, hostname):
     :type module_name: str
     :param hostname: The hostname of server serving modules
     :type hostname: str
+
+    :return: A generator of pulp_puppet.forge.unit.Unit objects
+    :rtype: generator
     """
     for repo_id, data in dbs.iteritems():
         protocol = data['protocol']
@@ -43,7 +35,9 @@ def unit_generator(dbs, module_name, hostname):
         try:
             json_data = db[module_name]
         except KeyError:
-            _LOGGER.debug('module %s not found in repo %s' % (module_name, repo_id))
+            msg_dict = {'module': module_name, 'repo_id': repo_id}
+            msg = _('module %(module)s not found in repo %(repo_id)s')
+            _LOGGER.debug(msg, msg_dict)
             continue
         units = json.loads(json_data)
         for unit in units:
@@ -167,8 +161,8 @@ def get_repo_data(repo_ids):
         try:
             ret[repo_id] = {'db': gdbm.open(db_path, 'r'), 'protocol': publish_protocol}
         except gdbm.error:
-            _LOGGER.error('failed to find dependency database for repo %s. re-publish to fix.' %
-                          repo_id)
+            _LOGGER.error(_('failed to find dependency database for repo %s. re-publish to fix.' %
+                          repo_id))
     return ret
 
 

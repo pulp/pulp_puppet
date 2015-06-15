@@ -1,17 +1,5 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2014 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 """
-Tests for pulp_rpm.plugins.migrations.0002_puppet_publishing_directory_change
+Tests for pulp_puppet.plugins.migrations.0002_puppet_publishing_directory_change
 """
 import os
 import tempfile
@@ -36,7 +24,7 @@ class Test0002PuppetPublishingDirectoryChange(unittest.TestCase):
                                         'publishing_directory_change')
         migration.migrate()
         mock_listdir.assert_called_once_with('/var/www/pulp_puppet')
-        mock_path_exists.assert_called_once_with('/var/www/pulp_puppet')
+        mock_path_exists.assert_has_call('/var/www/pulp_puppet')
 
     def test_move_directory_contents(self):
         test_old_publish_dir = tempfile.mkdtemp(prefix='test_0002_migration_old')

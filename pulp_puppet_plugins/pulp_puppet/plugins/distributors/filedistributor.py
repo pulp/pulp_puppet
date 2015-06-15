@@ -1,20 +1,7 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
-import os
 from gettext import gettext as _
+import os
 
-from pulp.plugins.file.distributor import FileDistributor
+from pulp.plugins.file.model_distributor import FileDistributor
 
 from pulp_puppet.common import constants
 from pulp_puppet.plugins.distributors import configuration
@@ -34,13 +21,14 @@ class PuppetFileDistributor(FileDistributor):
     """
     Distribute Puppet Module File
     """
+
     @classmethod
     def metadata(cls):
         """
-        Advertise the capabilities of the mighty PuppetFileDistributor.
+        Advertise the capabilities of the PuppetFileDistributor.
 
-        :return: The description of the impressive PuppetFileDistributor's capabilities.
-        :rtype:  dict
+        :return: The description of PuppetFileDistributor's capabilities.
+        :rtype: dict
         """
         return {
             'id': constants.DISTRIBUTOR_FILE_TYPE_ID,
@@ -50,23 +38,19 @@ class PuppetFileDistributor(FileDistributor):
 
     def validate_config(self, repo, config, config_conduit):
         """
-        Validate the configuration information for the puppet file distributor
-        Ensures that the https directory where the files are going to be served
-        from is valid.
+        Validate the configuration information for the puppet file distributor.
 
-        :param repo: metadata describing the repository to which the
-                     configuration applies
-        :type  repo: pulp.plugins.model.Repository
+        Ensures that the https directory where the files are going to be served from is valid.
 
-        :param config: plugin configuration instance; the proposed repo
-                       configuration is found within
-        :type  config: pulp.plugins.config.PluginCallConfiguration
+        :param repo: metadata describing the repository to which the configuration applies
+        :type repo: pulp.plugins.model.Repository
+        :param config: plugin configuration instance; contains the proposed repo configuration
+        :type config: pulp.plugins.config.PluginCallConfiguration
+        :param config_conduit: Configuration Conduit
+        :type config_conduit: pulp.plugins.conduits.repo_config.RepoConfigConduit
 
-        :param config_conduit: Configuration Conduit;
-        :type  config_conduit: pulp.plugins.conduits.repo_config.RepoConfigConduit
-
-        :return: tuple of (bool, str) to describe the result
-        :rtype:  tuple (bool, str)
+        :return: A tuple of validation results
+        :rtype: tuple of length two. Either (False, str) or (True, None)
         """
         config.default_config = configuration.DEFAULT_CONFIG
         https_dir = config.get(constants.CONFIG_FILE_HTTPS_DIR)
@@ -79,14 +63,15 @@ class PuppetFileDistributor(FileDistributor):
     def publish_metadata_for_unit(self, unit):
         """
         Publish the metadata for a single unit.
+
         This should be writing to open file handles from the initialize_metadata call
 
-        :param unit: the unit for which metadata needs to be generated
-        :type unit: pulp.plugins.model.AssociatedUnit
+        :param unit: the unit for which metadata needs to be written
+        :type unit: pulp_puppet.plugins.db.models.Module
         """
         self.metadata_csv_writer.writerow([os.path.basename(unit.storage_path),
-                                           unit.metadata['checksum'],
-                                           unit.metadata['checksum_type']])
+                                           unit.checksum,
+                                           unit.checksum_type])
 
     def get_hosting_locations(self, repo, config):
         """
@@ -94,11 +79,11 @@ class PuppetFileDistributor(FileDistributor):
 
         :param repo: The repository that is going to be hosted
         :type repo: pulp.plugins.model.Repository
-        :param config:    plugin configuration
-        :type  config:    pulp.plugins.config.PluginConfiguration
+        :param config: plugin configuration
+        :type config: pulp.plugins.config.PluginConfiguration
         """
         config.default_config = configuration.DEFAULT_CONFIG
-        hosting_dir = os.path.join(config.get(constants.CONFIG_FILE_HTTPS_DIR), repo.id)
+        hosting_dir = os.path.join(config.get(constants.CONFIG_FILE_HTTPS_DIR), repo.repo_id)
         return [hosting_dir]
 
     def get_paths_for_unit(self, unit):
@@ -106,7 +91,8 @@ class PuppetFileDistributor(FileDistributor):
         Get the paths within a target directory where this unit should be linked to.
 
         :param unit: The unit for which we want to return target paths
-        :type unit: pulp.plugins.model.AssociatedUnit
+        :type unit: pulp_puppet.plugins.db.models.Module
+
         :return: a list of paths the unit should be linked to
         :rtype: list of str
         """

@@ -4,9 +4,10 @@ import urllib
 
 from django.http import HttpResponseNotFound, HttpResponse, HttpResponseBadRequest
 from django.views.generic import View
+from pulp.server.webservices.views.util import generate_json_response
 
 from pulp_puppet.forge import releases
-from pulp.server.webservices.views.util import generate_json_response
+
 
 MODULE_PATTERN = re.compile('(^[a-zA-Z0-9]+)(/|-)([a-zA-Z0-9_]+)$')
 

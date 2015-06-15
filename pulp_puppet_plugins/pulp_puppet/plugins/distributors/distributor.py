@@ -1,19 +1,7 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2012 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
 from gettext import gettext as _
 
 from pulp.plugins.distributor import Distributor
+from pulp.server.db.model import Repository
 
 from pulp_puppet.common import constants
 from pulp_puppet.plugins.distributors import configuration, publish
@@ -49,11 +37,12 @@ class PuppetModuleDistributor(Distributor):
         config.default_config = configuration.DEFAULT_CONFIG
         publish.unpublish_repo(repo, config)
 
-    def publish_repo(self, repo, publish_conduit, config):
+    def publish_repo(self, repo_transfer, publish_conduit, config):
+        repo = Repository.objects.get_repo_or_missing_resource(repo_transfer.id)
         self.publish_cancelled = False
         config.default_config = configuration.DEFAULT_CONFIG
-        publish_runner = publish.PuppetModulePublishRun(repo, publish_conduit, config,
-                                                        self.is_publish_cancelled)
+        publish_runner = publish.PuppetModulePublishRun(repo, repo_transfer, publish_conduit,
+                                                        config, self.is_publish_cancelled)
         report = publish_runner.perform_publish()
         return report
 
@@ -65,8 +54,7 @@ class PuppetModuleDistributor(Distributor):
 
     def is_publish_cancelled(self):
         """
-        Hook back into this plugin to check if a cancel request has been issued
-        for a publish operation.
+        Hook into this plugin to check if a cancel request has been issued for a publish operation.
 
         :return: true if the sync should stop running; false otherwise
         :rtype: bool

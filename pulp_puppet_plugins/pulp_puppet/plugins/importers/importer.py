@@ -1,16 +1,3 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2012 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
 import logging
 
 from gettext import gettext as _
@@ -22,6 +9,7 @@ from pulp_puppet.common import constants
 from pulp_puppet.plugins.importers import configuration, upload, copier
 from pulp_puppet.plugins.importers.directory import SynchronizeWithDirectory
 from pulp_puppet.plugins.importers.forge import SynchronizeWithPuppetForge
+
 
 # The platform currently doesn't support automatic loading of conf files when the plugin
 # uses entry points. The current thinking is that the conf files will be named the same as
@@ -71,8 +59,8 @@ class PuppetModuleImporter(Importer):
         # method is used.  Otherwise, the puppet forge synchronization method is used.
 
         # synchronize with a directory
-        self.sync_method = SynchronizeWithDirectory(sync_conduit, config)
-        report = self.sync_method(repo)
+        self.sync_method = SynchronizeWithDirectory(repo, sync_conduit, config)
+        report = self.sync_method()
 
         # When fetching the PULP_MANIFEST is not successful, it's assumed that the
         # feed points to a puppet forge instance and the synchronization is retried
@@ -90,7 +78,8 @@ class PuppetModuleImporter(Importer):
 
     def upload_unit(self, repo, type_id, unit_key, metadata, file_path, conduit, config):
         try:
-            report = upload.handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path, conduit)
+            report = upload.handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path,
+                                                 conduit)
         except Exception, e:
             _logger.exception(e)
             report = {'success_flag': False, 'summary': e.message, 'details': {}}
@@ -107,10 +96,9 @@ class PuppetModuleImporter(Importer):
 
     def is_sync_cancelled(self):
         """
-        Hook back into this plugin to check if a cancel request has been issued
-        for a sync.
+        Hook into the plugin to check if a cancel request has been issued for a sync.
 
-        :return: true if the sync should stop running; false otherwise
+        :return: True if the sync should stop running; False otherwise
         :rtype: bool
         """
         return self.sync_cancelled

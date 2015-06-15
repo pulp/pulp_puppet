@@ -1,29 +1,17 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
+import errno
 from gettext import gettext as _
 import logging
 import os
 import shutil
 import tarfile
 import tempfile
-import errno
 
 from pulp.plugins.distributor import Distributor
-from pulp.server.db.model.criteria import UnitAssociationCriteria
+from pulp.server.controllers.repository import find_repo_content_units
 from pulp.plugins.util.misc import get_parent_directory, mkdir
 
 from pulp_puppet.common import constants
+from pulp_puppet.plugins.db.models import Module
 
 ERROR_MESSAGE_PATH = 'one or more units contains a path outside its base extraction path'
 _LOGGER = logging.getLogger(__name__)
@@ -41,12 +29,19 @@ def entry_point():
 
 
 class PuppetModuleInstallDistributor(Distributor):
+
     def __init__(self):
         super(PuppetModuleInstallDistributor, self).__init__()
         self.detail_report = DetailReport()
 
     @classmethod
     def metadata(cls):
+        """
+        Advertise the capabilities of the PuppetModuleInstallDistributor.
+
+        :return: The description of PuppetModuleInstallDistributor's capabilities.
+        :rtype:  dict
+        """
         return {
             'id': constants.INSTALL_DISTRIBUTOR_TYPE_ID,
             'display_name': _('Puppet Install Distributor'),
@@ -55,17 +50,17 @@ class PuppetModuleInstallDistributor(Distributor):
 
     def validate_config(self, repo, config, config_conduit):
         """
-        :param repo:            metadata describing the repository to which the
-                                configuration applies
-        :type  repo:            pulp.plugins.model.Repository
+        Validate the configuration of the install distributor.
 
-        :param config:          plugin configuration instance; the proposed repo
-                                configuration is found within
-        :type  config:          pulp.plugins.config.PluginCallConfiguration
-        :param config_conduit:  Configuration Conduit;
-        :type  config_conduit:  pulp.plugins.conduits.repo_config.RepoConfigConduit
-        :return: tuple of (bool, str) to describe the result
-        :rtype:  tuple
+        :param repo: metadata describing the repository to which the configuration applies
+        :type repo: pulp.plugins.model.Repository
+        :param config: plugin configuration instance; contains the proposed repo configuration
+        :type config: pulp.plugins.config.PluginCallConfiguration
+        :param config_conduit: Configuration conduit
+        :type config_conduit: pulp.plugins.conduits.repo_config.RepoConfigConduit
+
+        :return: A tuple of validation results
+        :rtype: tuple of length two. Either (False, str) or (True, None)
         """
         path = config.get(constants.CONFIG_INSTALL_PATH)
         if not isinstance(path, basestring):
@@ -81,30 +76,30 @@ class PuppetModuleInstallDistributor(Distributor):
         destination directory. This effectively means extracting each module's
         tarball in that directory.
 
-        :param repo:            metadata describing the repository
-        :type  repo:            pulp.plugins.model.Repository
+        :param repo: plugin repository object
+        :type repo: pulp.plugins.model.Repository
         :param publish_conduit: provides access to relevant Pulp functionality
-        :type  publish_conduit: pulp.plugins.conduits.repo_publish.RepoPublishConduit
-        :param config:          plugin configuration
-        :type  config:          pulp.plugins.config.PluginConfiguration
+        :type publish_conduit: pulp.plugins.conduits.repo_publish.RepoPublishConduit
+        :param config: plugin configuration
+        :type config: pulp.plugins.config.PluginConfiguration
 
         :return: report describing the publish run
-        :rtype:  pulp.plugins.model.PublishReport
+        :rtype: pulp.plugins.model.PublishReport
         """
         # get dir from config
         destination = config.get(constants.CONFIG_INSTALL_PATH)
         if not destination:
-            return publish_conduit.build_failure_report('install path not provided',
+            return publish_conduit.build_failure_report(_('install path not provided'),
                                                         self.detail_report.report)
-
-        units = publish_conduit.get_units(UnitAssociationCriteria([constants.TYPE_PUPPET_MODULE]))
+        units = list(find_repo_content_units(repo.repo_obj, yield_content_unit=True))
 
         duplicate_units = self._find_duplicate_names(units)
         if duplicate_units:
             for unit in duplicate_units:
                 self.detail_report.error(unit.unit_key,
                                          'another unit in this repo also has this name')
-            return publish_conduit.build_failure_report('duplicate unit names', self.detail_report.report)
+            return publish_conduit.build_failure_report(_('duplicate unit names'),
+                                                        self.detail_report.report)
 
         # check for unsafe paths in tarballs, and fail early if problems are found
         self._check_for_unsafe_archive_paths(units, destination)
@@ -113,12 +108,11 @@ class PuppetModuleInstallDistributor(Distributor):
 
         # ensure the destination directory exists
         try:
-            self._ensure_destination_dir(destination)
+            mkdir(destination)
             temporarydestination = self._create_temporary_destination_directory(destination)
         except OSError, e:
             return publish_conduit.build_failure_report(
-                'failed to create destination directory: %s' % str(e),
-                self.detail_report.report)
+                _('failed to create destination directory: %s') % str(e), self.detail_report.report)
 
         # actually publish
         for unit in units:
@@ -134,7 +128,7 @@ class PuppetModuleInstallDistributor(Distributor):
                 self.detail_report.error(unit.unit_key, str(e))
 
         if self.detail_report.has_errors:
-            return publish_conduit.build_failure_report('failed publishing units',
+            return publish_conduit.build_failure_report(_('failed publishing units'),
                                                         self.detail_report.report)
 
         # remove old directory if exists
@@ -142,7 +136,7 @@ class PuppetModuleInstallDistributor(Distributor):
             self._clear_destination_directory(destination)
         except (IOError, OSError), e:
             return publish_conduit.build_failure_report(
-                'failed to clear destination directory: %s' % str(e),
+                _('failed to clear destination directory: %s') % str(e),
                 self.detail_report.report)
 
         # move the subdirs of the temporary dir to the destination dir
@@ -150,32 +144,35 @@ class PuppetModuleInstallDistributor(Distributor):
             self._move_to_destination_directory(temporarydestination, destination)
         except (IOError, OSError), e:
             return publish_conduit.build_failure_report(
-                'failed to move temporary destination to destination directory: %s' % str(e),
+                _('failed to move temporary destination to destination directory: %s') % str(e),
                 self.detail_report.report)
 
         # return some kind of report
         if self.detail_report.has_errors:
-            return publish_conduit.build_failure_report('failed', self.detail_report.report)
+            return publish_conduit.build_failure_report(_('failed'), self.detail_report.report)
         else:
-            return publish_conduit.build_success_report('success', self.detail_report.report)
+            return publish_conduit.build_success_report(_('success'), self.detail_report.report)
 
     def distributor_removed(self, repo, config):
         """
         Remove the environment that is configured for use.
 
-        :param repo:    metadata describing the repository
-        :type  repo:    pulp.plugins.model.Repository
-        :param config:  plugin configuration
-        :type  config:  pulp.plugins.config.PluginCallConfiguration
+        :param repo: metadata describing the repository
+        :type repo: pulp.plugins.model.Repository
+        :param config: plugin configuration
+        :type config: pulp.plugins.config.PluginCallConfiguration
         """
         destination = config.get(constants.CONFIG_INSTALL_PATH)
         if destination:
-            _LOGGER.info(_('removing installed modules from environment at %(directory)s' %
-                           {'directory': destination}))
+            msg = _('removing installed modules from environment at %(directory)s')
+            msg_dict = {'directory': destination}
+            _LOGGER.info(msg, msg_dict)
             try:
                 shutil.rmtree(destination)
             except Exception, e:
-                _LOGGER.error(_('error removing environment: %(e)s' % {'e': e}))
+                msg = _('error removing environment: %(exc)s')
+                msg_dict = {'exc': e}
+                _LOGGER.error(msg, msg_dict)
                 raise
 
     @staticmethod
@@ -187,15 +184,15 @@ class PuppetModuleInstallDistributor(Distributor):
         and renamed to just the "name" portion of their unit key. Multiple units
         with the name name will conflict on the filesystem.
 
-        :param units:   iterable of all units being published
-        :type  units:   iterable
+        :param units: iterable of all units being published
+        :type units: iterable
 
-        :return:    list of units that have conflicting names
-        :rtype:     list
+        :return: list of units that have conflicting names
+        :rtype: list
         """
         names = {}
         for unit in units:
-            name = unit.unit_key['name']
+            name = unit.name
             if name not in names:
                 names[name] = 1
             else:
@@ -205,7 +202,7 @@ class PuppetModuleInstallDistributor(Distributor):
         for name, count in names.iteritems():
             if count > 1:
                 duplicates.add(name)
-        return [unit for unit in units if unit.unit_key['name'] in duplicates]
+        return [unit for unit in units if unit.name in duplicates]
 
     @staticmethod
     def _rename_directory(unit, destination, names):
@@ -214,38 +211,30 @@ class PuppetModuleInstallDistributor(Distributor):
         out the name of the directory that was extracted, and then move it to
         the name that puppet expects.
 
-        :param unit:        unit whose tarball was extracted at the destination
-        :type  unit:        pulp.plugins.model.AssociatedUnit
-        :param destination: absolute path to the destination where modules should
-                            be installed
-        :type  destination: str
-        :param names:       list of paths (relative or absolute) to files that
-                            are contained in the archive that was just extracted.
-        :type  names:       list
+        :param unit: unit whose tarball was extracted at the destination
+        :type unit: pulp.plugins.model.AssociatedUnit
+        :param destination: absolute path to the destination where modules should be installed
+        :type destination: str
+        :param names: list of paths (relative or absolute) to files that are contained in the
+                      archive that was just extracted.
+        :type names: list
 
-        :raise:     IOError, ValueError
+        :raise: IOError, ValueError
         """
         if not destination.endswith('/'):
             destination += '/'
         dest_length = len(destination)
 
-        dir_names = set([os.path.join(destination, name)[dest_length:].split('/')[0] for name in names])
+        dir_names = set(
+            [os.path.join(destination, name)[dest_length:].split('/')[0] for name in names]
+        )
         if len(dir_names) != 1:
             raise ValueError('too many directories extracted')
 
         before = os.path.normpath(os.path.join(destination, dir_names.pop()))
-        after = os.path.normpath(os.path.join(destination, unit.unit_key['name']))
+        after = os.path.normpath(os.path.join(destination, unit.name))
         if before != after:
             shutil.move(before, after)
-
-    def _ensure_destination_dir(self, destination):
-        """
-        Ensure that the directory specified by destination exists
-
-        :param destination: The full path to the directory to create
-        :type destination: str
-        """
-        mkdir(destination)
 
     def _check_for_unsafe_archive_paths(self, units, destination):
         """
@@ -254,12 +243,10 @@ class PuppetModuleInstallDistributor(Distributor):
         the destination directory. Adds errors to the detail report for each unit
         that has one or more offending paths.
 
-        :param units:       list of pulp.plugins.model.AssociatedUnit whose
-                            tarballs should be checked for unsafe paths
-        :type  units:       list
-        :param destination: absolute path to the destination where modules should
-                            be installed
-        :type  destination: str
+        :param units: list of units whose tarballs should be checked for unsafe paths
+        :type units: list of pulp_puppet.plugins.db.models.Module objects
+        :param destination: absolute path to the destination where modules should be installed
+        :type destination: str
         """
         for unit in units:
             try:
@@ -278,14 +265,13 @@ class PuppetModuleInstallDistributor(Distributor):
         Checks a tarball archive for paths that include components such as "../"
         that would cause files to be placed outside of the destination_path.
 
-        :param destination: absolute path to the destination where modules should
-                            be installed
-        :type  destination: str
-        :param archive:     tarball archive that should be checked
-        :type  archive      tarfile.TarFile
+        :param destination: absolute path to the destination where modules should be installed
+        :type destination: str
+        :param archive: tarball archive that should be checked
+        :type archive: tarfile.TarFile
 
-        :return:    True iff all paths in the archive are safe, else False
-        :rtype:     bool
+        :return: True iff all paths in the archive are safe, else False
+        :rtype: bool
         """
         for name in archive.getnames():
             result = os.path.normpath(os.path.join(destination, name))
@@ -298,11 +284,10 @@ class PuppetModuleInstallDistributor(Distributor):
     @staticmethod
     def _clear_destination_directory(destination):
         """
-        deletes every directory found in the given destination
+        Deletes every directory found in the given destination.
 
-        :param destination: absolute path to the destination where modules should
-                            be installed
-        :type  destination: str
+        :param destination: absolute path to the destination where modules should be installed
+        :type destination: str
         """
         for directory in os.listdir(destination):
             path = os.path.join(destination, directory)
@@ -316,11 +301,11 @@ class PuppetModuleInstallDistributor(Distributor):
         This is so that the move is hopefully taking place on the same filesystem so it
         will be as fast as possible.
 
-        :param destination: absolute path to the destination where modules should
-                            be installed
-        :type  destination: str
+        :param destination: absolute path to the destination where modules should be installed
+        :type destination: str
         :param mode: the directory permissions
-        :type  mode: int
+        :type mode: int
+
         :return: absolute path to temporary created directory
         :rtype: str
         """
@@ -329,22 +314,21 @@ class PuppetModuleInstallDistributor(Distributor):
             os.makedirs(basedir, mode)
         except OSError, e:
             if e.errno == errno.EEXIST and os.path.isdir(basedir):
-                pass  # ignored
+                pass
             else:
-                raise e
+                raise
         return tempfile.mkdtemp(prefix='pulp', dir=basedir)
 
     @staticmethod
     def _move_to_destination_directory(source, destination):
         """
-        move the subdirectories of a source directory to
-        a destination directory and then delete the source directory.
+        Move the subdirectories of a source directory to a destination directory and then delete
+        the source directory.
 
         :param source: absolute path to where modules are installed
-        :type  source: str
-
+        :type source: str
         :param destination: absolute path to where the modules should be copied to
-        :type  destination: str
+        :type destination: str
         """
         for directory in os.listdir(source):
             path = os.path.join(source, directory)
@@ -365,11 +349,10 @@ class DetailReport(object):
 
     def success(self, unit_key):
         """
-        Call for each unit that is successfully published. This adds that unit
-        key to the report.
+        Call for each unit that is successfully published. This adds that unit key to the report.
 
-        :param unit_key:    unit key for a successfully published unit
-        :type  unit_key:    dict
+        :param unit_key: unit key for a successfully published unit
+        :type unit_key: dict
         """
         self.report['success_unit_keys'].append(unit_key)
 
@@ -378,17 +361,17 @@ class DetailReport(object):
         Call for each unit that has an error during publish. This adds that unit
         key to the report.
 
-        :param unit_key:        unit key for unit that had an error during publish
-        :type  unit_key:        dict
-        :param error_message:   error message indicating what went wrong for this
-                                particular unit
+        :param unit_key: unit key for unit that had an error during publish
+        :type unit_key: dict
+        :param error_message: error message indicating what went wrong for this particular unit
+        :type error_message: str
         """
         self.report['errors'].append((unit_key, error_message))
 
     @property
     def has_errors(self):
         """
-        :return:    True iff this report has one or more errors, else False
-        :rtype:     bool
+        :return: True iff this report has one or more errors, else False
+        :rtype: bool
         """
         return bool(self.report['errors'])

@@ -22,5 +22,8 @@ setup(
         'pulp.server.db.migrations': [
             'pulp_puppet = pulp_puppet.plugins.migrations',
         ],
+        'pulp.unit_models': [
+            'puppet_module=pulp_puppet.plugins.db.models:Module'
+        ],
     }
 )
