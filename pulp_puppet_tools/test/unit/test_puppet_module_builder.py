@@ -572,8 +572,11 @@ class TestBuilder(TestCase):
 
         self.assertTrue(options.origin is None)
 
+    @patch('os.environ.copy')
     @patch('pulp_puppet.tools.puppet_module_builder.Popen')
-    def test_shell(self, mock_popen):
+    def test_shell(self, mock_popen, mock_copy):
+        env = {'A': 1}
+        mock_copy.return_value = dict(env)
         p = Mock()
         p.wait = Mock(return_value=0)
         p.stdout = Mock()
@@ -587,7 +590,11 @@ class TestBuilder(TestCase):
 
         # validate
 
-        mock_popen.assert_called_with(command.split(), stdout=builder.PIPE, stderr=builder.PIPE)
+        mock_popen.assert_called_with(
+            command.split(),
+            stdout=builder.PIPE,
+            stderr=builder.PIPE,
+            env={'A': 1, 'LC_ALL': 'C'})
 
         self.assertEqual(status, 0)
         self.assertEqual(output, p.stdout.read())
@@ -610,7 +617,6 @@ class TestBuilder(TestCase):
 
         # validate
 
-        mock_popen.assert_called_with(command.split(), stdout=builder.PIPE, stderr=builder.PIPE)
         mock_exit.assert_called_with(1)
 
         self.assertEqual(status, 1)
@@ -633,8 +639,6 @@ class TestBuilder(TestCase):
         status, output = builder.shell(command, False)
 
         # validate
-
-        mock_popen.assert_called_with(command.split(), stdout=builder.PIPE, stderr=builder.PIPE)
 
         self.assertEqual(status, 1)
         self.assertEqual(output, '')

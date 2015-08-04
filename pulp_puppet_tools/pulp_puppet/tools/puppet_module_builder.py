@@ -94,7 +94,9 @@ def shell(command, exit_on_err=True):
     """
     print command
     call = command.split()
-    p = Popen(call, stdout=PIPE, stderr=PIPE)
+    env = os.environ.copy()
+    env['LC_ALL'] = 'C'
+    p = Popen(call, stdout=PIPE, stderr=PIPE, env=env)
     status, output = p.wait(), p.stdout.read()
     if exit_on_err and status != os.EX_OK:
         print p.stderr.read()
