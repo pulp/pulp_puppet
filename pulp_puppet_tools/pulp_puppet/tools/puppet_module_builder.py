@@ -223,10 +223,9 @@ def find_modules():
     """
     modules = set()
     # Some old modules contain only 'Modulefile' metadata files, so find both. The set will remove duplicates.
-    modulefile_status, modulefile_output = shell('find . -name Modulefile')
-    metadata_status, metadata_output = shell('find . -name metadata.json')
+    modules_status, modules_output = shell('find . -name Modulefile -o -name metadata.json')
 
-    paths = modulefile_output.strip().split('\n') + metadata_output.strip().split('\n')
+    paths = modules_output.strip().split('\n')
     for path in paths:
         path = path.strip()
         path_pieces = path.split('/')
