@@ -310,7 +310,7 @@ class SynchronizeWithPuppetForge(object):
             module = Module.from_json(metadata_json)
 
             # Update the unit with the extracted metadata
-            unit.metadata = module.unit_metadata()
+            unit.metadata.update(module.unit_metadata())
 
             # Save the unit and associate it to the repository
             self.sync_conduit.save_unit(unit)
