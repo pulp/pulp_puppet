@@ -32,5 +32,5 @@ def migrate(*args, **kwargs):
         checksum = metadata.calculate_checksum(storage_path)
         puppet_unit['checksum'] = checksum
         puppet_unit['checksum_type'] = constants.DEFAULT_HASHLIB
-        collection.save(puppet_unit, safe=True)
+        collection.save(puppet_unit)
     _log.info("Migrated puppet modules to include checksum")
