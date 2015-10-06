@@ -1,29 +1,18 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
-
 import os
 
 import mock
 
 import base_downloader
-from pulp_puppet.common import constants, model
+from pulp_puppet.common import constants
+from pulp_puppet.plugins.db.models import RepositoryMetadata
 from pulp_puppet.plugins.importers.downloaders.exceptions import FileRetrievalException
 from pulp_puppet.plugins.importers.downloaders.local import LocalDownloader
+
 
 DATA_DIR = os.path.abspath(os.path.dirname(__file__)) + '/../../../../data'
 VALID_REPO_DIR = os.path.join(DATA_DIR, 'repos', 'valid')
 INVALID_REPO_DIR = os.path.join(DATA_DIR, 'repos', 'invalid')
+MODULE_PATH = 'pulp_puppet.plugins.importers.downloaders.local'
 
 
 class LocalDownloaderTests(base_downloader.BaseDownloaderTests):
@@ -40,7 +29,7 @@ class LocalDownloaderTests(base_downloader.BaseDownloaderTests):
 
         # Verify
         self.assertEqual(1, len(docs))
-        metadata = model.RepositoryMetadata()
+        metadata = RepositoryMetadata()
         metadata.update_from_json(docs[0])
         self.assertEqual(2, len(metadata.modules))
 
@@ -63,7 +52,10 @@ class LocalDownloaderTests(base_downloader.BaseDownloaderTests):
         except FileRetrievalException:
             pass
 
-    def test_retrieve_module(self):
+    @mock.patch(MODULE_PATH + '.os.path.exists')
+    def test_retrieve_module(self, mock_exists):
+        mock_exists.return_value = True
+
         # Test
         mod_path = self.downloader.retrieve_module(self.mock_progress_report, self.module)
 
@@ -71,7 +63,10 @@ class LocalDownloaderTests(base_downloader.BaseDownloaderTests):
         expected = os.path.join(VALID_REPO_DIR, self.module.filename())
         self.assertEqual(expected, mod_path)
 
-    def test_retrieve_module_no_file(self):
+    @mock.patch(MODULE_PATH + '.os.path.exists')
+    def test_retrieve_module_no_file(self, mock_exists):
+        mock_exists.return_value = False
+
         # Setup
         self.module.author = 'foo'
 

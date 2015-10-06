@@ -15,11 +15,11 @@ from nectar.downloaders.threaded import HTTPThreadedDownloader
 from nectar.listener import AggregatingEventListener
 from nectar.request import DownloadRequest
 from pulp.plugins.util.nectar_config import importer_config_to_nectar_config
-from pulp.server.db.model.criteria import UnitAssociationCriteria
+from pulp.server.controllers import repository as repo_controller
 
 from pulp_puppet.common import constants
-from pulp_puppet.common.model import Module
 from pulp_puppet.common.sync_progress import SyncProgressReport
+from pulp_puppet.plugins.db.models import Module
 
 
 _logger = logging.getLogger(__name__)
@@ -42,6 +42,8 @@ class SynchronizeWithDirectory(object):
     The source of the import is a directory containing a PULP_MANIFEST and
     multiple puppet built puppet modules.
 
+    :ivar repo: A Pulp repository object
+    :type repo: pulp.plugins.model.Repository
     :ivar conduit: Provides access to relevant Pulp functionality.
     :type conduit: pulp.plugins.conduits.repo_sync.RepoSyncConduit
     :ivar config: Plugin configuration.
@@ -59,10 +61,11 @@ class SynchronizeWithDirectory(object):
         """
         Extract the puppet module metadata from the tarball at the specified path.
         Search the tarball content for a file named: */metadata.json and extract
-        it into temporary directory.  Then read the file and return the json decoded content.
+        it into temporary directory. Then read the file and return the json decoded content.
 
         :param module_path: The fully qualified path to the module.
         :type module_path: str
+
         :return: The puppet module metadata.
         :rtype: dict
         """
@@ -78,13 +81,16 @@ class SynchronizeWithDirectory(object):
         finally:
             shutil.rmtree(tmp_dir)
 
-    def __init__(self, conduit, config):
+    def __init__(self, repo, conduit, config):
         """
+        :param repo: A Pulp repository object
+        :type repo: pulp.plugins.model.Repository
         :param conduit: Provides access to relevant Pulp functionality.
         :type conduit: pulp.plugins.conduits.repo_sync.RepoSyncConduit
         :param config: Plugin configuration.
         :type config: pulp.plugins.config.PluginCallConfiguration
         """
+        self.repo = repo
         self.conduit = conduit
         self.config = config
         self.report = None
@@ -93,8 +99,9 @@ class SynchronizeWithDirectory(object):
 
     def feed_url(self):
         """
-        Get the feed URL from the configuration and ensure it has a
-        trailing '/' so urljoin will work correctly.
+        Get the feed URL from the configuration and ensure it has a trailing '/' so urljoin will
+        work correctly.
+
         :return: The feed URL.
         :rtype: str
         """
@@ -112,13 +119,14 @@ class SynchronizeWithDirectory(object):
     def _download(self, urls):
         """
         Download files by URL.
-        Encapsulates nectar details and provides a simplified method
-        of downloading files.
 
-        :param urls: A list of tuples: (url, destination).  The *url* and
-            *destination* are both strings.  The *destination* is the fully
-            qualified path to where the file is to be downloaded.
+        Encapsulates nectar details and provides a simplified method of downloading files.
+
+        :param urls: A list of tuples: (url, destination).  The *url* and *destination* are both
+                     strings.  The *destination* is the fully qualified path to where the file is
+                     to be downloaded.
         :type urls: list
+
         :return: The nectar reports.  Tuple of: (succeeded_reports, failed_reports)
         :rtype: tuple
         """
@@ -135,15 +143,16 @@ class SynchronizeWithDirectory(object):
         nectar_config.finalize()
 
         for report in listener.succeeded_reports:
-            _logger.info(FETCH_SUCCEEDED % dict(url=report.url, dst=report.destination))
+            _logger.info(FETCH_SUCCEEDED, dict(url=report.url, dst=report.destination))
         for report in listener.failed_reports:
-            _logger.error(FETCH_FAILED % dict(url=report.url, msg=report.error_msg))
+            _logger.error(FETCH_FAILED, dict(url=report.url, msg=report.error_msg))
 
         return listener.succeeded_reports, listener.failed_reports
 
     def _fetch_manifest(self):
         """
         Fetch the PULP_MANIFEST.
+
         After the manifest is fetched, the file is parsed into a list of tuples.
 
         :return: The manifest content.  List of: (name,checksum,size).
@@ -188,10 +197,10 @@ class SynchronizeWithDirectory(object):
         Fetch all of the modules referenced in the manifest.
 
         :param manifest: A parsed PULP_MANIFEST. List of: (name,checksum,size).
-        :type  manifest: list
+        :type manifest: list
 
         :return: A list of paths to the fetched module files.
-        :rtype:  list
+        :rtype: list
         """
         self.started_fetch_modules = time()
 
@@ -232,26 +241,31 @@ class SynchronizeWithDirectory(object):
         :param module_paths: A list of paths to puppet module files.
         :type module_paths: list
         """
-        criteria = UnitAssociationCriteria(type_ids=[constants.TYPE_PUPPET_MODULE],
-                                           unit_fields=Module.UNIT_KEY_NAMES)
-        local_units = self.conduit.get_units(criteria=criteria)
-        local_unit_keys = [unit.unit_key for unit in local_units]
+        existing_module_ids_by_key = {}
+        for module in Module.objects.only(*Module.unit_key_fields).all():
+            existing_module_ids_by_key[module.unit_key_str] = module.id
+
         remote_unit_keys = []
 
         for module_path in module_paths:
             if self.canceled:
                 return
             puppet_manifest = self._extract_metadata(module_path)
-            module = Module.from_json(puppet_manifest)
-            remote_unit_keys.append(module.unit_key())
+            module = Module.from_metadata(puppet_manifest)
+            remote_unit_keys.append(module.unit_key_str)
 
             # Even though we've already basically processed this unit, not doing this makes the
             # progress reporting confusing because it shows Pulp always importing all the modules.
-            if module.unit_key() in local_unit_keys:
+            if module.unit_key_str in existing_module_ids_by_key:
                 self.report.modules_total_count -= 1
                 continue
-            _logger.debug(IMPORT_MODULE % dict(mod=module_path))
-            self._add_module(module_path, module)
+            _logger.debug(IMPORT_MODULE, dict(mod=module_path))
+
+            module.set_content(module_path)
+            module.save()
+
+            repo_controller.associate_single_unit(self.repo.repo_obj, module)
+
             self.report.modules_finished_count += 1
             self.report.update_progress()
 
@@ -265,56 +279,36 @@ class SynchronizeWithDirectory(object):
         if remove_missing is None:
             remove_missing = constants.DEFAULT_REMOVE_MISSING
         if remove_missing:
-            self._remove_missing(local_units, remote_unit_keys)
+            self._remove_missing(existing_module_ids_by_key, remote_unit_keys)
+        repo_controller.rebuild_content_unit_counts(self.repo.repo_obj)
 
-    def _remove_missing(self, local_units, remote_unit_keys):
+    def _remove_missing(self, existing_module_ids_by_key, remote_unit_keys):
         """
         Removes units from the local repository if they are missing from the remote repository.
 
-        :param local_units:         A list of units associated with the current repository
-        :type  local_units:         list of AssociatedUnit
-        :param remote_unit_keys:    a list of all the unit keys in the remote repository
-        :type  remote_unit_keys:    list of dict
+        :param existing_module_ids_by_key: A dict keyed on Module unit key associated with the
+            current repository. The values are the mongoengine id of the corresponding Module.
+        :type existing_module_ids_by_key: dict of Module.id values keyed on unit_key_str
+        :param remote_unit_keys: A list of all the Module keys in the remote repository
+        :type remote_unit_keys: list of strings
         """
-        for missing in [unit for unit in local_units if unit.unit_key not in remote_unit_keys]:
-            if self.canceled:
-                return
-            self.conduit.remove_unit(missing)
+        keys_to_remove = list(set(existing_module_ids_by_key.keys()) - set(remote_unit_keys))
+        doomed_ids = [existing_module_ids_by_key[key] for key in keys_to_remove]
+        doomed_module_iterator = Module.objects.in_bulk(doomed_ids).itervalues()
+        repo_controller.disassociate_units(self.repo, doomed_module_iterator)
 
-    def _add_module(self, path, module):
-        """
-        Add the specified module to Pulp using the conduit. This will both create the module
-        and associate it to a repository. The module tarball is copied to the *storage path*
-        only if it does not already exist at the *storage path*.
-
-        :param path: The path to the downloaded module tarball.
-        :type path: str
-        :param module: A puppet module model object.
-        :type module: Module
-        """
-        type_id = constants.TYPE_PUPPET_MODULE
-        unit_key = module.unit_key()
-        unit_metadata = module.unit_metadata()
-        relative_path = constants.STORAGE_MODULE_RELATIVE_PATH % module.filename()
-        unit = self.conduit.init_unit(type_id, unit_key, unit_metadata, relative_path)
-        if not os.path.exists(unit.storage_path):
-            shutil.copy(path, unit.storage_path)
-        self.conduit.save_unit(unit)
-
-    def __call__(self, repository):
+    def __call__(self):
         """
         Invoke the callable object.
-        All work is performed in the repository working directory and
-        cleaned up after the call.
 
-        :param repository: A Pulp repository object.
-        :type repository: pulp.server.plugins.model.Repository
+        All work is performed in the repository working directory and cleaned up after the call.
+
         :return: The final synchronization report.
         :rtype: SyncProgressReport
         """
         self.canceled = False
         self.report = SyncProgressReport(self.conduit)
-        self.tmp_dir = mkdtemp(dir=repository.working_dir)
+        self.tmp_dir = mkdtemp(dir=self.repo.working_dir)
         try:
             manifest = self._fetch_manifest()
             if manifest is not None:
@@ -332,8 +326,8 @@ class SynchronizeWithDirectory(object):
 
 class DownloadListener(AggregatingEventListener):
     """
-    An extension of the nectar AggregatingEventListener used primarily
-    to detect cancellation and cancel the associated nectar downloader.
+    An extension of the nectar AggregatingEventListener used primarily to detect cancellation and
+    cancel the associated nectar downloader.
 
     :ivar synchronizer: The object performing the synchronization.
     :type synchronizer: SynchronizeWithDirectory
@@ -356,6 +350,7 @@ class DownloadListener(AggregatingEventListener):
     def download_progress(self, report):
         """
         A download progress event.
+
         Cancel the download if the import_function call has been canceled.
 
         :param report: A nectar download report.

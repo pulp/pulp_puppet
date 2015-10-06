@@ -1,6 +1,5 @@
-from pulp.server.db.model.criteria import UnitAssociationCriteria
-
-from pulp_puppet.common import constants
+from pulp.server.controllers.repository import find_repo_content_units
+from pulp.server.db.model import Repository
 
 
 def copy_units(import_conduit, units):
@@ -12,11 +11,13 @@ def copy_units(import_conduit, units):
 
     # Determine which units are being copied
     if units is None:
-        criteria = UnitAssociationCriteria(type_ids=[constants.TYPE_PUPPET_MODULE])
-        units = import_conduit.get_source_units(criteria=criteria)
+        repo = Repository.objects.get(repo_id=import_conduit.source_repo_id)
+        units = find_repo_content_units(repo, yield_content_unit=True)
 
     # Associate to the new repository
+    units_to_return = []
     for u in units:
+        units_to_return.append(u)
         import_conduit.associate_unit(u)
 
-    return units
+    return units_to_return

@@ -1,31 +1,19 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 """
-Tests for pulp_puppet.plugins.distributors.filesdistributor
+Tests for pulp_puppet.plugins.distributors.filedistributor
 """
 import os
 import shutil
 import tempfile
 import unittest
 
-from mock import MagicMock, patch
-from pulp.devel.mock_distributor import get_basic_config
-from pulp.plugins.model import Unit
+import mock
 from pulp.plugins.config import PluginCallConfiguration
 
 from pulp_puppet.common import constants
-from pulp_puppet.plugins.distributors import configuration
 from pulp_puppet.plugins.distributors import filedistributor
+
+
+MODULE_PATH = 'pulp_puppet.plugins.distributors.filedistributor'
 
 
 class TestEntryPoint(unittest.TestCase):
@@ -47,7 +35,7 @@ class TestPuppetFilesDistributor(unittest.TestCase):
         self.temp_dir = tempfile.mkdtemp()
         self.files_path = os.path.join(self.temp_dir, 'files')
         os.makedirs(self.files_path)
-        self.unit = MagicMock()
+        self.unit = mock.MagicMock()
         self.unit.storage_path = os.path.join(self.temp_dir, 'source', "foo.tgz")
         self.config = PluginCallConfiguration({constants.CONFIG_FILE_HTTPS_DIR: self.files_path},
                                               {})
@@ -57,7 +45,7 @@ class TestPuppetFilesDistributor(unittest.TestCase):
         shutil.rmtree(self.temp_dir)
 
     def _get_default_repo(self):
-        repo = MagicMock()
+        repo = mock.MagicMock()
         repo.id = 'awesome_repo'
         return repo
 
@@ -96,25 +84,24 @@ class TestPuppetFilesDistributor(unittest.TestCase):
         finally:
             shutil.rmtree(tempdir)
 
-    def test_get_hosting_locations(self):
+    @mock.patch(MODULE_PATH + '.os.path.join')
+    def test_get_hosting_locations(self, mock_join):
         locations = self.distributor.get_hosting_locations(self.repo, self.config)
         self.assertEquals(1, len(locations))
-        self.assertEquals(os.path.join(self.files_path, self.repo.id), locations[0])
+        self.assertEquals(locations, [mock_join.return_value])
 
     def test_get_paths_for_unit(self):
         paths = self.distributor.get_paths_for_unit(self.unit)
         self.assertEquals(1, len(paths))
         self.assertEquals('foo.tgz', paths[0])
 
-    def test_publish_metadata_for_unit(self):
-        unit = Unit(constants.TYPE_PUPPET_MODULE,
-                    {'name': 'foo'},
-                    {'checksum': 'alpha', 'checksum_type': 'beta'},
-                    os.path.join(self.temp_dir, 'foo.tgz'))
+    @mock.patch(MODULE_PATH + '.os.path.basename')
+    def test_publish_metadata_for_unit(self, mock_path):
+        mock_unit = mock.MagicMock()
 
         metadata_distributor = filedistributor.PuppetFileDistributor()
-        metadata_distributor.metadata_csv_writer = MagicMock()
-        metadata_distributor.publish_metadata_for_unit(unit)
-        metadata_distributor.metadata_csv_writer.writerow.assert_called_with(['foo.tgz',
-                                                                              'alpha',
-                                                                              'beta'])
+        metadata_distributor.metadata_csv_writer = mock.MagicMock()
+        metadata_distributor.publish_metadata_for_unit(mock_unit)
+        expected_row = [mock_path.return_value, mock_unit.checksum, mock_unit.checksum_type]
+        metadata_distributor.metadata_csv_writer.writerow.assert_called_with(expected_row)
+        mock_path.assert_called_once_with(mock_unit.storage_path)

@@ -1,16 +1,3 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2012 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
 """
 Contains classes and functions related to tracking the progress of the puppet
 importer.
@@ -22,55 +9,15 @@ from pulp_puppet.common.constants import STATE_NOT_STARTED, STATE_SUCCESS, STATE
 
 class SyncProgressReport(object):
     """
-    Used to carry the state of the sync run as it proceeds. This object is used
-    to update the on going progress in Pulp at appropriate intervals through
-    the update_progress call. Once the sync is finished, this object should
-    be used to produce the final report to return to Pulp to describe the
-    sync.
+    Stores the state of the sync run as it proceeds.
+
+    This object is used to update the on going progress in Pulp at appropriate intervals through
+    the update_progress call. Once the sync is finished, this object should be used to produce
+    the final report to return to Pulp describing the sync.
+
+    :ivar conduit: The repository conduit used by the sync.
+    :type conduit: pulp.plugins.conduits.repo_sync.RepoSyncConduit
     """
-
-    @classmethod
-    def from_progress_dict(cls, report):
-        """
-        Parses the output from the build_progress_report method into an instance
-        of this class. The intention is to use this client-side to reconstruct
-        the instance as it is retrieved from the server.
-
-        The build_final_report call on instances returned from this call will
-        not function as it requires the server-side conduit to be provided.
-        Additionally, any exceptions and tracebacks will be a text representation
-        instead of formal objects.
-
-        :param report: progress report retrieved from the server's task
-        :type  report: dict
-        :return: instance populated with the state in the report
-        :rtype:  SyncProgressReport
-        """
-
-        r = cls(None)
-
-        m = report['metadata']
-        r.metadata_state = m['state']
-        r.metadata_execution_time = m['execution_time']
-        r.metadata_current_query = m['current_query']
-        r.metadata_query_finished_count = m['query_finished_count']
-        r.metadata_query_total_count = m['query_total_count']
-        r.metadata_error_message = m['error_message']
-        r.metadata_exception = m['error']
-        r.metadata_traceback = m['traceback']
-
-        m = report['modules']
-        r.modules_state = m['state']
-        r.modules_execution_time = m['execution_time']
-        r.modules_total_count = m['total_count']
-        r.modules_finished_count = m['finished_count']
-        r.modules_error_count = m['error_count']
-        r.modules_individual_errors = m['individual_errors']
-        r.modules_error_message = m['error_message']
-        r.modules_exception = m['error']
-        r.modules_traceback = m['traceback']
-
-        return r
 
     def __init__(self, conduit):
         self.conduit = conduit
@@ -98,6 +45,50 @@ class SyncProgressReport(object):
         self.modules_exception = None
         self.modules_traceback = None
 
+    @classmethod
+    def from_progress_dict(cls, report):
+        """
+        Parses the output from the build_progress_report method into an instance
+        of this class. The intention is to use this client-side to reconstruct
+        the instance as it is retrieved from the server.
+
+        The build_final_report call on instances returned from this call will
+        not function as it requires the server-side conduit to be provided.
+        Additionally, any exceptions and tracebacks will be a text representation
+        instead of formal objects.
+
+        :param report: progress report retrieved from the server's task
+        :type  report: dict
+
+        :return: instance populated with the state in the report
+        :rtype:  cls
+        """
+
+        r = cls(None)
+
+        m = report['metadata']
+        r.metadata_state = m['state']
+        r.metadata_execution_time = m['execution_time']
+        r.metadata_current_query = m['current_query']
+        r.metadata_query_finished_count = m['query_finished_count']
+        r.metadata_query_total_count = m['query_total_count']
+        r.metadata_error_message = m['error_message']
+        r.metadata_exception = m['error']
+        r.metadata_traceback = m['traceback']
+
+        m = report['modules']
+        r.modules_state = m['state']
+        r.modules_execution_time = m['execution_time']
+        r.modules_total_count = m['total_count']
+        r.modules_finished_count = m['finished_count']
+        r.modules_error_count = m['error_count']
+        r.modules_individual_errors = m['individual_errors']
+        r.modules_error_message = m['error_message']
+        r.modules_exception = m['error']
+        r.modules_traceback = m['traceback']
+
+        return r
+
     def update_progress(self):
         """
         Sends the current state of the progress report to Pulp.
@@ -111,8 +102,10 @@ class SyncProgressReport(object):
         The conduit will include information that it has tracked over the
         course of its usage, therefore this call should only be invoked
         when it is time to return the report.
-        """
 
+        :return: Returns an object representing the final report at the end of a sync.
+        :rtype: pulp.plugins.model.SyncReport
+        """
         # Report fields
         total_execution_time = -1
         if self.metadata_execution_time is not None and self.modules_execution_time is not None:
@@ -160,14 +153,22 @@ class SyncProgressReport(object):
     def add_failed_module(self, module, exception, traceback):
         """
         Updates the progress report that a module failed to be imported.
+
+        :param module: The module being processed when the failure occurred
+        :type module: pulp_puppet.plugins.db.models.Module
+        :param exception: The exception related to the module failure
+        :type exception: exception
+        :param traceback: The traceback corresponding with the exception
+        :type traceback: traceback
         """
         self.modules_error_count += 1
-        self.modules_individual_errors.append({
+        error_dict = {
             'module': '%s-%s' % (module.name, module.version),
             'author': module.author,
             'exception': reporting.format_exception(exception),
             'traceback': reporting.format_traceback(traceback),
-        })
+        }
+        self.modules_individual_errors.append(error_dict)
 
     def _metadata_section(self):
         metadata_report = {

@@ -1,0 +1,21 @@
+=============================
+Pulp Puppet 2.8 Release Notes
+=============================
+
+Pulp Puppet 2.8.0
+=================
+
+New Features
+------------
+
+- This release drops the following three indexes using a database migration which runs as part of
+  the `pulp-manage-db` command:
+   - `tag_list`
+   - `name_1_version_1_author_1`
+   - `author`
+- This release also adds an index for `author_1_name_1_version_1`
+
+Bugs Fixed
+----------
+
+You can see the :fixedbugs:`list of bugs fixed<2.8.0>`.

@@ -1,16 +1,3 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
 import os
 
 import mock
@@ -18,9 +5,10 @@ import mock
 from nectar.report import DownloadReport
 
 import base_downloader
-from pulp_puppet.common import constants, model
+from pulp_puppet.common import constants
 from pulp_puppet.plugins.importers.downloaders import exceptions, web
 from pulp_puppet.plugins.importers.downloaders.web import HttpDownloader
+
 
 TEST_SOURCE = 'http://forge.puppetlabs.com/'
 
@@ -69,21 +57,23 @@ class HttpDownloaderTests(base_downloader.BaseDownloaderTests):
         except exceptions.FileRetrievalException:
             pass
 
-    @mock.patch('nectar.config.DownloaderConfig.finalize')
-    @mock.patch('nectar.downloaders.threaded.HTTPThreadedDownloader.download')
-    def test_retrieve_module(self, mock_downloader_download, mock_finalize):
+    @mock.patch.object(HttpDownloader, 'retrieve_modules')
+    def test_retrieve_module(self, mock_retrieve_modules):
+        mock_retrieve_modules.return_value = ['foo', 'bar']
         try:
             stored_filename = self.downloader.retrieve_module(self.mock_progress_report, self.module)
         except:
             self.fail()
 
-        mock_downloader_download.assert_called_once()
-        mock_finalize.assert_called_once()
+        mock_retrieve_modules.assert_called_once_with(self.mock_progress_report, [self.module])
+        self.assertEqual(stored_filename, 'foo')
 
     @mock.patch('pulp_puppet.plugins.importers.downloaders.web.HTTPModuleDownloadEventListener')
     @mock.patch('nectar.downloaders.threaded.HTTPThreadedDownloader.download')
     def test_retrieve_module_missing_module(self, mock_downloader_download, mock_listener_constructor):
         # Setup
+        self.module.author = 'asdf'
+        self.module.puppet_standard_filename.return_value = 'puppet-filename.tar.gz'
         mock_listener = mock.MagicMock()
         report = DownloadReport(None, None)
         report.error_msg = 'oops'
@@ -97,10 +87,11 @@ class HttpDownloaderTests(base_downloader.BaseDownloaderTests):
         except exceptions.FileRetrievalException:
             expected_filename = web._create_download_tmp_dir(self.working_dir)
             expected_filename = os.path.join(expected_filename, self.module.filename())
-            self.assertFalse(os.path.exists(os.path.join(expected_filename)))
 
     @mock.patch('nectar.downloaders.threaded.HTTPThreadedDownloader.download')
     def test_cleanup_module(self, mock_downloader_download):
+        self.module.author = 'asdf'
+        self.module.puppet_standard_filename.return_value = 'puppet-filename.tar.gz'
         stored_filename = self.downloader.retrieve_module(self.mock_progress_report, self.module)
         self.downloader.cleanup_module(self.module)
         self.assertTrue(not os.path.exists(stored_filename))
@@ -127,6 +118,11 @@ class HttpDownloaderTests(base_downloader.BaseDownloaderTests):
         self.assertEqual(urls[0], TEST_SOURCE + 'modules.json')
 
     def test_create_module_url(self):
+        # Setup
+        self.module.author = 'asdf'
+        self.module.puppet_standard_filename.return_value = 'puppet-filename.tar.gz'
+        self.module.filename.return_value = 'puppet-filename.tar.gz'
+
         # Test
 
         # Strip the trailing / off to make sure that branch is followed

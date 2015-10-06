@@ -47,11 +47,11 @@ def extract_metadata(filename, temp_dir):
     Pulls the module's metadata file out of the module's tarball and returns it.
 
     :param filename: full path to the module file
-    :type  filename: str
+    :type filename: str
 
-    :param temp_dir: location the module's files should be extracted to;
-           must exist prior to this call
-    :type  temp_dir: str
+    :param temp_dir: location the module's files should be extracted to; must exist prior to this
+                     call
+    :type temp_dir: str
 
     :raise InvalidTarball: if the module file cannot be opened
     :raise MissingModuleFile: if the module's metadata file cannot be found
@@ -66,6 +66,7 @@ def calculate_checksum(filename):
 
     :param filename: the filename including path of the file to calculate a checksum for
     :type filename: str
+
     :return: The checksum for the file
     :rtype: str
     """
@@ -81,17 +82,16 @@ def calculate_checksum(filename):
 
 def _extract_json(filename, temp_dir):
     """
-    The entire module will be extracted to a temporary location and an attempt
-    will be made to find the module file. If it still cannot be found, an
-    exception is raised. The temporary location is deleted at the end of this
-    call regardless.
+    The entire module will be extracted to a temporary location and an attempt will be made to
+    find the module file. If it still cannot be found, an exception is raised. The temporary
+    location is deleted at the end of this call regardless.
 
     :param filename: full path to the module file
-    :type  filename: str
+    :type filename: str
 
-    :param temp_dir: location the module's files should be extracted to;
-           must exist prior to this call
-    :type  temp_dir: str
+    :param temp_dir: location the module's files should be extracted to; must exist prior to this
+                     call
+    :type temp_dir: str
 
     :raise InvalidTarball: if the module file cannot be opened
     :raise MissingModuleFile: if the module's metadata file cannot be found

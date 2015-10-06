@@ -1,21 +1,8 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2012 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
 import unittest
 
 from pulp.common.compat import json
 
-from pulp_puppet.common.model import RepositoryMetadata, Module
+from pulp_puppet.plugins.db.models import RepositoryMetadata, Module
 
 # -- constants ----------------------------------------------------------------
 
@@ -135,88 +122,3 @@ class RepositoryMetadataTests(unittest.TestCase):
         self.assertEqual(sorted_modules[1]['author'], 'lab42')
         self.assertEqual(sorted_modules[1]['version'], '0.0.2')
         self.assertEqual(sorted_modules[1]['tag_list'], ['postfix', 'applications'])
-
-
-class ModuleTests(unittest.TestCase):
-
-    def test_update_from_json(self):
-        # Setup
-        module = Module('jdob-valid', '1.0.0', 'jdob')
-
-        # Test
-        module.update_from_json(VALID_MODULE_METADATA_JSON)
-
-        # Verify
-        self.assert_valid_module(module)
-
-    def test_from_dict(self):
-        # Setup
-        data = json.loads(VALID_MODULE_METADATA_JSON)
-
-        # Test
-        module = Module.from_dict(data)
-
-        # Verify
-        self.assert_valid_module(module)
-
-    def test_from_json(self):
-        # Setup
-        data = json.loads(VALID_MODULE_METADATA_JSON)
-
-        # Test
-        module = Module.from_json(data)
-
-        # Verify
-        self.assertEqual(module.name, "valid")
-        self.assertEqual(module.author, "jdob")
-
-        module.name = "jdob-valid" # rename the module to use the assert
-        self.assert_valid_module(module)
-
-    def test_from_json_old_name(self):
-        """
-        Test that the Module.from_json method handles the old naming style
-        """
-        # Setup
-        metadata = {
-            'name': 'oldauthor/oldmodule',
-            'version': '0.1.0',
-        }
-
-        # Test
-        module = Module.from_json(metadata)
-
-        # Verify
-        self.assertEqual(module.author, 'oldauthor')
-        self.assertEqual(module.name, 'oldmodule')
-        self.assertEqual(module.version, '0.1.0')
-
-    def assert_valid_module(self, module):
-        self.assertEqual(module.name, 'jdob-valid')
-        self.assertEqual(module.version, '1.0.0')
-        self.assertEqual(module.author, 'jdob')
-        self.assertEqual(module.source, 'http://example.org/jdob-valid/source')
-        self.assertEqual(module.license, 'Apache License, Version 2.0')
-        self.assertEqual(module.summary, 'Valid Module Summary')
-        self.assertEqual(module.description, 'Valid Module Description')
-        self.assertEqual(module.project_page, 'http://example.org/jdob-valid')
-        self.assertEqual(module.checksum, 'anvil')
-        self.assertEqual(module.checksum_type, 'acme_checksum')
-
-        self.assertEqual(2, len(module.dependencies))
-        sorted_deps = sorted(module.dependencies, key=lambda x : x['name'])
-        self.assertEqual(sorted_deps[0]['name'], 'jdob/dep-alpha')
-        self.assertEqual(sorted_deps[0]['version_requirement'], '>= 1.0.0')
-        self.assertEqual(sorted_deps[1]['name'], 'ldob/dep-beta')
-        self.assertEqual(sorted_deps[1]['version_requirement'], '>= 2.0.0')
-
-        self.assertEqual(module.types, [])
-
-        expected_checksums = {
-            'Modulefile': '704cecf2957448dcf7fa20cffa2cf7c1',
-            'README': '11edd8578497566d8054684a8c89c6cb',
-            'manifests/init.pp': '1d1fb26825825b4d64d37d377016869e',
-            'spec/spec_helper.rb': 'a55d1e6483344f8ec6963fcb2c220372',
-            'tests/init.pp': '7043c7ef0c4b0ac52b4ec6bb76008ebd'
-        }
-        self.assertEqual(module.checksums, expected_checksums)

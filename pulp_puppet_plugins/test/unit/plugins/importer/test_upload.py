@@ -1,16 +1,3 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
 import os
 import shutil
 import tempfile
@@ -23,6 +10,7 @@ from pulp_puppet.common import constants
 from pulp_puppet.plugins.importers import upload
 
 DATA_DIR = os.path.abspath(os.path.dirname(__file__)) + '/../../../data'
+MODULE_STRING = 'pulp_puppet.plugins.importers.upload'
 
 
 class UploadTests(unittest.TestCase):
@@ -51,7 +39,9 @@ class UploadTests(unittest.TestCase):
         if os.path.exists(self.dest_dir):
             shutil.rmtree(self.dest_dir)
 
-    def test_handle_uploaded_unit(self):
+    @mock.patch(MODULE_STRING + '.Module')
+    @mock.patch(MODULE_STRING + '.repo_controller')
+    def test_handle_uploaded_unit(self, mock_repo_controller, mock_module):
         # Setup
         initialized_unit = mock.MagicMock()
         initialized_unit.storage_path = self.dest_dir
@@ -62,10 +52,7 @@ class UploadTests(unittest.TestCase):
                                              self.unit_metadata, self.source_file, self.conduit)
 
         # Verify
-        self.assertTrue(os.path.exists(self.dest_file))
-
-        self.assertEqual(1, self.conduit.init_unit.call_count)
-        self.assertEqual(1, self.conduit.save_unit.call_count)
+        mock_module.from_metadata.return_value.save.assert_called_once_with()
 
         self.assertTrue(isinstance(report, dict))
         self.assertTrue('success_flag' in report)
@@ -73,7 +60,9 @@ class UploadTests(unittest.TestCase):
         self.assertTrue('summary' in report)
         self.assertTrue('details' in report)
 
-    def test_handle_uploaded_unit_with_no_data(self):
+    @mock.patch(MODULE_STRING + '.Module')
+    @mock.patch(MODULE_STRING + '.repo_controller')
+    def test_handle_uploaded_unit_with_no_data(self, mock_repo_controller, mock_module):
         # Setup
         initialized_unit = mock.MagicMock()
         initialized_unit.storage_path = self.dest_dir
@@ -83,11 +72,7 @@ class UploadTests(unittest.TestCase):
         report = upload.handle_uploaded_unit(self.repo, constants.TYPE_PUPPET_MODULE, {},
                                              {}, self.source_file, self.conduit)
 
-        # Verify
-        self.assertTrue(os.path.exists(self.dest_file))
-
-        self.assertEqual(1, self.conduit.init_unit.call_count)
-        self.assertEqual(1, self.conduit.save_unit.call_count)
+        mock_module.from_metadata.return_value.save.assert_called_once_with()
 
         self.assertTrue(report['success_flag'])
 

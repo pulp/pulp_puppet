@@ -2,7 +2,7 @@ from django.conf.urls import patterns, url
 from pulp_puppet.forge.views.releases import ReleasesView, ReleasesPost36View
 from pulp.server.db import connection
 
-# This is all that is required to start using Manager classes
+
 connection.initialize()
 
 urlpatterns = patterns('',

@@ -1,21 +1,10 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright © 2013 Red Hat, Inc.
-#
-# This software is licensed to you under the GNU General Public
-# License as published by the Free Software Foundation; either version
-# 2 of the License (GPLv2) or (at your option) any later version.
-# There is NO WARRANTY for this software, express or implied,
-# including the implied warranties of MERCHANTABILITY,
-# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
-# have received a copy of GPLv2 along with this software; if not, see
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
-
 from gettext import gettext as _
 import logging
 
 from pulp.plugins.profiler import Profiler
 from pulp.server.config import config as pulp_conf
+from pulp.server.controllers.repository import find_repo_content_units
+from pulp.server.db.model import Repository
 
 from pulp_puppet.common import constants
 
@@ -28,6 +17,7 @@ def entry_point():
 
 
 class WholeRepoProfiler(Profiler):
+
     @classmethod
     def metadata(cls):
         """
@@ -76,25 +66,25 @@ class WholeRepoProfiler(Profiler):
         :type conduit: pulp.plugins.conduits.profiler.ProfilerConduit
 
         :return: The translated units
-        :rtype: list of: { type_id:<str>, unit_key:<dict> }
+        :rtype: list of: {'type_id': <str>, unit_key: {'author': <author>, 'name': <name>}
         """
         repo_id = options.get(constants.REPO_ID_OPTION)
         self._inject_forge_settings(options)
         if options.get(constants.WHOLE_REPO_OPTION) and repo_id:
-            _LOGGER.debug('installing whole repo %s on %s' % (repo_id, consumer.id))
-            unit_keys = [unit.unit_key for unit in conduit.get_units(repo_id)]
+            msg = _('installing whole repo %(repo_id)s on %(consumer_id)s')
+            msg_dict = {'repo_id': repo_id, 'consumer_id': consumer.id}
+            _LOGGER.debug(msg, msg_dict)
 
-            for unit_key in unit_keys:
-                # lets the install tool automatically choose the newest version
-                # available in the repo
-                unit_key.pop('version', None)
+            repo = Repository.objects.get(repo_id=repo_id)
+            units = find_repo_content_units(repo, yield_content_unit=True)
 
-            # this just makes sure we don't have duplicate copies of the same
-            # unit leftover from having multiple versions
             unit_key_dict = {}
-            for unit_key in unit_keys:
-                fullname = '%s/%s' % (unit_key['author'], unit_key['name'])
-                unit_key_dict[fullname] = {'unit_key': unit_key, 'type_id': constants.TYPE_PUPPET_MODULE}
+            for unit in units:
+                fullname = '%s/%s' % (unit.author, unit.name)
+                unit_key_dict[fullname] = {
+                    'unit_key': {'author': unit.author, 'name': unit.name},
+                    'type_id': constants.TYPE_PUPPET_MODULE
+                }
 
             return unit_key_dict.values()
 
@@ -131,6 +121,7 @@ class WholeRepoProfiler(Profiler):
         Inject the puppet forge settings into the options.
         Add the pulp server host and port information to the options.
         Used by the agent handler.
+
         :param options: An options dictionary.
         :type options: dict
         """
