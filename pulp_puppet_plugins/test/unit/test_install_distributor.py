@@ -10,9 +10,10 @@ import mock
 from pulp.devel.unit.util import touch
 from pulp.plugins.conduits.repo_publish import RepoPublishConduit
 from pulp.plugins.config import PluginCallConfiguration
-from pulp.plugins.model import Repository, AssociatedUnit, PublishReport
+from pulp.plugins.model import Repository
 
 from pulp_puppet.common import constants
+from pulp_puppet.plugins.db.models import Module
 from pulp_puppet.plugins.distributors import installdistributor
 
 
@@ -65,8 +66,8 @@ class TestPublishRepo(unittest.TestCase):
         self.uk1 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.2.0'}
         self.uk2 = {'author': 'puppetlabs', 'name': 'java', 'version': '1.3.1'}
         self.units = [
-            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk1, {}, '/a/b/x', '', ''),
-            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk2, {}, '/a/b/y', '', ''),
+            Module(_storage_path='/a/b/x', **self.uk1),
+            Module(_storage_path='/a/b/y', **self.uk2)
         ]
         self.conduit.get_units = mock.MagicMock(return_value=self.units, spec_set=self.conduit.get_units)
 
@@ -172,8 +173,8 @@ class TestCheckForUnsafeArchivePaths(unittest.TestCase):
         self.uk1 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.2.0'}
         self.uk2 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.2.1'}
         self.units = [
-            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk1, {}, '/a/b/x', '', ''),
-            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk2, {}, '/a/b/y', '', ''),
+            Module(_storage_path='/a/b/x', **self.uk1),
+            Module(_storage_path='/a/b/y', **self.uk2)
         ]
 
     def test_does_not_exist(self):

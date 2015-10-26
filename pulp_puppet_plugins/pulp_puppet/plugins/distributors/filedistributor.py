@@ -69,7 +69,7 @@ class PuppetFileDistributor(FileDistributor):
         :param unit: the unit for which metadata needs to be written
         :type unit: pulp_puppet.plugins.db.models.Module
         """
-        self.metadata_csv_writer.writerow([os.path.basename(unit.storage_path),
+        self.metadata_csv_writer.writerow([os.path.basename(unit._storage_path),
                                            unit.checksum,
                                            unit.checksum_type])
 
@@ -96,4 +96,4 @@ class PuppetFileDistributor(FileDistributor):
         :return: a list of paths the unit should be linked to
         :rtype: list of str
         """
-        return [os.path.basename(unit.storage_path), ]
+        return [os.path.basename(unit._storage_path), ]
