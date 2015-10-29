@@ -97,6 +97,10 @@ This distributor performs these operations in the following order:
  4. Moves the content of temporary directory into the ``install_path``.
  5. Removes the temporary directory.
 
+Extracted files and directories will inherit the uid and gid of the pulp process that extracts them.
+Because some puppet modules contain files with problematic filesystem permissions, pulp ensures
+minimum permissions of 0644 for regular files and 0755 for directories.
+
 When this distributor gets removed from a repository, such as when the repository
 gets deleted, the ``install_path`` and everything in it will be deleted.
 

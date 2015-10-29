@@ -7,11 +7,10 @@ import tarfile
 import tempfile
 
 from pulp.plugins.distributor import Distributor
-from pulp.server.controllers.repository import find_repo_content_units
+from pulp.server.controllers import repository as repo_controller
 from pulp.plugins.util.misc import get_parent_directory, mkdir
 
 from pulp_puppet.common import constants
-from pulp_puppet.plugins.db.models import Module
 
 ERROR_MESSAGE_PATH = 'one or more units contains a path outside its base extraction path'
 _LOGGER = logging.getLogger(__name__)
@@ -26,6 +25,40 @@ def entry_point():
     """
     # there is never a default or global config for this distributor
     return PuppetModuleInstallDistributor, {}
+
+
+class NormalizingTarInfo(tarfile.TarInfo):
+    """
+    Use this class with a call to tarfile.open(). It ensures that the uid and gid of extracted files
+    get set to the values of the current process, and that the permissions on files and dirs get
+    the below minimum values.
+
+    Specifically, it is important to guarantee that puppet can read the extracted files.
+    """
+    min_file_perms = int('0644', base=8)
+    min_dir_perms = int('0755', base=8)
+
+    @classmethod
+    def fromtarfile(cls, *args, **kwargs):
+        """
+        This removes the uid and gid from the returned TarInfo file, causing those values to be set
+        based on the process currently running.
+
+        This also adds a basic level of filesystem permissions to each file and directory extracted,
+        to ensure that they can be accessed and moved around as required.
+
+        :return:    a new TarInfo instance representing a file in an archive
+        :rtype:     tarfile.TarInfo
+        """
+        ret = super(NormalizingTarInfo, cls).fromtarfile(*args, **kwargs)
+        # this causes the uid and gid to be set matching the process doing the extraction
+        ret.uid = 0
+        ret.gid = 0
+        if ret.isfile():
+            ret.mode |= cls.min_file_perms
+        elif ret.isdir():
+            ret.mode |= cls.min_dir_perms
+        return ret
 
 
 class PuppetModuleInstallDistributor(Distributor):
@@ -91,8 +124,8 @@ class PuppetModuleInstallDistributor(Distributor):
         if not destination:
             return publish_conduit.build_failure_report(_('install path not provided'),
                                                         self.detail_report.report)
-        units = list(find_repo_content_units(repo.repo_obj, yield_content_unit=True))
-
+        units = list(repo_controller.find_repo_content_units(repo.repo_obj,
+                                                             yield_content_unit=True))
         duplicate_units = self._find_duplicate_names(units)
         if duplicate_units:
             for unit in duplicate_units:
@@ -117,7 +150,7 @@ class PuppetModuleInstallDistributor(Distributor):
         # actually publish
         for unit in units:
             try:
-                archive = tarfile.open(unit.storage_path)
+                archive = tarfile.open(unit.storage_path, tarinfo=NormalizingTarInfo)
                 try:
                     archive.extractall(temporarydestination)
                     self._rename_directory(unit, temporarydestination, archive.getnames())
@@ -147,11 +180,7 @@ class PuppetModuleInstallDistributor(Distributor):
                 _('failed to move temporary destination to destination directory: %s') % str(e),
                 self.detail_report.report)
 
-        # return some kind of report
-        if self.detail_report.has_errors:
-            return publish_conduit.build_failure_report(_('failed'), self.detail_report.report)
-        else:
-            return publish_conduit.build_success_report(_('success'), self.detail_report.report)
+        return publish_conduit.build_success_report(_('success'), self.detail_report.report)
 
     def distributor_removed(self, repo, config):
         """

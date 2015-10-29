@@ -14,6 +14,11 @@ New Features
    - `name_1_version_1_author_1`
    - `author`
 - This release also adds an index for `author_1_name_1_version_1`
+- The install distributor normalizes uid, gid, and filesystem permissions.
+   - Extracted files and directories will inherit the uid and gid of the pulp process that extracts
+     them.
+   - Because some puppet modules contain files with problematic filesystem permissions, pulp ensures
+     minimum permissions of 0644 for regular files and 0755 for directories.
 
 Bugs Fixed
 ----------
