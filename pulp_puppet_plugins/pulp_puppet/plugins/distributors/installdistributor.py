@@ -117,7 +117,7 @@ class PuppetModuleInstallDistributor(Distributor):
         # actually publish
         for unit in units:
             try:
-                archive = tarfile.open(unit.storage_path)
+                archive = tarfile.open(unit._storage_path)
                 try:
                     archive.extractall(temporarydestination)
                     self._rename_directory(unit, temporarydestination, archive.getnames())
@@ -250,7 +250,7 @@ class PuppetModuleInstallDistributor(Distributor):
         """
         for unit in units:
             try:
-                archive = tarfile.open(unit.storage_path)
+                archive = tarfile.open(unit._storage_path)
                 try:
                     if not self._archive_paths_are_safe(destination, archive):
                         self.detail_report.error(unit.unit_key, ERROR_MESSAGE_PATH)

@@ -235,7 +235,7 @@ class PuppetModulePublishRun(object):
             try:
                 if not os.path.exists(symlink_dir):
                     os.makedirs(symlink_dir)
-                os.symlink(module.storage_path, symlink_path)
+                os.symlink(module._storage_path, symlink_path)
                 self.progress_report.modules_finished_count += 1
             except Exception:
                 self.progress_report.add_failed_module(module, sys.exc_info()[2])
@@ -254,7 +254,7 @@ class PuppetModulePublishRun(object):
         """
         subs = (module.author[0], module.author)
         served_relative_path = constants.HOSTED_MODULE_FILE_RELATIVE_PATH % subs
-        return os.path.join(served_relative_path, os.path.basename(module.storage_path))
+        return os.path.join(served_relative_path, os.path.basename(module._storage_path))
 
     @property
     def _repo_path(self):
@@ -316,7 +316,7 @@ class PuppetModulePublishRun(object):
             for module in modules:
                 path = os.path.join(self._repo_path, self._build_relative_path(module))
                 # calculate the checksum
-                with open(module.storage_path, 'rb') as file_handle:
+                with open(module._storage_path, 'rb') as file_handle:
                     file_hash = hashlib.md5()
                     while True:
                         # This leverages the style of 128 chunking size of MD5 and does
