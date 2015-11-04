@@ -36,7 +36,7 @@ class TestPuppetFilesDistributor(unittest.TestCase):
         self.files_path = os.path.join(self.temp_dir, 'files')
         os.makedirs(self.files_path)
         self.unit = mock.MagicMock()
-        self.unit.storage_path = os.path.join(self.temp_dir, 'source', "foo.tgz")
+        self.unit._storage_path = os.path.join(self.temp_dir, 'source', "foo.tgz")
         self.config = PluginCallConfiguration({constants.CONFIG_FILE_HTTPS_DIR: self.files_path},
                                               {})
         self.repo = self._get_default_repo()
@@ -104,4 +104,4 @@ class TestPuppetFilesDistributor(unittest.TestCase):
         metadata_distributor.publish_metadata_for_unit(mock_unit)
         expected_row = [mock_path.return_value, mock_unit.checksum, mock_unit.checksum_type]
         metadata_distributor.metadata_csv_writer.writerow.assert_called_with(expected_row)
-        mock_path.assert_called_once_with(mock_unit.storage_path)
+        mock_path.assert_called_once_with(mock_unit._storage_path)

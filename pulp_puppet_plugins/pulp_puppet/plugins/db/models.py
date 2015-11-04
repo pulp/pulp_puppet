@@ -83,8 +83,7 @@ class Module(FileContentUnit):
 
     # For backward compatibility
     _ns = StringField(default='units_puppet_module')
-    unit_type_id = StringField(db_field='_content_type_id', required=True,
-                               default=constants.TYPE_PUPPET_MODULE)
+    _content_type_id = StringField(required=True, default=constants.TYPE_PUPPET_MODULE)
 
     unit_key_fields = ('author', 'name', 'version')
 
@@ -113,7 +112,7 @@ class Module(FileContentUnit):
         """
         super(Module, cls).pre_save_signal(sender, document, **kwargs)
         if document.checksum is None:
-            document.checksum = metadata_parser.calculate_checksum(document.storage_path)
+            document.checksum = metadata_parser.calculate_checksum(document._storage_path)
 
         # Checksums is expressed as a dict of files to checksum. This causes a problem in mongo
         # since keys can't have periods in them, but file names clearly will. Translate this to a
@@ -123,7 +122,7 @@ class Module(FileContentUnit):
 
     def __str__(self):
         """ Backwards compatible with __str__ from pulp.plugins.model.AssociatedUnit """
-        return 'Unit [key=%s] [type=%s] [id=%s]' % (self.unit_key, self.unit_type_id, self.id)
+        return 'Unit [key=%s] [type=%s] [id=%s]' % (self.unit_key, self._content_type_id, self.id)
 
     def __repr__(self):
         """ Backwards compatible with __repr__ from pulp.plugins.model.AssociatedUnit """

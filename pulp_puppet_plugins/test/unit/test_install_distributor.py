@@ -10,7 +10,7 @@ import mock
 from pulp.devel.unit.util import touch
 from pulp.plugins.conduits.repo_publish import RepoPublishConduit
 from pulp.plugins.config import PluginCallConfiguration
-from pulp.plugins.model import Repository, AssociatedUnit, PublishReport
+from pulp.plugins.model import Repository, PublishReport
 
 from pulp_puppet.common import constants
 from pulp_puppet.plugins.db.models import Module
@@ -122,8 +122,8 @@ class TestPublishRepo(unittest.TestCase):
         self.uk1 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.2.0'}
         self.uk2 = {'author': 'puppetlabs', 'name': 'java', 'version': '1.3.1'}
         self.units = [
-            Module(unit_type_id=constants.TYPE_PUPPET_MODULE, storage_path='/a/b/x', **self.uk1),
-            Module(unit_type_id=constants.TYPE_PUPPET_MODULE, storage_path='/a/b/y', **self.uk2),
+            Module(_storage_path='/a/b/x', **self.uk1),
+            Module(_storage_path='/a/b/y', **self.uk2)
         ]
         self.conduit.get_units = mock.MagicMock(return_value=self.units, spec_set=self.conduit.get_units)
 
@@ -164,9 +164,9 @@ class TestPublishRepo(unittest.TestCase):
         self.assertTrue(self.uk2 in report.details['success_unit_keys'])
 
         self.assertEqual(mock_open.call_count, 2)
-        mock_open.assert_any_call(self.units[0].storage_path,
+        mock_open.assert_any_call(self.units[0]._storage_path,
                                   tarinfo=installdistributor.NormalizingTarInfo)
-        mock_open.assert_any_call(self.units[1].storage_path,
+        mock_open.assert_any_call(self.units[1]._storage_path,
                                   tarinfo=installdistributor.NormalizingTarInfo)
 
         self.assertEqual(mock_rename.call_count, 2)
@@ -193,7 +193,7 @@ class TestPublishRepo(unittest.TestCase):
     def test_duplicate_unit_names(self, mock_find):
         config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: self.puppet_dir})
         uk3 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.3.1'}
-        unit3 = Module(unit_type_id=constants.TYPE_PUPPET_MODULE, storage_path='/a/b/y', **uk3)
+        unit3 = Module(_storage_path='/a/b/y', **uk3)
         self.units.append(unit3)
         mock_find.return_value = self.units
 
@@ -437,8 +437,8 @@ class TestCheckForUnsafeArchivePaths(unittest.TestCase):
         self.uk1 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.2.0'}
         self.uk2 = {'author': 'puppetlabs', 'name': 'stdlib', 'version': '1.2.1'}
         self.units = [
-            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk1, {}, '/a/b/x', '', ''),
-            AssociatedUnit(constants.TYPE_PUPPET_MODULE, self.uk2, {}, '/a/b/y', '', ''),
+            Module(_storage_path='/a/b/x', **self.uk1),
+            Module(_storage_path='/a/b/y', **self.uk2)
         ]
 
     def test_does_not_exist(self):
