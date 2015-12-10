@@ -15,7 +15,7 @@
 
 Name: pulp-puppet
 Version: 2.7.1
-Release: 0.1.beta%{?dist}
+Release: 1%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -279,6 +279,9 @@ A collection of tools used to manage puppet modules.
 
 
 %changelog
+* Thu Dec 10 2015 Austin Macdonald <asmacdo@gmail.com> 2.7.1-1
+- Pulp rebuild
+
 * Tue Dec 08 2015 Austin Macdonald <asmacdo@gmail.com> 2.7.1-0.1.beta
 - Pulp rebuild
 
