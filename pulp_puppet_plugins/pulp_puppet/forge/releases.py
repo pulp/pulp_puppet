@@ -16,9 +16,9 @@ import json
 import logging
 import os.path
 
-from pulp.server.managers.consumer.bind import BindManager
-from pulp.server.managers.repo.distributor import RepoDistributorManager
 from django.http import HttpResponseNotFound, HttpResponse
+from pulp.server.db import model
+from pulp.server.managers.consumer.bind import BindManager
 
 from pulp_puppet.common import constants
 from pulp_puppet.forge.unit import Unit
@@ -158,7 +158,7 @@ def get_repo_data(repo_ids):
     :rtype:     dict
     """
     ret = {}
-    for distributor in RepoDistributorManager.find_by_repo_list(repo_ids):
+    for distributor in model.Distributor.objects(repo_id__in=repo_ids):
         publish_protocol = _get_protocol_from_distributor(distributor)
         protocol_key, protocol_default_value = PROTOCOL_CONFIG_KEYS[publish_protocol]
         repo_path = distributor['config'].get(protocol_key, protocol_default_value)
