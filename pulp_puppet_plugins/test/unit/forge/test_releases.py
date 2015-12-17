@@ -93,7 +93,8 @@ class TestUnitGenerator(unittest.TestCase):
 class TestView(unittest.TestCase):
 
     def test_null_auth(self):
-        data = releases.view(constants.FORGE_NULL_AUTH_VALUE, constants.FORGE_NULL_AUTH_VALUE, 'foo/bar')
+        data = releases.view(constants.FORGE_NULL_AUTH_VALUE, constants.FORGE_NULL_AUTH_VALUE,
+                             'foo/bar')
         self.assertEqual(data.status_code, 401)
 
     @mock.patch.object(releases, 'unit_generator', autospec=True)
@@ -245,26 +246,26 @@ class TestView(unittest.TestCase):
         self.assertEquals('3.0.0', result['me/mymodule'][0]['version'])
 
 
+@mock.patch('pulp_puppet.forge.releases.model.Distributor.objects')
 class TestGetRepoData(unittest.TestCase):
-    @mock.patch('pulp.server.managers.repo.distributor.RepoDistributorManager.find_by_repo_list')
+
     @mock.patch('gdbm.open', autospec=True)
     def test_single_repo(self, mock_open, mock_find):
-        mock_find.return_value = [{'repo_id':'repo1', 'config':{}}]
+        mock_find.return_value = [{'repo_id': 'repo1', 'config': {}}]
 
         result = releases.get_repo_data(['repo1'])
 
         self.assertTrue(isinstance(result, dict))
         self.assertEqual(result.keys(), ['repo1'])
         self.assertEqual(result['repo1']['db'], mock_open.return_value)
-        mock_open.assert_called_once_with('/var/lib/pulp/published/puppet/http/repos/repo1/.dependency_db',
-                                          'r')
+        mock_open.assert_called_once_with(
+            '/var/lib/pulp/published/puppet/http/repos/repo1/.dependency_db', 'r')
 
-    @mock.patch('pulp.server.managers.repo.distributor.RepoDistributorManager.find_by_repo_list')
     @mock.patch('gdbm.open', autospec=True)
     def test_multiple_repos(self, mock_open, mock_find):
         mock_find.return_value = [
-            {'repo_id':'repo1', 'config':{}},
-            {'repo_id':'repo2', 'config':{}}
+            {'repo_id': 'repo1', 'config': {}},
+            {'repo_id': 'repo2', 'config': {}}
         ]
 
         result = releases.get_repo_data(['repo1', 'repo2'])
@@ -272,34 +273,32 @@ class TestGetRepoData(unittest.TestCase):
         self.assertTrue('repo1' in result)
         self.assertTrue('repo2' in result)
 
-    @mock.patch('pulp.server.managers.repo.distributor.RepoDistributorManager.find_by_repo_list')
     @mock.patch('gdbm.open', autospec=True)
     def test_configured_publish_dir(self, mock_open, mock_find):
         mock_find.return_value = [
-            {'repo_id':'repo1',
-             'config':{constants.CONFIG_HTTP_DIR: '/var/lib/pulp/published/puppet/foo'}}
+            {'repo_id': 'repo1',
+             'config': {constants.CONFIG_HTTP_DIR: '/var/lib/pulp/published/puppet/foo'}}
         ]
+        releases.get_repo_data(['repo1'])
 
-        result = releases.get_repo_data(['repo1'])
+        mock_open.assert_called_once_with(
+            '/var/lib/pulp/published/puppet/foo/repo1/.dependency_db', 'r')
 
-        mock_open.assert_called_once_with('/var/lib/pulp/published/puppet/foo/repo1/.dependency_db', 'r')
-
-    @mock.patch('pulp.server.managers.repo.distributor.RepoDistributorManager.find_by_repo_list')
     @mock.patch('gdbm.open', autospec=True)
     def test_db_open_error(self, mock_open, mock_find):
-        mock_find.return_value = [{'repo_id':'repo1', 'config':{}}]
+        mock_find.return_value = [{'repo_id': 'repo1', 'config': {}}]
         mock_open.side_effect = gdbm.error
 
         result = releases.get_repo_data(['repo1'])
 
         self.assertEqual(result, {})
-        mock_open.assert_called_once_with('/var/lib/pulp/published/puppet/http/repos/repo1/.dependency_db',
-                                          'r')
+        mock_open.assert_called_once_with(
+            '/var/lib/pulp/published/puppet/http/repos/repo1/.dependency_db', 'r')
 
 
 class TestGetProtocol(unittest.TestCase):
     def test_default(self):
-        result = releases._get_protocol_from_distributor({'config':{}})
+        result = releases._get_protocol_from_distributor({'config': {}})
 
         # http is currently the default protocol for publishes
         self.assertEqual(result, 'http')
@@ -324,9 +323,9 @@ class TestGetProtocol(unittest.TestCase):
 class TestGetBoundRepos(unittest.TestCase):
     @mock.patch.object(BindManager, 'find_by_consumer', spec=BindManager().find_by_consumer)
     def test_only_puppet(self, mock_find):
-        bindings =[{
+        bindings = [{
             'repo_id': 'repo1',
-            'distributor_id' : constants.DISTRIBUTOR_TYPE_ID
+            'distributor_id': constants.DISTRIBUTOR_TYPE_ID
         }]
         mock_find.return_value = bindings
 
@@ -337,10 +336,7 @@ class TestGetBoundRepos(unittest.TestCase):
 
     @mock.patch.object(BindManager, 'find_by_consumer', spec=BindManager().find_by_consumer)
     def test_only_other_type(self, mock_find):
-        bindings =[{
-                       'repo_id': 'repo1',
-                       'distributor_id': 'some_other_type'
-                   }]
+        bindings = [{'repo_id': 'repo1', 'distributor_id': 'some_other_type'}]
         mock_find.return_value = bindings
 
         result = releases.get_bound_repos('consumer1')
@@ -350,19 +346,10 @@ class TestGetBoundRepos(unittest.TestCase):
 
     @mock.patch.object(BindManager, 'find_by_consumer', spec=BindManager().find_by_consumer)
     def test_mixed_types(self, mock_find):
-        bindings =[
-            {
-               'repo_id': 'repo1',
-               'distributor_id' : constants.DISTRIBUTOR_TYPE_ID
-            },
-            {
-                'repo_id': 'repo2',
-                'distributor_id' :'some_other_type'
-            },
-            {
-                'repo_id': 'repo3',
-                'distributor_id' : constants.DISTRIBUTOR_TYPE_ID
-            },
+        bindings = [
+            {'repo_id': 'repo1', 'distributor_id': constants.DISTRIBUTOR_TYPE_ID},
+            {'repo_id': 'repo2', 'distributor_id': 'some_other_type'},
+            {'repo_id': 'repo3', 'distributor_id': constants.DISTRIBUTOR_TYPE_ID},
         ]
         mock_find.return_value = bindings
 
