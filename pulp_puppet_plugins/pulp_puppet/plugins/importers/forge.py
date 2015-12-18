@@ -1,6 +1,7 @@
 from datetime import datetime
 from gettext import gettext as _
 import logging
+import os
 import sys
 
 from pulp.server.controllers import repository as repo_controller
@@ -297,7 +298,8 @@ class SynchronizeWithPuppetForge(object):
 
             # Create and save the Module
             module = Module.from_metadata(metadata)
-            module.set_content(downloaded_filename)
+            module.set_storage_path(os.path.basename(downloaded_filename))
+            module.import_content(downloaded_filename)
             module.save()
 
             # Associate the module with the repo

@@ -261,7 +261,8 @@ class SynchronizeWithDirectory(object):
                 continue
             _logger.debug(IMPORT_MODULE, dict(mod=module_path))
 
-            module.set_content(module_path)
+            module.set_storage_path(os.path.basename(module_path))
+            module.import_content(module_path)
             module.save()
 
             repo_controller.associate_single_unit(self.repo.repo_obj, module)
