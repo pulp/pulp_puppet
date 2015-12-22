@@ -68,7 +68,7 @@ class Module(FileContentUnit):
     tag_list = ListField()
 
     # Generated at the file level
-    checksum = StringField(required=True)
+    checksum = StringField()
     checksum_type = StringField(default=constants.DEFAULT_HASHLIB)
 
     # From Module Metadata
@@ -101,24 +101,46 @@ class Module(FileContentUnit):
     @classmethod
     def pre_save_signal(cls, sender, document, **kwargs):
         """
-        The signal that is triggered before a unit is saved. This is used to automatically
-        calculate the checksum field.
+        Checksums is expressed as a dict of files to checksum. This causes a problem in mongo
+        since keys can't have periods in them, but file names clearly will. Translate this to a
+        list of tuples to get around this before saving.
 
-        :param sender: sender class
-        :type sender: object
-
+        :param sender:   sender class
+        :type  sender:   object
         :param document: Document that sent the signal
-        :type document: FileContentUnit
+        :type  document: Module
+        :param kwargs:   unused
         """
         super(Module, cls).pre_save_signal(sender, document, **kwargs)
-        if document.checksum is None:
-            document.checksum = metadata_parser.calculate_checksum(document._storage_path)
-
-        # Checksums is expressed as a dict of files to checksum. This causes a problem in mongo
-        # since keys can't have periods in them, but file names clearly will. Translate this to a
-        # list of tuples to get around this.
         if isinstance(document.checksums, dict):
             document.checksums = [(k, v) for k, v in document.checksums.items()]
+
+    def import_content(self, path, location=None):
+        """
+        The parent class promises to import a content file into platform storage.
+        The (optional) *location* may be used to specify a path within the unit
+        storage where the content is to be stored.
+        For example:
+          import_content('/tmp/file') will store 'file' at: _storage_path
+          import_content('/tmp/file', 'a/b/c) will store 'file' at: _storage_path/a/b/c
+
+        In addition to the parent behavior, this overridden method calculates the
+        checksum after moving the content to permanent storage if it has not already
+        been provided.
+
+        :param path:     The absolute path to the file to be imported.
+        :type  path:     str
+        :param location: The (optional) location within the unit storage path
+                         where the content is to be stored.
+        :type  location: str
+
+        :raises PulpCodedException: PLP0036 if the unit has not been saved.
+        :raises PulpCodedException: PLP0037 if *path* is not an existing file.
+        """
+        super(Module, self).import_content(path, location=location)
+        if self.checksum is None:
+            self.checksum = metadata_parser.calculate_checksum(self._storage_path)
+        self.save()
 
     def __str__(self):
         """ Backwards compatible with __str__ from pulp.plugins.model.AssociatedUnit """
