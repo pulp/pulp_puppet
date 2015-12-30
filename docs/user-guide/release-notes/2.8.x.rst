@@ -19,6 +19,7 @@ New Features
      them.
    - Because some puppet modules contain files with problematic filesystem permissions, pulp ensures
      minimum permissions of 0644 for regular files and 0755 for directories.
+- This release adds support for the /releases/{user}-{module}-{version} endpoint of the Puppet Forge v3 API
 
 Bugs Fixed
 ----------

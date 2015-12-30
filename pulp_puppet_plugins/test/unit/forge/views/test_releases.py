@@ -5,6 +5,7 @@ import urlparse
 
 import mock
 from pulp_puppet.forge.views.releases import ReleasesView, ReleasesPost36View
+from django.test.client import RequestFactory
 
 
 class TestReleasesView(unittest.TestCase):
@@ -13,28 +14,27 @@ class TestReleasesView(unittest.TestCase):
     """
     FAKE_VIEW_DATA = {'foo/bar': [{'version': '1.0.0', 'file': '/tmp/foo', 'dependencies': []}]}
 
-    @mock.patch('pulp_puppet.forge.views.releases.ReleasesView._get_module_name')
     @mock.patch('pulp_puppet.forge.views.releases.ReleasesView._get_credentials')
-    def test_releases_missing_module(self, mock_get_credentials, mock_get_module_name):
+    def test_releases_missing_module(self, mock_get_credentials):
         """
         Test that proper response is returned when module name is not specified
         """
-        mock_get_module_name.return_value = ''
         mock_get_credentials.return_value = ()
-        mock_request = mock.MagicMock()
+        rf = RequestFactory()
+        mock_request = rf.get('/blah/')
 
         releases_view = ReleasesView()
         response = releases_view.get(mock_request, resource_type='repository', resource='repo-id')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content, 'Module name is missing.')
 
-    @mock.patch('pulp_puppet.forge.views.releases.ReleasesView._get_module_name')
+    @mock.patch('pulp_puppet.forge.views.releases.ReleasesView._get_parameters')
     @mock.patch('pulp_puppet.forge.views.releases.ReleasesView._get_credentials')
-    def test_releases_missing_auth(self, mock_get_credentials, mock_get_module_name):
+    def test_releases_missing_auth(self, mock_get_credentials, mock_get_parameters):
         """
         Test that 401 is returned when basic auth is not used for pre 3.3
         """
-        mock_get_module_name.return_value = 'fake-module'
+        mock_get_parameters.return_value = {'module': 'fake-module'}
         mock_get_credentials.return_value = ()
         mock_request = mock.MagicMock()
 
@@ -42,13 +42,13 @@ class TestReleasesView(unittest.TestCase):
         response = releases_view.get(mock_request)
         self.assertEqual(response.status_code, 401)
 
-    @mock.patch('pulp_puppet.forge.views.releases.ReleasesView._get_module_name')
+    @mock.patch('pulp_puppet.forge.views.releases.ReleasesView._get_parameters')
     @mock.patch('pulp_puppet.forge.views.releases.ReleasesView._get_credentials')
-    def test_releases_bad_resource_type(self, mock_get_credentials, mock_get_module_name):
+    def test_releases_bad_resource_type(self, mock_get_credentials, mock_get_parameters):
         """
         Test that only consumer or repository resource type is allowed
         """
-        mock_get_module_name.return_value = 'fake-module'
+        mock_get_parameters.return_value = {'module': 'fake-module'}
         mock_get_credentials.return_value = ()
         mock_request = mock.MagicMock()
 
@@ -57,14 +57,14 @@ class TestReleasesView(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
 
     @mock.patch('pulp_puppet.forge.releases.view')
-    @mock.patch('pulp_puppet.forge.views.releases.ReleasesView._get_module_name')
+    @mock.patch('pulp_puppet.forge.views.releases.ReleasesView._get_parameters')
     @mock.patch('pulp_puppet.forge.views.releases.ReleasesView._get_credentials')
-    def test_releases_get_module_without_version(self, mock_get_credentials, mock_get_module_name,
+    def test_releases_get_module_without_version(self, mock_get_credentials, mock_get_parameters,
                                                  mock_view):
         """
         Test getting a module without specifying a version
         """
-        mock_get_module_name.return_value = 'food/bar'
+        mock_get_parameters.return_value = {'module': 'food/bar'}
         mock_get_credentials.return_value = ('consumer1', 'repo1')
         mock_request = mock.MagicMock()
         mock_view.return_value = self.FAKE_VIEW_DATA
@@ -95,22 +95,72 @@ class TestReleasesView(unittest.TestCase):
         creds = releases_view._get_credentials(headers)
         self.assertEqual(creds, None)
 
-    def test_releases_get_module_name(self):
+    def test_releases_get_parameters(self):
         """
-        Test getting module name from GET params
+        Test getting request parameters from HTTP GET request
         """
         releases_view = ReleasesView()
         module = 'test-module'
+        path = '/test/'
         formatted_module_name = 'test/module'
         get_dict = {'module': module}
-        module_name = releases_view._get_module_name(get_dict)
-        self.assertEqual(formatted_module_name, module_name)
+        parameters = releases_view._get_parameters(get_dict, path)
+        self.assertEqual(formatted_module_name, parameters.get('module'))
 
 
 class TestReleasesPost36View(unittest.TestCase):
     """
-    Tests for ReleasesView.
+    Tests for ReleasesPost36View.
     """
+
+    def test_releases_post_36_get_path_parameters(self):
+        """
+        Test getting request parameters from HTTP GET request
+        """
+        releases_view = ReleasesPost36View()
+        param = 'foo-bar-1.0.0'
+        version = '1.0.0'
+        formatted_module_name = 'foo/bar'
+        parameters = releases_view._get_parameters({}, '/v3/releases/' + param)
+        self.assertEqual(formatted_module_name, parameters.get('module'))
+        self.assertEqual(version, parameters.get('version'))
+        self.assertEqual(param, parameters.get('path'))
+
+    def test_releases_post_36_get_query_parameters(self):
+        """
+        Test getting request parameters from HTTP GET request
+        """
+        releases_view = ReleasesPost36View()
+        module = 'test-module'
+        path = '/test/'
+        formatted_module_name = 'test/module'
+        get_dict = {'module': module}
+        parameters = releases_view._get_parameters(get_dict, path)
+        self.assertEqual(formatted_module_name, parameters.get('module'))
+
+    @mock.patch('pulp_puppet.forge.views.releases.ReleasesPost36View._get_credentials')
+    def test_releases_post_36_get_bad_parameters(self, mock_get_credentials):
+        """
+        Test getting malformed request parameters from HTTP GET request
+        """
+        mock_get_credentials.return_value = ('consumer1', 'repo1')
+        rf = RequestFactory()
+        mock_request = rf.get('/v3/releases/blah!')
+        releases_view = ReleasesPost36View()
+        response = releases_view.get(mock_request)
+        self.assertEqual(response.status_code, 400)
+
+    @mock.patch('pulp_puppet.forge.views.releases.ReleasesView._get_credentials')
+    def test_releases_post_36_get_single_module_without_version(self, mock_get_credentials):
+        """
+        Test getting a single module without specifying a version
+        """
+        mock_get_credentials.return_value = ('consumer1', 'repo1')
+        rf = RequestFactory()
+        mock_request = rf.get('/v3/releases/foo-bar')
+        releases_view = ReleasesPost36View()
+        response = releases_view.get(mock_request)
+        self.assertEqual(response.status_code, 400)
 
     def test_format_query_string_no_version(self):
         result = ReleasesPost36View._format_query_string(
@@ -140,9 +190,27 @@ class TestReleasesPost36View(unittest.TestCase):
         query = urlparse.parse_qs(data.query)
         self.assertEquals(['3.5'], query['version'])
 
-    @mock.patch('pulp_puppet.forge.views.releases.ReleasesPost36View._get_module_name')
-    def test_format_results_pagination_defaults(self, mock_get_module_name):
-        mock_get_module_name.return_value = 'foo/bar'
+    def test_format_results_with_single_module(self):
+        release = ReleasesPost36View()
+        module = 'foo/bar'
+        get_dict = {'module': module, 'version': '1.0.0', 'path': 'foo-bar-1.0.0'}
+        result_str = release.format_results({'foo/bar': [
+            {'dependencies': [('apple', '42.5')],
+             'version': '1.0', 'file': 'foo', 'file_md5': 'bar'},
+        ]}, get_dict, '/v3/releases').content
+        module_data = json.loads(result_str)
+
+        self.assertEquals('foo/bar', module_data['metadata']['name'])
+        self.assertEquals('1.0', module_data['metadata']['version'])
+        self.assertEquals('foo', module_data['file_uri'])
+        self.assertEquals('bar', module_data['file_md5'])
+        dependencies = module_data['metadata']['dependencies']
+        self.assertEquals('apple', dependencies[0]['name'])
+        self.assertEquals('42.5', dependencies[0]['version_requirement'])
+
+    @mock.patch('pulp_puppet.forge.views.releases.ReleasesPost36View._get_parameters')
+    def test_format_results_pagination_defaults(self, mock_get_parameters):
+        mock_get_parameters.return_value = {'module': 'foo/bar'}
         release = ReleasesPost36View()
         module = 'foo/bar'
         get_dict = {'module': module}
@@ -159,9 +227,9 @@ class TestReleasesPost36View(unittest.TestCase):
         self.assertEquals(None, result['pagination']['previous'])
         self.assertEquals(None, result['pagination']['next'])
 
-    @mock.patch('pulp_puppet.forge.views.releases.ReleasesPost36View._get_module_name')
-    def test_format_results_pagination_middle_page(self, mock_get_module_name):
-        mock_get_module_name.return_value = 'foo/bar'
+    @mock.patch('pulp_puppet.forge.views.releases.ReleasesPost36View._get_parameters')
+    def test_format_results_pagination_middle_page(self, mock_get_parameters):
+        mock_get_parameters.return_value = {'module': 'foo/bar'}
         release = ReleasesPost36View()
         module = 'foo/bar'
         get_dict = {'module': module,
@@ -188,9 +256,9 @@ class TestReleasesPost36View(unittest.TestCase):
         self.assertEquals(1, len(result['results']))
         self.assertEquals('2.0', result['results'][0]['metadata']['version'])
 
-    @mock.patch('pulp_puppet.forge.views.releases.ReleasesPost36View._get_module_name')
-    def test_format_results_pagination_last_page(self, mock_get_module_name):
-        mock_get_module_name.return_value = 'foo/bar'
+    @mock.patch('pulp_puppet.forge.views.releases.ReleasesPost36View._get_parameters')
+    def test_format_results_pagination_last_page(self, mock_get_parameters):
+        mock_get_parameters.return_value = {'module': 'foo/bar'}
         release = ReleasesPost36View()
         module = 'foo/bar'
         get_dict = {'module': module,
@@ -216,9 +284,9 @@ class TestReleasesPost36View(unittest.TestCase):
         self.assertEquals(1, len(result['results']))
         self.assertEquals('3.0', result['results'][0]['metadata']['version'])
 
-    @mock.patch('pulp_puppet.forge.views.releases.ReleasesPost36View._get_module_name')
-    def test_format_results_render_module(self, mock_get_module_name):
-        mock_get_module_name.return_value = 'foo/bar'
+    @mock.patch('pulp_puppet.forge.views.releases.ReleasesPost36View._get_parameters')
+    def test_format_results_render_module(self, mock_get_parameters):
+        mock_get_parameters.return_value = {'module': 'foo/bar'}
         release = ReleasesPost36View()
         module = 'foo/bar'
         get_dict = {'module': module}
