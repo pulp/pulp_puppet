@@ -49,6 +49,5 @@ def handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path, conduit):
     uploaded_module.import_content(new_file_path)
 
     repo_controller.associate_single_unit(repo.repo_obj, uploaded_module)
-    repo_controller.rebuild_content_unit_counts(repo.repo_obj)
 
     return {'success_flag': True, 'summary': '', 'details': {}}

@@ -281,7 +281,6 @@ class SynchronizeWithDirectory(object):
             remove_missing = constants.DEFAULT_REMOVE_MISSING
         if remove_missing:
             self._remove_missing(existing_module_ids_by_key, remote_unit_keys)
-        repo_controller.rebuild_content_unit_counts(self.repo.repo_obj)
 
     def _remove_missing(self, existing_module_ids_by_key, remote_unit_keys):
         """
