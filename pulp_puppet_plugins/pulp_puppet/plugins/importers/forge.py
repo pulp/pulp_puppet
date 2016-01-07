@@ -270,7 +270,6 @@ class SynchronizeWithPuppetForge(object):
             doomed_module_iterator = Module.objects.in_bulk(doomed_ids).itervalues()
             repo_controller.disassociate_units(self.repo, doomed_module_iterator)
 
-        repo_controller.rebuild_content_unit_counts(self.repo.repo_obj)
         self.downloader = None
 
     def _add_new_module(self, downloader, module):
