@@ -32,7 +32,7 @@ DIR_PLUGINS = '/usr/lib/pulp/plugins'
 LINKS = (
     ('pulp_puppet_plugins/etc/httpd/conf.d/pulp_puppet.conf', '/etc/httpd/conf.d/pulp_puppet.conf'),
     ('pulp_puppet_plugins/etc/pulp/vhosts80/puppet.conf', '/etc/pulp/vhosts80/puppet.conf'),
-    ('pulp_puppet_plugins/srv/pulp/puppet_forge.wsgi', '/srv/pulp/puppet_forge.wsgi'),
+    ('pulp_puppet_plugins/usr/share/pulp/wsgi/puppet_forge.wsgi', '/usr/share/pulp/wsgi/puppet_forge.wsgi'),
     # Puppet Support Admin Extensions
     ('pulp_puppet_extensions_admin/etc/pulp/admin/conf.d/puppet.conf', '/etc/pulp/admin/conf.d/puppet.conf'),
     # handlers

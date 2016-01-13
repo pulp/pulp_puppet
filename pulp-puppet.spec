@@ -94,14 +94,14 @@ pushd pulp_puppet_plugins
 popd
 
 mkdir -p %{buildroot}/%{_sysconfdir}/pulp/vhosts80
-mkdir -p %{buildroot}/srv/pulp
+mkdir -p %{buildroot}/%{_datadir}/pulp/wsgi
 mkdir -p %{buildroot}/%{_var}/lib/pulp/published/puppet/http
 mkdir -p %{buildroot}/%{_var}/lib/pulp/published/puppet/https
 
 cp -R pulp_puppet_plugins/etc/httpd %{buildroot}/%{_sysconfdir}
 cp pulp_puppet_plugins/etc/pulp/vhosts80/puppet.conf %{buildroot}/%{_sysconfdir}/pulp/vhosts80/
 # WSGI app
-cp -R pulp_puppet_plugins/srv/pulp/puppet_forge.wsgi %{buildroot}/srv/pulp/
+cp -R pulp_puppet_plugins/usr/share/pulp/wsgi/puppet_forge.wsgi %{buildroot}%{_datadir}/pulp/wsgi
 %endif # End pulp_server if block
 
 pushd pulp_puppet_handlers
@@ -179,7 +179,7 @@ to provide Puppet specific support.
 %{python_sitelib}/pulp_puppet/plugins/
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/pulp_puppet.conf
 %{python_sitelib}/pulp_puppet_plugins*.egg-info
-/srv/pulp/puppet_forge.wsgi
+%{_datadir}/pulp/wsgi/puppet_forge.wsgi
 
 %defattr(-,apache,apache,-)
 %{_var}/lib/pulp/published/puppet/
