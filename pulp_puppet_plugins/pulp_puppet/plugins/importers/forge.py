@@ -298,8 +298,7 @@ class SynchronizeWithPuppetForge(object):
             # Create and save the Module
             module = Module.from_metadata(metadata)
             module.set_storage_path(os.path.basename(downloaded_filename))
-            module.save()
-            module.import_content(downloaded_filename)
+            module.save_and_import_content(downloaded_filename)
 
             # Associate the module with the repo
             repo_controller.associate_single_unit(self.repo.repo_obj, module)

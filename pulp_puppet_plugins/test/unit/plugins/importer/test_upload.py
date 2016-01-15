@@ -52,7 +52,7 @@ class UploadTests(unittest.TestCase):
                                              self.unit_metadata, self.source_file, self.conduit)
 
         # Verify
-        mock_module.from_metadata.return_value.save.assert_called_once_with()
+        mock_module.from_metadata.return_value.save_and_import_content.assert_called_once()
 
         self.assertTrue(isinstance(report, dict))
         self.assertTrue('success_flag' in report)
@@ -72,7 +72,7 @@ class UploadTests(unittest.TestCase):
         report = upload.handle_uploaded_unit(self.repo, constants.TYPE_PUPPET_MODULE, {},
                                              {}, self.source_file, self.conduit)
 
-        mock_module.from_metadata.return_value.save.assert_called_once_with()
+        mock_module.from_metadata.return_value.save_and_import_content.assert_called_once()
 
         self.assertTrue(report['success_flag'])
 
