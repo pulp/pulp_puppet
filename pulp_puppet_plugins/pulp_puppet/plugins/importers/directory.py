@@ -14,6 +14,7 @@ from nectar.downloaders.local import LocalFileDownloader
 from nectar.downloaders.threaded import HTTPThreadedDownloader
 from nectar.listener import AggregatingEventListener
 from nectar.request import DownloadRequest
+from pulp.plugins.util import publish_step
 from pulp.plugins.util.nectar_config import importer_config_to_nectar_config
 from pulp.server.controllers import repository as repo_controller
 
@@ -247,18 +248,20 @@ class SynchronizeWithDirectory(object):
 
         remote_unit_keys = []
 
+        list_of_modules = []
         for module_path in module_paths:
-            if self.canceled:
-                return
             puppet_manifest = self._extract_metadata(module_path)
             module = Module.from_metadata(puppet_manifest)
             remote_unit_keys.append(module.unit_key_str)
+            list_of_modules.append(module)
 
-            # Even though we've already basically processed this unit, not doing this makes the
-            # progress reporting confusing because it shows Pulp always importing all the modules.
-            if module.unit_key_str in existing_module_ids_by_key:
-                self.report.modules_total_count -= 1
-                continue
+        pub_step = publish_step.GetLocalUnitsStep(constants.IMPORTER_TYPE_ID, available_units=list_of_modules, repo=self.repo)
+        pub_step.process_main()
+        self.report.modules_total_count = len(pub_step.units_to_download)
+
+        for module in pub_step.units_to_download:
+            if self.canceled:
+                return
             _logger.debug(IMPORT_MODULE, dict(mod=module_path))
 
             module.set_storage_path(os.path.basename(module_path))
