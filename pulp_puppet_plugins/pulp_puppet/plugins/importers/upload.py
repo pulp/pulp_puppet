@@ -45,8 +45,7 @@ def handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path, conduit):
 
     uploaded_module = Module.from_metadata(extracted_data)
     uploaded_module.set_storage_path(os.path.basename(new_file_path))
-    uploaded_module.save()
-    uploaded_module.import_content(new_file_path)
+    uploaded_module.save_and_import_content(new_file_path)
 
     repo_controller.associate_single_unit(repo.repo_obj, uploaded_module)
 
