@@ -90,12 +90,6 @@ class Module(FileContentUnit):
     meta = {
         'allow_inheritance': False,
         'collection': 'units_puppet_module',
-        'indexes': [
-            {
-                'fields': unit_key_fields,
-                'unique': True
-            },
-        ],
     }
 
     @classmethod
