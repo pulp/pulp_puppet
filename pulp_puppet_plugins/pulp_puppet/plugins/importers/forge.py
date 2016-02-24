@@ -4,6 +4,8 @@ import logging
 import os
 import sys
 
+from mongoengine import NotUniqueError
+
 from pulp.server.controllers import repository as repo_controller
 
 from pulp_puppet.common import constants
@@ -298,8 +300,10 @@ class SynchronizeWithPuppetForge(object):
             # Create and save the Module
             module = Module.from_metadata(metadata)
             module.set_storage_path(os.path.basename(downloaded_filename))
-            module.save_and_import_content(downloaded_filename)
-
+            try:
+                module.save_and_import_content(downloaded_filename)
+            except NotUniqueError:
+                module = module.__class__.objects.get(**module.unit_key)
             # Associate the module with the repo
             repo_controller.associate_single_unit(self.repo.repo_obj, module)
         finally:

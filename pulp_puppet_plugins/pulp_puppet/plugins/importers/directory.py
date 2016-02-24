@@ -10,6 +10,8 @@ import os
 import shutil
 import tarfile
 
+from mongoengine import NotUniqueError
+
 from nectar.downloaders.local import LocalFileDownloader
 from nectar.downloaders.threaded import HTTPThreadedDownloader
 from nectar.listener import AggregatingEventListener
@@ -265,7 +267,10 @@ class SynchronizeWithDirectory(object):
             _logger.debug(IMPORT_MODULE, dict(mod=module_path))
 
             module.set_storage_path(os.path.basename(module_path))
-            module.save_and_import_content(module_path)
+            try:
+                module.save_and_import_content(module_path)
+            except NotUniqueError:
+                module = module.__class__.objects.get(**module.unit_key)
 
             repo_controller.associate_single_unit(self.repo.repo_obj, module)
 
