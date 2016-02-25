@@ -1,6 +1,8 @@
 import os
 import shutil
 
+from mongoengine import NotUniqueError
+
 from pulp.server.controllers import repository as repo_controller
 
 from pulp_puppet.common import constants
@@ -45,8 +47,10 @@ def handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path, conduit):
 
     uploaded_module = Module.from_metadata(extracted_data)
     uploaded_module.set_storage_path(os.path.basename(new_file_path))
-    uploaded_module.save_and_import_content(new_file_path)
-
+    try:
+        uploaded_module.save_and_import_content(new_file_path)
+    except NotUniqueError:
+        uploaded_module = uploaded_module.__class__.objects.get(**uploaded_module.unit_key)
     repo_controller.associate_single_unit(repo.repo_obj, uploaded_module)
 
     return {'success_flag': True, 'summary': '', 'details': {}}
