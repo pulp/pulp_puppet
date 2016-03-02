@@ -152,6 +152,53 @@ documentation for details.
           will include public documentation, and we believe that new API will be
           much easier to integrate with.
 
+Installing With r10k
+^^^^^^^^^^^^^^^^^^^^
+
+You can use r10k with Pulp to install a set of Puppet modules specified in a Puppetfile.
+
+The repository URL must be set in the ``r10k.yaml`` configuration file in order for
+r10k to connect to Pulp instead of the default puppet forge. See the r10k
+documentation for details and the specific location of this file in your environment.
+
+For technical reasons described in the note below, r10k ignores the part of the
+URL after the host name, which means we cannot put the repository ID in the URL.
+We have a work-around that will still allow you to use r10k with Pulp,
+and it involves the use of basic auth credentials as part of the URL.
+
+.. note:: Puppet Forge implements a web API that r10k uses to obtain the download
+          location of modules that it needs to install. Unfortunately, r10k has
+          hard-coded absolute paths instead of relative, which means the API must
+          live at the root of a web server. As a result, we cannot put the repository
+          ID in the path as you would expect with the above example.
+
+- **Consumer ID** For a consumer registered with Pulp, just specify its consumer
+  ID as the username in the URL, and a "." for the password. A consumer's ID is a
+  unique identifier just like a username, so this isn't actually a bad use of
+  that field. When a consumer ID is provided, Pulp searches all of that consumer's
+  bound repositories for the exact version of each module defined in the Puppetfile.
+
+::
+
+  forge:
+    baseurl: 'http://consumer1:.@localhost'
+
+- **Repository ID** For machines that are not bound to a repository, or for a
+  bound machine where you want to specify a repository, do so in the password
+  field. If a repository ID is specified, any value in the username field is
+  ignored. To keep the convention, use a single "." as a null value.
+
+::
+
+  forge:
+    baseurl: 'http://.:forge@localhost'
+
+.. note:: At this time, Pulp requires that all modules defined in a Puppetfile
+          have their versions explicitly declared. For any modules that do not
+          have versions specified in the Puppetfile, r10k will attempt to search for
+          the latest version of the module by using modules endpoint of the Puppet
+          Forge v3 API, which is not currently supported by Pulp.
+
 
 Puppet Consumers
 ----------------
