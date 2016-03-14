@@ -5,6 +5,7 @@ from gettext import gettext as _
 from optparse import OptionParser, OptionGroup
 from subprocess import Popen, PIPE
 from hashlib import sha256
+from urlparse import urlparse
 
 
 PKG_DIR = 'pkg'
@@ -121,6 +122,10 @@ def get_options():
         print BAD_BRANCH_AND_TAG
         sys.exit(os.EX_USAGE)
 
+    # clean url
+    if opts.url:
+        opts.url = opts.url.rstrip('/')
+
     # expand paths
     if opts.working_dir:
         opts.working_dir = os.path.expanduser(opts.working_dir)
@@ -174,8 +179,10 @@ def git_clone(options):
         return
     shell('git clone --recursive %s' % options.url)
     if not options.path:
-        path = os.path.basename(options.url)
-        options.path = path.split('.')[0]
+        url = urlparse(options.url)
+        path = os.path.basename(url.path)
+        path = os.path.splitext(path)[0]
+        options.path = path
 
 
 def git_checkout(options):
@@ -206,21 +213,19 @@ def git_checkout(options):
 def find_modules():
     """
     Search for puppet (source) modules to build and return a list of paths.
-    Puppet modules are identified by finding '<module>/manifests/init.pp'
+    Puppet modules are identified by finding `Modulefile` or `metadata.json`
     files.  Once found, the *module* directory path is included in the result.
 
     :return: A set of puppet module directory paths.
     :rtype: set
     """
     modules = set()
-    # Some old modules contain only 'Modulefile' metadata files, so find both. The set will remove duplicates.
     modules_status, modules_output = shell('find . -name Modulefile -o -name metadata.json')
-
     paths = modules_output.strip().split('\n')
     for path in paths:
         path = path.strip()
         path_pieces = path.split('/')
-        # Puppet makes a PKG_DIR with a copy of the module when built, so don't include those
+        # Puppet makes a PKG_DIR with a copy of the module when built, so don't include those.
         if len(path_pieces) >= 3 and path_pieces[-3] == PKG_DIR:
             continue
         modules.add(os.path.dirname(path))
@@ -308,7 +313,10 @@ def clean(options):
     :type options: optparse.Options
     """
     if options.url and options.clean:
-        path = os.path.join(options.working_dir, os.path.basename(options.url))
+        url = urlparse(options.url)
+        path = os.path.basename(url.path)
+        path = os.path.splitext(path)[0]
+        path = os.path.join(options.working_dir, path)
         shell('rm -rf %s' % path)
 
 
