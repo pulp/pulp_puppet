@@ -3,7 +3,6 @@ import os
 from unittest import TestCase
 from optparse import OptionParser, OptionGroup, Values
 from hashlib import sha256
-from urlparse import urlparse
 
 from mock import Mock, patch
 
@@ -64,7 +63,6 @@ class TestOptions(TestCase):
     @patch('pulp_puppet.tools.puppet_module_builder.OptionParser.parse_args')
     def test_validate_path(self, mock_parse, mock_stdout, mock_exit):
         parsed_options = {
-            'url': None,
             'working_dir': None,
             'output_dir': None,
             'path': '/',
@@ -88,7 +86,6 @@ class TestOptions(TestCase):
     @patch('pulp_puppet.tools.puppet_module_builder.OptionParser.parse_args')
     def test_validate_both_branch_and_tag(self, mock_parse, mock_stdout, mock_exit):
         parsed_options = {
-            'url': None,
             'working_dir': None,
             'output_dir': None,
             'path': None,
@@ -110,7 +107,6 @@ class TestOptions(TestCase):
     @patch('pulp_puppet.tools.puppet_module_builder.OptionParser.parse_args')
     def test_expanded_paths(self, mock_parse):
         parsed_options = {
-            'url': None,
             'working_dir': '~/',
             'output_dir': '~/',
             'path': None,
@@ -130,28 +126,8 @@ class TestOptions(TestCase):
         self.assertEqual(options.output_dir, os.path.expanduser('~/'))
 
     @patch('pulp_puppet.tools.puppet_module_builder.OptionParser.parse_args')
-    def test_clean_url(self, mock_parse):
-        parsed_options = {
-            'url': 'git@test:/pulp/',
-            'working_dir': '~/',
-            'output_dir': '~/',
-            'path': None,
-            'branch': None,
-            'tag': None
-        }
-
-        mock_parse.return_value = (Values(defaults=parsed_options), [])
-
-        # test
-        options = builder.get_options()
-
-        # validation
-        self.assertEqual(options.url, parsed_options['url'].rstrip('/'))
-
-    @patch('pulp_puppet.tools.puppet_module_builder.OptionParser.parse_args')
     def test_defaulting(self, mock_parse):
         parsed_options = {
-            'url': None,
             'working_dir': None,
             'output_dir': None,
             'path': None,
@@ -181,7 +157,7 @@ class TestClean(TestCase):
     @patch('pulp_puppet.tools.puppet_module_builder.shell')
     def test_clean(self, mock_shell):
         parsed_options = {
-            'url': 'git@test:foo/bar.git',
+            'url': 'http://',
             'working_dir': '/tmp/working',
             'clean': True
         }
@@ -193,10 +169,8 @@ class TestClean(TestCase):
         builder.clean(options)
 
         # validation
-        url = urlparse(options.url)
-        path = os.path.basename(url.path)
-        path = os.path.splitext(path)[0]
-        path = os.path.join(options.working_dir, path)
+
+        path = os.path.join(options.working_dir, os.path.basename(options.url))
         mock_shell.assert_called_with('rm -rf %s' % path)
 
     @patch('pulp_puppet.tools.puppet_module_builder.shell')
