@@ -592,11 +592,11 @@ class TestDistributorRemoved(unittest.TestCase):
 
         mock_rmtree.assert_called_once_with(self.path)
 
-    @mock.patch.object(installdistributor._LOGGER, 'error', spec_set=True)
+    @mock.patch.object(installdistributor._LOGGER, 'warn', spec_set=True)
     @mock.patch('shutil.rmtree', spec_set=True, side_effect=TestException)
     def test_rmtree_exception(self, mock_rmtree, mock_error):
-        self.assertRaises(TestException, self.distributor.distributor_removed, self.repo, self.config)
-        # make sure the error was logged
+        """Test that exception raised by shutil.rmtree won't be re-raised."""
+        self.distributor.distributor_removed(self.repo, self.config)
         self.assertEqual(mock_error.call_count, 1)
 
     @mock.patch('shutil.rmtree', spec_set=True)

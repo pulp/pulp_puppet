@@ -175,8 +175,7 @@ class PuppetModuleInstallDistributor(Distributor):
             try:
                 shutil.rmtree(destination)
             except Exception, e:
-                _LOGGER.error(_('error removing environment: %(e)s' % {'e': e}))
-                raise
+                _LOGGER.warn(_('error removing environment: %(e)s' % {'e': e}))
 
     @staticmethod
     def _find_duplicate_names(units):
