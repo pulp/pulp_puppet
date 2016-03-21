@@ -201,8 +201,7 @@ class PuppetModuleInstallDistributor(Distributor):
             except Exception, e:
                 msg = _('error removing environment: %(exc)s')
                 msg_dict = {'exc': e}
-                _LOGGER.error(msg, msg_dict)
-                raise
+                _LOGGER.warn(msg, msg_dict)
 
     @staticmethod
     def _find_duplicate_names(units):
