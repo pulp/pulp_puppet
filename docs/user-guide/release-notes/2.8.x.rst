@@ -2,6 +2,12 @@
 Pulp Puppet 2.8 Release Notes
 =============================
 
+Pulp Puppet 2.8.2
+=================
+
+Due to a Pulp platform release, this plugin's version has been incremented.
+There are no changes from the previous release.
+
 Pulp Puppet 2.8.1
 =================
 
