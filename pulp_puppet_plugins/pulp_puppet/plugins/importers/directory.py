@@ -248,13 +248,13 @@ class SynchronizeWithDirectory(object):
         for module in Module.objects.only(*Module.unit_key_fields).all():
             existing_module_ids_by_key[module.unit_key_str] = module.id
 
-        remote_unit_keys = []
+        remote_paths = {}
 
         list_of_modules = []
         for module_path in module_paths:
             puppet_manifest = self._extract_metadata(module_path)
             module = Module.from_metadata(puppet_manifest)
-            remote_unit_keys.append(module.unit_key_str)
+            remote_paths[module.unit_key_str] = module_path
             list_of_modules.append(module)
 
         pub_step = publish_step.GetLocalUnitsStep(constants.IMPORTER_TYPE_ID, available_units=list_of_modules, repo=self.repo)
@@ -262,13 +262,14 @@ class SynchronizeWithDirectory(object):
         self.report.modules_total_count = len(pub_step.units_to_download)
 
         for module in pub_step.units_to_download:
+            remote_path = remote_paths[module.unit_key_str]
             if self.canceled:
                 return
-            _logger.debug(IMPORT_MODULE, dict(mod=module_path))
+            _logger.debug(IMPORT_MODULE, dict(mod=remote_path))
 
-            module.set_storage_path(os.path.basename(module_path))
+            module.set_storage_path(os.path.basename(remote_path))
             try:
-                module.save_and_import_content(module_path)
+                module.save_and_import_content(remote_path)
             except NotUniqueError:
                 module = module.__class__.objects.get(**module.unit_key)
 
@@ -287,7 +288,7 @@ class SynchronizeWithDirectory(object):
         if remove_missing is None:
             remove_missing = constants.DEFAULT_REMOVE_MISSING
         if remove_missing:
-            self._remove_missing(existing_module_ids_by_key, remote_unit_keys)
+            self._remove_missing(existing_module_ids_by_key, remote_paths.keys())
 
     def _remove_missing(self, existing_module_ids_by_key, remote_unit_keys):
         """

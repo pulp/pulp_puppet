@@ -215,7 +215,8 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
         self.assertEqual(pr.modules_state, constants.STATE_NOT_STARTED)
 
     @mock.patch('pulp_puppet.plugins.importers.forge.SynchronizeWithPuppetForge._do_import_modules')
-    def test_import_modules_exception(self, mock_import):
+    @mock.patch('pulp.server.managers.repo._common.get_working_directory', return_value = '/tmp/')
+    def test_import_modules_exception(self, mock_get_working_dir, mock_import):
         # Setup
         mock_import.side_effect = Exception()
 

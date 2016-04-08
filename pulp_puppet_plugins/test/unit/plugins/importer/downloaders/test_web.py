@@ -22,7 +22,8 @@ class HttpDownloaderTests(base_downloader.BaseDownloaderTests):
 
     @mock.patch('nectar.config.DownloaderConfig.finalize')
     @mock.patch('nectar.downloaders.threaded.HTTPThreadedDownloader.download')
-    def test_retrieve_metadata(self, mock_downloader_download, mock_finalize):
+    @mock.patch('pulp.server.managers.repo._common.get_working_directory', return_value = '/tmp/')
+    def test_retrieve_metadata(self, mock_get_working_dir, mock_downloader_download, mock_finalize):
         docs = self.downloader.retrieve_metadata(self.mock_progress_report)
 
         self.assertEqual(len(docs), 1)
@@ -31,7 +32,9 @@ class HttpDownloaderTests(base_downloader.BaseDownloaderTests):
         mock_finalize.assert_called_once()
 
     @mock.patch('nectar.downloaders.threaded.HTTPThreadedDownloader.download')
-    def test_retrieve_metadata_multiple_queries(self, mock_downloader_download):
+    @mock.patch('pulp.server.managers.repo._common.get_working_directory', return_value = '/tmp/')
+    def test_retrieve_metadata_multiple_queries(self, mock_get_working_dir,
+                                                mock_downloader_download):
         self.config.repo_plugin_config[constants.CONFIG_QUERIES] = ['a', ['b', 'c']]
 
         docs = self.downloader.retrieve_metadata(self.mock_progress_report)
@@ -42,7 +45,9 @@ class HttpDownloaderTests(base_downloader.BaseDownloaderTests):
 
     @mock.patch('pulp_puppet.plugins.importers.downloaders.web.HTTPMetadataDownloadEventListener')
     @mock.patch('nectar.downloaders.threaded.HTTPThreadedDownloader.download')
-    def test_retrieve_metadata_with_error(self, mock_downloader_download, mock_listener_constructor):
+    @mock.patch('pulp.server.managers.repo._common.get_working_directory', return_value = '/tmp/')
+    def test_retrieve_metadata_with_error(self, mock_get_working_dir, mock_downloader_download,
+                                          mock_listener_constructor):
         # Setup
         mock_listener = mock.MagicMock()
         report = DownloadReport(None, None)
@@ -70,7 +75,9 @@ class HttpDownloaderTests(base_downloader.BaseDownloaderTests):
 
     @mock.patch('pulp_puppet.plugins.importers.downloaders.web.HTTPModuleDownloadEventListener')
     @mock.patch('nectar.downloaders.threaded.HTTPThreadedDownloader.download')
-    def test_retrieve_module_missing_module(self, mock_downloader_download, mock_listener_constructor):
+    @mock.patch('pulp.server.managers.repo._common.get_working_directory', return_value = '/tmp/')
+    def test_retrieve_module_missing_module(self, mock_get_working_dir, mock_downloader_download,
+                                            mock_listener_constructor):
         # Setup
         self.module.author = 'asdf'
         self.module.puppet_standard_filename.return_value = 'puppet-filename.tar.gz'
@@ -89,7 +96,8 @@ class HttpDownloaderTests(base_downloader.BaseDownloaderTests):
             expected_filename = os.path.join(expected_filename, self.module.filename())
 
     @mock.patch('nectar.downloaders.threaded.HTTPThreadedDownloader.download')
-    def test_cleanup_module(self, mock_downloader_download):
+    @mock.patch('pulp.server.managers.repo._common.get_working_directory', return_value = '/tmp/')
+    def test_cleanup_module(self, mock_get_working_dir, mock_downloader_download):
         self.module.author = 'asdf'
         self.module.puppet_standard_filename.return_value = 'puppet-filename.tar.gz'
         stored_filename = self.downloader.retrieve_module(self.mock_progress_report, self.module)
