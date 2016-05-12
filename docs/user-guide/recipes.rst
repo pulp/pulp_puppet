@@ -346,7 +346,7 @@ modules.  It also supports basic `Git <http://git-scm.com>`_ repository operatio
 the checkout of branches and tags to simplify the building and importing of pupppet modules from
 git repositories.
 
-.. see:: ``pulp-puppet-module-builder --help`` for usage and options.
+.. seealso:: ``pulp-puppet-module-builder --help`` for usage and options.
 
 In this example, we will build the ``puppetlabs-xinitd`` module provided by the Puppet Labs git
 repository using ``pulp-puppet-module-builder``.
