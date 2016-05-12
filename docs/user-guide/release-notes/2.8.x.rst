@@ -2,6 +2,20 @@
 Pulp Puppet 2.8 Release Notes
 =============================
 
+Pulp Puppet 2.8.4
+=================
+
+- A migration included in this release fixes an issue which caused some Puppet modules to not be
+  installable. You also may want to re-publish repos to update the symlinks to the correct module
+  with the corect name. When you run `pulp-manage-db`, the migration will print information to stdout
+  about the repos that need to be re-published.
+
+Pulp Puppet 2.8.3
+=================
+
+Due to a Pulp platform release, this plugin's version has been incremented.
+There are no changes from the previous release.
+
 Pulp Puppet 2.8.2
 =================
 
