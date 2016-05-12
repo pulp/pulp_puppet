@@ -25,9 +25,11 @@ New Features
 
 - This release drops the following three indexes using a database migration which runs as part of
   the `pulp-manage-db` command:
+
    - `tag_list`
    - `name_1_version_1_author_1`
    - `author`
+
 - This release also adds an index for `author_1_name_1_version_1`
 - The install distributor normalizes uid, gid, and filesystem permissions.
    - Extracted files and directories will inherit the uid and gid of the pulp process that extracts
