@@ -1,7 +1,6 @@
 from gettext import gettext as _
 import logging
 import os
-import tempfile
 
 from mongoengine import NotUniqueError, Q
 from pulp.server.controllers import repository as repo_controller
@@ -25,10 +24,10 @@ def migrate(*args, **kwargs):
     repos_to_rebuild = set()
     for puppet_unit in modules:
         try:
-            author, name = puppet_unit['name'].split("-", 1)
+            author, name = puppet_unit['name'].split('-', 1)
         except ValueError:
             # This is the forge format, but Puppet still allows it
-            author, name = puppet_unit['name'].split("/", 1)
+            author, name = puppet_unit['name'].split('/', 1)
         try:
             puppet_unit.name = name
             puppet_unit.save()
@@ -53,8 +52,7 @@ def migrate(*args, **kwargs):
     repos_to_republish = model.Distributor.objects.filter(repo_id__in=repo_list,
                                                           last_publish__ne=None)
     # redirect output to file
-    temp_dir = tempfile.gettempdir()
-    path = os.path.join(temp_dir, 'repos_to_republish.txt')
+    path = os.path.join('/var/lib/pulp', '0005_puppet_module_name_change.txt')
     f = open(path, 'w')
     f.write(str([repo.repo_id for repo in repos_to_republish]))
     f.close()
