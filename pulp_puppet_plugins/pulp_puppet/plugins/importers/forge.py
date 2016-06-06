@@ -239,7 +239,9 @@ class SynchronizeWithPuppetForge(object):
 
         # Collect information about the repository's modules before changing it
         existing_module_ids_by_key = {}
-        for module in Module.objects.only(*Module.unit_key_fields).all():
+        modules = repo_controller.find_repo_content_units(
+            self.repo.repo_obj, unit_fields=Module.unit_key_fields, yield_content_unit=True)
+        for module in modules:
             existing_module_ids_by_key[module.unit_key_str] = module.id
 
         new_unit_keys = self._resolve_new_units(existing_module_ids_by_key.keys(),
