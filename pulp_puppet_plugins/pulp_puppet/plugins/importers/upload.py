@@ -37,15 +37,16 @@ def handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path, conduit):
     # Extract the metadata from the module
     extracted_data = metadata_parser.extract_metadata(file_path, repo.working_dir)
 
-    # rename the file so it has the original module name
-    original_filename = extracted_data['name'] + '-' + extracted_data['version'] + '.tar.gz'
-    new_file_path = os.path.join(os.path.dirname(file_path), original_filename)
-    shutil.move(file_path, new_file_path)
-
     # Overwrite the author and name
     extracted_data.update(Module.split_filename(extracted_data['name']))
 
     uploaded_module = Module.from_metadata(extracted_data)
+
+    # rename the file so it has the original module name
+    new_file_path = os.path.join(os.path.dirname(file_path),
+                                 uploaded_module.puppet_standard_filename())
+    shutil.move(file_path, new_file_path)
+
     uploaded_module.set_storage_path(os.path.basename(new_file_path))
     try:
         uploaded_module.save_and_import_content(new_file_path)
