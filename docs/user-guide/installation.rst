@@ -1,12 +1,11 @@
 Installation
 ============
 
-.. _Pulp User Guide: http://pulp-user-guide.readthedocs.org
+.. _Pulp User Guide: https://docs.pulpproject.org
 
 .. note::
-  If you followed the Pulp :ref:`installation instructions<platform:server_installation>`
-  you already have Puppet features installed. If not, this document will walk
-  you through the installation.
+  If you followed the Pulp installation instructions you already have Puppet
+  features installed. If not, this document will walk you through the installation.
 
 Prerequisites
 -------------
