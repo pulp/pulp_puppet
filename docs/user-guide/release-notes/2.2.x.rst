@@ -21,7 +21,7 @@ Upgrade Instructions
 --------------------
 
 Please see the
-`Pulp Platform upgrade instructions <https://pulp-user-guide.readthedocs.org/en/pulp-2.2/release-notes.html>`_
+`Pulp Platform upgrade instructions <https://docs.pulpproject.org/en/latest/user-guide/release-notes/2.2.x.html>`_
 to upgrade the Pulp and Puppet RPMs and database.
 
 
