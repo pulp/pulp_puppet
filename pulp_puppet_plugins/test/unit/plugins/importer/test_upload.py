@@ -24,10 +24,11 @@ class UploadTests(unittest.TestCase):
         self.unit_metadata = {
             'source': 'http://pulpproject.org',
         }
+        self.filename = 'jdob-valid-1.0.0.tar.gz'
         self.dest_dir = tempfile.mkdtemp(prefix='puppet-upload-test')
-        self.dest_file = os.path.join(self.dest_dir, 'jdob-valid-1.0.0.tar.gz')
+        self.dest_file = os.path.join(self.dest_dir, self.filename)
         self.source_file = os.path.join(DATA_DIR, 'good-modules',
-                                        'jdob-valid', 'pkg', 'jdob-valid-1.0.0.tar.gz')
+                                        'jdob-valid', 'pkg', self.filename)
 
         self.conduit = mock.MagicMock()
 
@@ -46,6 +47,8 @@ class UploadTests(unittest.TestCase):
         initialized_unit = mock.MagicMock()
         initialized_unit.storage_path = self.dest_dir
         self.conduit.init_unit.return_value = initialized_unit
+        mock_uploaded_module = mock_module.from_metadata.return_value
+        mock_uploaded_module.puppet_standard_filename.return_value = self.filename
 
         # Test
         report = upload.handle_uploaded_unit(self.repo, constants.TYPE_PUPPET_MODULE, self.unit_key,
@@ -67,6 +70,8 @@ class UploadTests(unittest.TestCase):
         initialized_unit = mock.MagicMock()
         initialized_unit.storage_path = self.dest_dir
         self.conduit.init_unit.return_value = initialized_unit
+        mock_uploaded_module = mock_module.from_metadata.return_value
+        mock_uploaded_module.puppet_standard_filename.return_value = self.filename
 
         # Test
         report = upload.handle_uploaded_unit(self.repo, constants.TYPE_PUPPET_MODULE, {},

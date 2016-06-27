@@ -253,6 +253,7 @@ class SynchronizeWithDirectory(object):
         list_of_modules = []
         for module_path in module_paths:
             puppet_manifest = self._extract_metadata(module_path)
+            puppet_manifest.update(Module.split_filename(puppet_manifest['name']))
             module = Module.from_metadata(puppet_manifest)
             remote_paths[module.unit_key_str] = module_path
             list_of_modules.append(module)
