@@ -51,6 +51,8 @@ class TestOptions(TestCase):
             '-o', '--output-dir', dest='output_dir', help=builder.OUTPUT_DIR)
         parser.add_option.assert_any_call(
             '-c', '--clean', default=False, action='store_true', help=builder.CLEAN)
+        parser.add_option.assert_any_call(
+            '-f', '--force', default=False, action='store_true', help=builder.FORCE)
 
         parser.add_option.assert_any_call('-p', '--path', help=builder.PATH)
         parser.add_option_group.assert_called_with(group)
@@ -360,6 +362,7 @@ class TestBuilder(TestCase):
     def test_build_modules(self, mock_shell, mock_find, mock_publish):
         parsed_options = {
             'output_dir': '/tmp/output',
+            'force': False
         }
 
         options = Values(defaults=parsed_options)
@@ -379,12 +382,15 @@ class TestBuilder(TestCase):
         mock_shell.assert_any_call(command % module_paths[0])
         mock_shell.assert_any_call(command % module_paths[1])
 
-        mock_publish.assert_any_call('%s/pkg' % module_paths[0], parsed_options['output_dir'])
-        mock_publish.assert_any_call('%s/pkg' % module_paths[1], parsed_options['output_dir'])
+        mock_publish.assert_any_call('%s/pkg' % module_paths[0], parsed_options['output_dir'],
+                                     parsed_options['force'])
+        mock_publish.assert_any_call('%s/pkg' % module_paths[1], parsed_options['output_dir'],
+                                     parsed_options['force'])
 
     @patch('os.listdir')
+    @patch('os.path.isfile')
     @patch('pulp_puppet.tools.puppet_module_builder.shell')
-    def test_publish_module(self, mock_shell, mock_listdir):
+    def test_publish_module(self, mock_shell, mock_isfile, mock_listdir):
         module_path = '/tmp/module/pkg'
         output_dir = '/tmp/output'
 
@@ -392,9 +398,11 @@ class TestBuilder(TestCase):
             'path_1%s' % builder.ARCHIVE_SUFFIX,
             'path_2%s' % builder.ARCHIVE_SUFFIX,
             'path_3',  # not a module
+            'path_4%s' % builder.ARCHIVE_SUFFIX,  # already exists
         ]
 
         mock_listdir.return_value = files
+        mock_isfile.side_effect = [False, False, True]
 
         # test
 
@@ -407,6 +415,36 @@ class TestBuilder(TestCase):
         mock_shell.assert_any_call('cp %s %s' % (os.path.join(module_path, files[1]), output_dir))
 
         self.assertEqual(mock_shell.call_count, 3)
+
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('pulp_puppet.tools.puppet_module_builder.shell')
+    def test_force_publish_module(self, mock_shell, mock_isfile, mock_listdir):
+        module_path = '/tmp/module/pkg'
+        output_dir = '/tmp/output'
+
+        files = [
+            'path_1%s' % builder.ARCHIVE_SUFFIX,
+            'path_2%s' % builder.ARCHIVE_SUFFIX,
+            'path_3',  # not a module
+            'path_4%s' % builder.ARCHIVE_SUFFIX,  # already exists
+        ]
+
+        mock_listdir.return_value = files
+        mock_isfile.side_effect = [False, False, True]
+
+        # test
+
+        builder.publish_module(module_path, output_dir, True)
+
+        # validation
+
+        mock_shell.assert_any_call('mkdir -p %s' % output_dir)
+        mock_shell.assert_any_call('cp %s %s' % (os.path.join(module_path, files[0]), output_dir))
+        mock_shell.assert_any_call('cp %s %s' % (os.path.join(module_path, files[1]), output_dir))
+        mock_shell.assert_any_call('cp %s %s' % (os.path.join(module_path, files[3]), output_dir))
+
+        self.assertEqual(mock_shell.call_count, 4)
 
     @patch('pulp_puppet.tools.puppet_module_builder.shell')
     def test_find_modules(self, mock_shell):
