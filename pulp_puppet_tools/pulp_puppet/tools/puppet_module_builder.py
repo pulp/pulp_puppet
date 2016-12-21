@@ -25,6 +25,8 @@ BRANCH = _('the name of a git branch to be checked out.')
 
 TAG = _('the name of a git tag to be checked out.')
 
+FORCE = _('overwrite modules in the output directory.')
+
 WORKING_DIR = _('set the working directory. default: current directory.')
 
 OUTPUT_DIR = _('set the output directory. this can be either an absolute path'
@@ -106,6 +108,7 @@ def get_options():
     parser.add_option('-w', '--working-dir', dest='working_dir', help=WORKING_DIR)
     parser.add_option('-o', '--output-dir', dest='output_dir', help=OUTPUT_DIR)
     parser.add_option('-c', '--clean', default=False, action='store_true', help=CLEAN)
+    parser.add_option('-f', '--force', default=False, action='store_true', help=FORCE)
     git = OptionGroup(parser, 'git')
     git.add_option('-u', '--url', help=URL)
     git.add_option('-b', '--branch', help=BRANCH)
@@ -232,7 +235,7 @@ def find_modules():
     return modules
 
 
-def publish_module(module_dir, output_dir):
+def publish_module(module_dir, output_dir, force=False):
     """
     Publish built puppet modules.
     This mainly consists of copying the tarball from the pkg/
@@ -243,11 +246,19 @@ def publish_module(module_dir, output_dir):
     :type module_dir: str
     :param output_dir: The user specified output directory path.
     :type output_dir: str
+    :param force: Overwrite any existing files in output dir if True
+    :type force: bool
     """
     shell('mkdir -p %s' % output_dir)
     for name in os.listdir(module_dir):
         if not name.endswith(ARCHIVE_SUFFIX):
             continue
+
+        output_path = os.path.join(output_dir, name)
+        if os.path.isfile(output_path) and not force:
+            print "Skipping %s as the file exists" % name
+            continue
+
         path = os.path.join(module_dir, name)
         shell('cp %s %s' % (path, output_dir))
 
@@ -263,7 +274,7 @@ def build_puppet_modules(options):
     for path in find_modules():
         shell('puppet module build %s' % path)
         pkg_dir = os.path.join(path, PKG_DIR)
-        publish_module(pkg_dir, options.output_dir)
+        publish_module(pkg_dir, options.output_dir, options.force)
 
 
 def digest(path):
