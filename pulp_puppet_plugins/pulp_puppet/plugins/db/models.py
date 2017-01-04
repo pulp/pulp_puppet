@@ -1,9 +1,19 @@
 from mongoengine import ListField, StringField
 from pulp.common.compat import json
 from pulp.server.db.model import FileContentUnit
+from pulp.server.exceptions import InvalidValue
 
 from pulp_puppet.common import constants
 from pulp_puppet.plugins.importers import metadata as metadata_parser
+
+
+class InvalidModuleName(InvalidValue):
+    """
+    Raised if the metadata name (author & puppet module name) is invalid
+    """
+    def __init__(self, name):
+        InvalidValue.__init__(self, 'name')
+        self.name = name
 
 
 class RepositoryMetadata(object):
@@ -162,8 +172,12 @@ class Module(FileContentUnit):
         try:
             author, name = filename.split("-", 1)
         except ValueError:
-            # This is the forge format, but Puppet still allows it
-            author, name = filename.split("/", 1)
+            try:
+                # This is the forge format, but Puppet still allows it
+                author, name = filename.split("/", 1)
+            except ValueError:
+                raise InvalidModuleName(filename)
+
         return {'author': author, 'name': name}
 
     @classmethod
