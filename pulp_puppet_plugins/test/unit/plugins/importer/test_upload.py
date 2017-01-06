@@ -7,6 +7,7 @@ import mock
 from pulp.plugins.model import Repository
 
 from pulp_puppet.common import constants
+from pulp_puppet.plugins.db.models import InvalidModuleName
 from pulp_puppet.plugins.importers import upload
 
 DATA_DIR = os.path.abspath(os.path.dirname(__file__)) + '/../../../data'
@@ -84,3 +85,11 @@ class UploadTests(unittest.TestCase):
     def test_handle_uploaded_unit_bad_type(self):
         self.assertRaises(NotImplementedError, upload.handle_uploaded_unit, self.repo, 'foo',
                           None, None, None, None)
+
+    @mock.patch('pulp_puppet.plugins.importers.metadata.extract_metadata')
+    def test_handle_uploaded_unit_bad_name(self, mock_metadata):
+        mock_metadata.return_value = {'name': 'bad_name'}
+        self.assertRaises(InvalidModuleName, upload.handle_uploaded_unit,
+                          self.repo, constants.TYPE_PUPPET_MODULE,
+                          self.unit_key, self.unit_metadata, self.source_file,
+                          self.conduit)
