@@ -276,6 +276,9 @@ A collection of tools used to manage puppet modules.
 
 
 %changelog
+* Mon Jan 09 2017 Sean Myers <sean.myers@redhat.com> 2.11.1-0.1.beta
+- 1981 - Unnecessary pulp error on puppet repo sync. (ipanova@redhat.com)
+
 * Wed Nov 23 2016 Sean Myers <sean.myers@redhat.com> 2.11.0-0.4.beta
 - Pulp rebuild
 
