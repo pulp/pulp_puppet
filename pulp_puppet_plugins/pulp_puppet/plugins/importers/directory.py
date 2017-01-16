@@ -35,7 +35,7 @@ URL_TO_DOWNLOADER = {
 }
 
 FETCH_SUCCEEDED = _('Fetched URL: %(url)s destination: %(dst)s')
-FETCH_FAILED = _('Fetch URL: %(url)s failed: %(msg)s')
+FETCH_FAILED = _('Fetch URL: %(url)s failed: %(msg)s. Switching to puppet forge sync.')
 IMPORT_MODULE = _('Importing module: %(mod)s')
 
 
@@ -148,7 +148,7 @@ class SynchronizeWithDirectory(object):
         for report in listener.succeeded_reports:
             _logger.info(FETCH_SUCCEEDED, dict(url=report.url, dst=report.destination))
         for report in listener.failed_reports:
-            _logger.error(FETCH_FAILED, dict(url=report.url, msg=report.error_msg))
+            _logger.info(FETCH_FAILED, dict(url=report.url, msg=report.error_msg))
 
         return listener.succeeded_reports, listener.failed_reports
 
