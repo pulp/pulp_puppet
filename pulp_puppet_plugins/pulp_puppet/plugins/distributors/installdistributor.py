@@ -121,9 +121,13 @@ class PuppetModuleInstallDistributor(Distributor):
         """
         # get dir from config
         destination = config.get(constants.CONFIG_INSTALL_PATH)
+        subdir = config.get(constants.CONFIG_SUBDIR)
         if not destination:
             return publish_conduit.build_failure_report(_('install path not provided'),
                                                         self.detail_report.report)
+        if subdir:
+            destination = os.path.join(destination, subdir)
+
         units = list(repo_controller.find_repo_content_units(repo.repo_obj,
                                                              yield_content_unit=True))
         duplicate_units = self._find_duplicate_names(units)
