@@ -85,16 +85,16 @@ Install Distributor
 Type ID: ``puppet_install_distributor``
 
 This distributor publishes modules by actually installing them into a given
-``install_path`` on the Pulp server's filesystem. The use case is that you want
+``install_path[/subdir]`` on the Pulp server's filesystem. This is useful when you want
 the contents of a repository to exactly be the collection of modules installed
 in a puppet environment. This allows you to use Pulp's repository management
 features to manage which modules are installed in puppet.
 
 This distributor performs these operations in the following order:
- 1. Creates a temporary directory in the parent directory of ``install_path``.
+ 1. Creates a temporary directory in the parent directory of ``install_path[/subdir]``.
  2. Extracts each module in the repository to that temporary directory.
- 3. Deletes every directory it finds in the ``install_path``.
- 4. Moves the content of temporary directory into the ``install_path``.
+ 3. Deletes every directory it finds in the ``install_path[/subdir]``.
+ 4. Moves the content of temporary directory into the ``install_path[/subdir]``.
  5. Removes the temporary directory.
 
 Extracted files and directories will inherit the uid and gid of the pulp process that extracts them.
@@ -123,6 +123,28 @@ gets deleted, the ``install_path`` and everything in it will be deleted.
  it as your ``install_path`` and you enable the ``pulp_manage_puppet`` boolean, SELinux will allow
  Pulp to write to that path.
 
+``subdir``
+ This is an optional setting to install puppet modules in a subdirectory of the ``install_path``.
+ This allows Pulp to install puppet modules in ``install_path[/subdir]`` and to remove the
+ ``install_path`` directory on distributor removal. If the specified ``subdir`` does not exist
+ it will be created.
+
+ ``subdir`` defaults to None, so if a subdir options is not provided the module is installed in the
+ ``install_path`` directory.
+ An existing repository that wishes to use the ``subdir`` option can update the distributor config.
+
+ Sample Request::
+
+    {
+    "distributor_configs": {
+        "puppet_install_distributor_example":
+            {
+            "install_path":"/etc/puppet/environments/MYENV",
+            "subdir": "modules"
+            }
+         }
+    }
+
 File Distributor
 -------------------
 
@@ -131,7 +153,7 @@ Type ID: ``puppet_file_distributor``
 This distributor publishes modules by making them available in a flattened format in
 a single directory on the file system and served via HTTPS.  The files are published
 to the ``https_files_dir`` specified in the plugin configuration.  A repository is
-placed in a subdirectory of the ```https_files_dir`` with the same name as the repository
+placed in a subdirectory of the ``https_files_dir`` with the same name as the repository
 id.  The base URL path where all Puppet repositories are published is ``/pulp/puppet/files``.
 
 ``https_files_dir``

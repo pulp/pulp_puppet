@@ -119,6 +119,8 @@ DEFAULT_ABSOLUTE_PATH = '/pulp/puppet/'
 
 CONFIG_INSTALL_PATH = 'install_path'
 
+CONFIG_SUBDIR = 'subdir'
+
 # -- forge API ---------------------------------------------------------------
 
 # The puppet forge hostname/IP.

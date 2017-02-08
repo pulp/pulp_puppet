@@ -1,0 +1,21 @@
+=============================
+Pulp Puppet 2.13 Release Notes
+=============================
+
+Pulp Puppet 2.13.0
+=================
+
+New Features
+------------
+
+- Added the ``subdir`` option to the install distributor. This is an optional setting to install
+  puppet modules in a subdirectory in the ``install_path``. This allows Pulp to install puppet
+  modules in ``install_path[/subdir]`` and to remove the ``install_path`` directory on distributor
+  removal. If the specified ``subdir`` does not exist it will be created.
+
+
+Bugs Fixed
+----------
+
+You can see the :fixedbugs:`list of bugs fixed<2.13.0>`.
+
