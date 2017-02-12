@@ -1,0 +1,34 @@
+=============================
+Pulp Puppet 2.10 Release Notes
+=============================
+
+Pulp Puppet 2.10.4
+=================
+
+Due to a Pulp platform release, this plugin's version has been incremented.
+There are no changes from the previous release.
+
+Pulp Puppet 2.10.3
+=================
+
+Due to a Pulp platform release, this plugin's version has been incremented.
+There are no changes from the previous release.
+
+Pulp Puppet 2.10.2
+=================
+
+Due to a Pulp platform release, this plugin's version has been incremented.
+There are no changes from the previous release.
+
+Pulp Puppet 2.10.1
+=================
+
+Due to a Pulp platform release, this plugin's version has been incremented.
+There are no changes from the previous release.
+
+
+Pulp Puppet 2.10.0
+=================
+
+Due to a Pulp platform release, this plugin's version has been incremented.
+There are no changes from the previous release.
