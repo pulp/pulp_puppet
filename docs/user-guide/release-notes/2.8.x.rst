@@ -8,7 +8,7 @@ Pulp Puppet 2.8.5
 Bug Fixes
 ---------
 
-See the list of :fixedbugs:`2.8.5`
+See the list of :fixedbugs_pulp_puppet:`2.8.5`
 
 Pulp Puppet 2.8.4
 =================
@@ -36,7 +36,7 @@ Pulp Puppet 2.8.1
 Bug Fixes
 ---------
 
-See the list of :fixedbugs:`2.8.1`
+See the list of :fixedbugs_pulp_puppet:`2.8.1`
 
 
 Pulp Puppet 2.8.0
@@ -63,4 +63,4 @@ New Features
 Bugs Fixed
 ----------
 
-You can see the :fixedbugs:`list of bugs fixed<2.8.0>`.
+You can see the :fixedbugs_pulp_puppet:`list of bugs fixed<2.8.0>`.
