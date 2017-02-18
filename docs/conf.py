@@ -242,10 +242,10 @@ texinfo_documents = [
 #texinfo_show_urls = 'footnote'
 
 extlinks = {'redmine': ('https://pulp.plan.io/issues/%s', '#'),
-            'fixedbugs': ('https://pulp.plan.io/projects/pulp_puppet/issues?utf8=%%E2%%9C%%93&set'
-                          '_filter=1&f%%5B%%5D=cf_4&op%%5Bcf_4%%5D=%%3D&v%%5Bcf_4%%5D%%5B%%5D=%s&'
-                          'f%%5B%%5D=tracker_id&op%%5Btracker_id%%5D=%%3D&v%%5Btracker_id%%5D%%5B'
-                          '%%5D=1&f%%5B%%5D=&c%%5B%%5D=tracker&c%%5B%%5D=status&c%%5B%%5D=priorit'
-                          'y&c%%5B%%5D=cf_5&c%%5B%%5D=subject&c%%5B%%5D=author&c%%5B%%5D=assigned'
-                          '_to&c%%5B%%5D=cf_3&group_by=', 'bugs fixed in ')}
-
+            'fixedbugs_pulp_puppet': ('https://pulp.plan.io/projects/pulp_puppet/issues?utf8=%%E2%'
+                                      '%9C%%93&set_filter=1&f%%5B%%5D=cf_4&op%%5Bcf_4%%5D=%%3D&v%%'
+                                      '5Bcf_4%%5D%%5B%%5D=%s&f%%5B%%5D=tracker_id&op%%5Btracker_id'
+                                      '%%5D=%%3D&v%%5Btracker_id%%5D%%5B%%5D=1&f%%5B%%5D=&c%%5B%%5'
+                                      'D=tracker&c%%5B%%5D=status&c%%5B%%5D=priority&c%%5B%%5D=cf_'
+                                      '5&c%%5B%%5D=subject&c%%5B%%5D=author&c%%5B%%5D=assigned_to&'
+                                      'c%%5B%%5D=cf_3&group_by=', 'bugs fixed in '),}
