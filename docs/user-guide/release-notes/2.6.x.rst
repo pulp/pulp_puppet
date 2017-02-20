@@ -5,9 +5,9 @@ Pulp 2.6 Release Notes
 Pulp 2.6.1
 ==========
 
-List of :fixedbugs:`2.6.1`.
+List of :fixedbugs_pulp_puppet:`2.6.1`.
 
 Pulp 2.6.0
 ==========
 
-You can see the :fixedbugs:`2.6.0`.
+You can see the :fixedbugs_pulp_puppet:`2.6.0`.

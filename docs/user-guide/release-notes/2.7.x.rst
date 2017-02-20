@@ -21,4 +21,4 @@ API Changes
 Bugs Fixed
 ----------
 
-You can see the :fixedbugs:`list of bugs fixed<2.7.0>`.
+You can see the :fixedbugs_pulp_puppet:`list of bugs fixed<2.7.0>`.
