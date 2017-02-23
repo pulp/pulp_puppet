@@ -3,6 +3,11 @@ Release Notes
 
 Contents:
 
+   Please note that the Pulp Puppet Plugin is released every time Pulp platform is released.
+   This may lead to some releases not having release specific notes. This means that no changes
+   other than the version increase were made from the previous release.
+   This is a problem that will be fixed with incoming Pulp3 plugin API.
+
 .. toctree::
    :maxdepth: 2
 
