@@ -14,6 +14,7 @@ from pulp_puppet.plugins.importers.downloaders.web import HttpDownloader, DOWNLO
 
 TEST_SOURCE = 'http://forge.puppetlabs.com/'
 
+
 class LiveHttpDownloaderTests(unittest.TestCase):
 
     def setUp(self):
@@ -21,7 +22,7 @@ class LiveHttpDownloaderTests(unittest.TestCase):
         self.repo = Repository('test-repo', working_dir=self.working_dir)
 
         repo_config = {
-            constants.CONFIG_FEED : TEST_SOURCE,
+            constants.CONFIG_FEED: TEST_SOURCE,
         }
         self.config = PluginCallConfiguration({}, repo_config)
 

@@ -7,6 +7,7 @@ from pulp.plugins.conduits.profiler import ProfilerConduit
 from pulp_puppet.common import constants
 from pulp_puppet.plugins.profilers import wholerepo
 
+
 class TestAccessories(unittest.TestCase):
     def test_entry_point(self):
         class_definition, config = wholerepo.entry_point()

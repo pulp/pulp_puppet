@@ -23,7 +23,7 @@ class LocalDownloaderTests(base_downloader.BaseDownloaderTests):
         self.downloader = LocalDownloader(self.repo, None, self.config)
 
     @mock.patch('nectar.config.DownloaderConfig.finalize')
-    @mock.patch('pulp.server.managers.repo._common.get_working_directory', return_value = '/tmp/')
+    @mock.patch('pulp.server.managers.repo._common.get_working_directory', return_value='/tmp/')
     def test_retrieve_metadata(self, mock_get_working_dir, mock_finalize):
         # Test
         docs = self.downloader.retrieve_metadata(self.mock_progress_report)
@@ -42,7 +42,7 @@ class LocalDownloaderTests(base_downloader.BaseDownloaderTests):
 
         mock_finalize.assert_called_once()
 
-    @mock.patch('pulp.server.managers.repo._common.get_working_directory', return_value = '/tmp/')
+    @mock.patch('pulp.server.managers.repo._common.get_working_directory', return_value='/tmp/')
     def test_retrieve_metadata_no_metadata_found(self, mock_get_working_dir):
         # Setup
         self.config.repo_plugin_config[constants.CONFIG_FEED] = 'file://' + INVALID_REPO_DIR

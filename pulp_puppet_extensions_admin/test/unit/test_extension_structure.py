@@ -1,6 +1,7 @@
 from pulp_puppet.devel import base_cli
 from pulp_puppet.extensions.admin import structure
 
+
 class StructureTests(base_cli.ExtensionTests):
 
     def test_ensure_puppet_root(self):

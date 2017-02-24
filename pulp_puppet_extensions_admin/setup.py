@@ -7,7 +7,7 @@ setup(
     packages=find_packages(exclude=['test', 'test.*']),
     author='Pulp Team',
     author_email='pulp-list@redhat.com',
-    entry_points = {
+    entry_points={
         'pulp.extensions.admin': [
             'repo_admin = pulp_puppet.extensions.admin.pulp_cli:initialize',
         ]

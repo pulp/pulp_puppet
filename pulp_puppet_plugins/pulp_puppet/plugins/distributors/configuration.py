@@ -45,7 +45,7 @@ def _validate_http(config):
     """
     parsed = config.get_boolean(constants.CONFIG_SERVE_HTTP)
     if parsed is None:
-        msg_dict = {'k' : constants.CONFIG_SERVE_HTTP}
+        msg_dict = {'k': constants.CONFIG_SERVE_HTTP}
         return False, _('The value for <%(k)s> must be either "true" or "false"') % msg_dict
 
     return True, None
@@ -57,8 +57,7 @@ def _validate_https(config):
     """
     parsed = config.get_boolean(constants.CONFIG_SERVE_HTTPS)
     if parsed is None:
-        msg_dict = {'k' : constants.CONFIG_SERVE_HTTPS}
+        msg_dict = {'k': constants.CONFIG_SERVE_HTTPS}
         return False, _('The value for <%(k)s> must be either "true" or "false"') % msg_dict
 
     return True, None
-

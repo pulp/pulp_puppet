@@ -4,7 +4,7 @@ import traceback
 from pulp.client.extensions.core import TAG_FAILURE, TAG_PROGRESS_BAR, TAG_SPINNER
 
 from pulp_puppet.common import constants
-from pulp_puppet.common.publish_progress import  PublishProgressReport
+from pulp_puppet.common.publish_progress import PublishProgressReport
 from pulp_puppet.common.sync_progress import SyncProgressReport
 from pulp_puppet.devel import base_cli
 from pulp_puppet.extensions.admin.repo.status import PuppetStatusRenderer
@@ -60,8 +60,8 @@ DISTRIBUTOR_REPORT = {
 }
 
 FULL_REPORT = {
-    'puppet_importer' : IMPORTER_REPORT,
-    'puppet_distributor' : DISTRIBUTOR_REPORT,
+    'puppet_importer': IMPORTER_REPORT,
+    'puppet_distributor': DISTRIBUTOR_REPORT,
 }
 
 
@@ -256,7 +256,6 @@ class PuppetStatusRendererTests(base_cli.ExtensionTests):
         self.assertEqual(self.renderer.publish_http_last_state, constants.STATE_NOT_STARTED)
         self.assertEqual(self.renderer.publish_https_last_state, constants.STATE_NOT_STARTED)
 
-
     def test_publish_http_https_skipped(self):
         # Setup
         self.publish_report.publish_http = constants.STATE_SKIPPED
@@ -302,8 +301,8 @@ class PuppetStatusRendererTests(base_cli.ExtensionTests):
             individual_errors.append({
                 'module': 'mod_%s' % i,
                 'author': 'some author',
-                'exception' : 'e_%s' % i,
-                'traceback' : tb,
+                'exception': 'e_%s' % i,
+                'traceback': tb,
             })
 
         # Test

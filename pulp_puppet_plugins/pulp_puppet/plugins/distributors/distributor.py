@@ -24,9 +24,9 @@ class PuppetModuleDistributor(Distributor):
     @classmethod
     def metadata(cls):
         return {
-            'id' : constants.DISTRIBUTOR_TYPE_ID,
-            'display_name' : _('Puppet Distributor'),
-            'types' : [constants.TYPE_PUPPET_MODULE]
+            'id': constants.DISTRIBUTOR_TYPE_ID,
+            'display_name': _('Puppet Distributor'),
+            'types': [constants.TYPE_PUPPET_MODULE]
         }
 
     def validate_config(self, repo, config, config_conduit):

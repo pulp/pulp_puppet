@@ -175,8 +175,8 @@ class InstallCommand(ContentMixin, content.ConsumerContentInstallCommand):
 
     def get_install_options(self, kwargs):
         """
-        Looks for the --whole-repo, --skip-dep, --modulepath options and returns an corresponding "options"
-        dict appropriate for a handler
+        Looks for the --whole-repo, --skip-dep, --modulepath options and returns corresponding
+        "options" dict appropriate for a handler
 
         :param kwargs:  arguments passed on the command line
         :type  kwargs:  dict

@@ -1,8 +1,8 @@
 from gettext import gettext as _
 
-from pulp.client.commands.schedule import (\
-    DeleteScheduleCommand, ListScheduleCommand, CreateScheduleCommand,
-    UpdateScheduleCommand, NextRunCommand, ScheduleStrategy)
+from pulp.client.commands.schedule import \
+    DeleteScheduleCommand, ListScheduleCommand, CreateScheduleCommand, \
+    UpdateScheduleCommand, NextRunCommand, ScheduleStrategy
 from pulp.client.commands.options import OPTION_REPO_ID
 
 from pulp_puppet.common.constants import DISTRIBUTOR_ID
@@ -16,6 +16,7 @@ DESC_UPDATE = _('updates an existing schedule')
 DESC_NEXT_RUN = _('displays the next scheduled publish run for a repository')
 
 # -- commands -----------------------------------------------------------------
+
 
 class PuppetListScheduleCommand(ListScheduleCommand):
     def __init__(self, context):
@@ -57,6 +58,7 @@ class PuppetNextRunCommand(NextRunCommand):
         self.add_option(OPTION_REPO_ID)
 
 # -- internal -----------------------------------------------------------------
+
 
 class RepoPublishSchedulingStrategy(ScheduleStrategy):
 

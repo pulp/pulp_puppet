@@ -9,7 +9,6 @@ from pulp.plugins.config import PluginCallConfiguration
 from pulp.plugins.model import Repository, SyncReport, Unit
 
 from pulp_puppet.common import constants, sync_progress
-from pulp_puppet.plugins.db.models import Module, RepositoryMetadata
 from pulp_puppet.plugins.importers.forge import SynchronizeWithPuppetForge
 
 
@@ -54,7 +53,7 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
         self.repo = Repository('test-repo', working_dir=self.working_dir)
         self.conduit = MockConduit()
         self.config = PluginCallConfiguration({}, {
-            constants.CONFIG_FEED : FEED,
+            constants.CONFIG_FEED: FEED,
         })
 
         self.method = SynchronizeWithPuppetForge(self.repo, self.conduit, self.config)
@@ -215,7 +214,7 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
         self.assertEqual(pr.modules_state, constants.STATE_NOT_STARTED)
 
     @mock.patch('pulp_puppet.plugins.importers.forge.SynchronizeWithPuppetForge._do_import_modules')
-    @mock.patch('pulp.server.managers.repo._common.get_working_directory', return_value = '/tmp/')
+    @mock.patch('pulp.server.managers.repo._common.get_working_directory', return_value='/tmp/')
     def test_import_modules_exception(self, mock_get_working_dir, mock_import):
         # Setup
         mock_import.side_effect = Exception()

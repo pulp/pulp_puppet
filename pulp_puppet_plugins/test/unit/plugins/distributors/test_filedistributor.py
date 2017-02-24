@@ -68,7 +68,6 @@ class TestPuppetFilesDistributor(unittest.TestCase):
         self.assertTrue(error_message.find('The directory specified for the puppet file '
                                            'distributor is invalid') != -1)
 
-
     def test_validate_config_files_dir_does_not_exist(self):
         config = PluginCallConfiguration({constants.CONFIG_FILE_HTTPS_DIR: '/foo/bar/baz'}, {})
         return_val, error_message = self.distributor.validate_config(self.repo, config, None)

@@ -154,4 +154,3 @@ class LocalMetadataDownloadEventListener(AggregatingEventListener):
         super(LocalMetadataDownloadEventListener, self).download_succeeded(report)
         self.progress_report.metadata_query_finished_count += 1
         self.progress_report.update_progress()
-

@@ -64,6 +64,7 @@ VALID_MODULE_METADATA_JSON = """{
 
 # -- test cases ---------------------------------------------------------------
 
+
 class RepositoryMetadataTests(unittest.TestCase):
 
     def test_update_from_json(self):
@@ -76,7 +77,7 @@ class RepositoryMetadataTests(unittest.TestCase):
         for m in metadata.modules:
             self.assertTrue(isinstance(m, Module))
 
-        sorted_modules = sorted(metadata.modules, key=lambda x : x.name)
+        sorted_modules = sorted(metadata.modules, key=lambda x: x.name)
 
         self.assertEqual(sorted_modules[0].name, 'common')
         self.assertEqual(sorted_modules[0].author, 'lab42')
@@ -109,7 +110,7 @@ class RepositoryMetadataTests(unittest.TestCase):
 
         self.assertEqual(2, len(parsed))
 
-        sorted_modules = sorted(parsed, key=lambda x : x['name'])
+        sorted_modules = sorted(parsed, key=lambda x: x['name'])
 
         self.assertEqual(4, len(sorted_modules[0]))
         self.assertEqual(sorted_modules[0]['name'], 'common')

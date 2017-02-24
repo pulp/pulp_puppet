@@ -1,5 +1,6 @@
 from pulp.client.commands.options import OPTION_REPO_ID
-from pulp.client.commands.schedule import ListScheduleCommand, CreateScheduleCommand, DeleteScheduleCommand, UpdateScheduleCommand, NextRunCommand
+from pulp.client.commands.schedule import ListScheduleCommand, CreateScheduleCommand, \
+    DeleteScheduleCommand, UpdateScheduleCommand, NextRunCommand
 
 from pulp_puppet.devel import base_cli
 from pulp_puppet.extensions.admin.repo import publish_schedules

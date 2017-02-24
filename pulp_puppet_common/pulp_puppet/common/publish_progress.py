@@ -28,8 +28,8 @@ class PublishProgressReport(object):
         self.modules_total_count = None
         self.modules_finished_count = None
         self.modules_error_count = None
-        self.modules_individual_errors = None # mapping of module to its error
-        self.modules_error_message = None # overall execution error
+        self.modules_individual_errors = None  # mapping of module to its error
+        self.modules_error_message = None  # overall execution error
         self.modules_exception = None
         self.modules_traceback = None
 
@@ -110,10 +110,10 @@ class PublishProgressReport(object):
             total_execution_time = self.metadata_execution_time + self.modules_execution_time
 
         summary = {
-            'total_execution_time' : total_execution_time
+            'total_execution_time': total_execution_time
         }
 
-        details = {} # intentionally empty; not sure what to put in here
+        details = {}  # intentionally empty; not sure what to put in here
 
         # Determine if the report was successful or failed
         all_step_states = (self.metadata_state, self.modules_state)
@@ -136,9 +136,9 @@ class PublishProgressReport(object):
         """
 
         report = {
-            'modules' : self._modules_section(),
-            'metadata' : self._metadata_section(),
-            'publishing' : self._publishing_section(),
+            'modules': self._modules_section(),
+            'metadata': self._metadata_section(),
+            'publishing': self._publishing_section(),
         }
         return report
 
@@ -167,15 +167,15 @@ class PublishProgressReport(object):
         :rtype: dict
         """
         modules_report = {
-            'state' : self.modules_state,
-            'execution_time' : self.modules_execution_time,
-            'total_count' : self.modules_total_count,
-            'finished_count' : self.modules_finished_count,
-            'error_count' : self.modules_error_count,
-            'individual_errors' : self.modules_individual_errors,
-            'error_message' : self.modules_error_message,
-            'error' : reporting.format_exception(self.modules_exception),
-            'traceback' : reporting.format_traceback(self.modules_traceback),
+            'state': self.modules_state,
+            'execution_time': self.modules_execution_time,
+            'total_count': self.modules_total_count,
+            'finished_count': self.modules_finished_count,
+            'error_count': self.modules_error_count,
+            'individual_errors': self.modules_individual_errors,
+            'error_message': self.modules_error_message,
+            'error': reporting.format_exception(self.modules_exception),
+            'traceback': reporting.format_traceback(self.modules_traceback),
         }
         return modules_report
 
@@ -187,12 +187,12 @@ class PublishProgressReport(object):
         :rtype: dict
         """
         metadata_report = {
-            'state' : self.metadata_state,
-            'execution_time' : self.metadata_execution_time,
-            'error_message' : self.metadata_error_message,
-            'error' : reporting.format_exception(self.metadata_exception),
-            'traceback' : reporting.format_traceback(self.metadata_traceback),
-            }
+            'state': self.metadata_state,
+            'execution_time': self.metadata_execution_time,
+            'error_message': self.metadata_error_message,
+            'error': reporting.format_exception(self.metadata_exception),
+            'traceback': reporting.format_traceback(self.metadata_traceback),
+        }
         return metadata_report
 
     def _publishing_section(self):
@@ -203,7 +203,7 @@ class PublishProgressReport(object):
         :rtype: dict
         """
         publishing_report = {
-            'http' : self.publish_http,
-            'https' : self.publish_https,
+            'http': self.publish_http,
+            'https': self.publish_https,
         }
         return publishing_report

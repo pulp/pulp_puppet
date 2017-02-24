@@ -36,7 +36,6 @@ class FileNotFoundException(FileRetrievalException):
     pass
 
 
-
 class UnauthorizedException(FileRetrievalException):
     """
     Raised if a file fails to be retrieved because it could not be read

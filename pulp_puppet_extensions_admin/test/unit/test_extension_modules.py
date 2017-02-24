@@ -1,3 +1,4 @@
+# flake8: noqa
 from pulp.client.commands import options
 from pulp.client.commands.criteria import DisplayUnitAssociationsCommand
 

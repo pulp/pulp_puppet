@@ -64,7 +64,7 @@ MODULE_FILENAME = '%s-%s-%s.tar.gz'
 # Substitutions: filename
 STORAGE_MODULE_RELATIVE_PATH = '%s'
 
-#Default hashlib encoder to user
+# Default hashlib encoder to user
 DEFAULT_HASHLIB = 'sha256'
 
 # -- progress states ----------------------------------------------------------

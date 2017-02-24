@@ -12,9 +12,9 @@ import logging
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pulp_puppet.forge.settings")
 
-from django.core.wsgi import get_wsgi_application
-from pulp.server.webservices.application import SaveEnvironWSGIHandler
-from pulp.server import initialization, logs
+from django.core.wsgi import get_wsgi_application  # noqa: E402
+from pulp.server.webservices.application import SaveEnvironWSGIHandler  # noqa: E402
+from pulp.server import initialization, logs  # noqa: E402
 
 
 def wsgi_application():
@@ -36,7 +36,8 @@ def wsgi_application():
         raise e
     except Exception as e:
         logger.fatal('*************************************************************')
-        logger.exception('The Pulp Puppet Forge encountered an unexpected failure during initialization')
+        logger.exception('The Pulp Puppet Forge encountered an unexpected failure during ' /
+                         'initialization')
         logger.fatal('*************************************************************')
         raise e
 

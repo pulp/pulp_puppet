@@ -18,4 +18,5 @@ def initialize(context):
     root_section = structure.root_section(context.cli)
     root_section.add_command(bind.BindCommand(context))
     root_section.add_command(bind.UnbindCommand(context))
-    root_section.add_command(RepoSearchCommand(context, constants.REPO_NOTE_PUPPET, name=SEARCH_NAME))
+    root_section.add_command(RepoSearchCommand(context, constants.REPO_NOTE_PUPPET,
+                                               name=SEARCH_NAME))
