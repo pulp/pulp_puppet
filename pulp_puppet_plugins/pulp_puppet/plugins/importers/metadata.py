@@ -10,33 +10,26 @@ import tarfile
 import tempfile
 
 from pulp.common.compat import json
-from pulp.server.exceptions import InvalidValue
+from pulp.server.exceptions import PulpCodedException
 
 from pulp_puppet.common import constants
+from pulp_puppet.plugins import error_codes
 
 
-class ExtractionException(InvalidValue):
-    """
-    Root exception of all exceptions that can occur while extracting a module's
-    metadata.
-    """
-    def __init__(self, module_filename):
-        InvalidValue.__init__(self, module_filename)
-        self.module_filename = module_filename
-
-
-class MissingModuleFile(ExtractionException):
+class MissingMetadataFile(PulpCodedException):
     """
     Raised if the metadata file cannot be extracted from a module.
     """
-    pass
+    def __init__(self, error_code=error_codes.PUP0001, **kwargs):
+        super(MissingMetadataFile, self).__init__(error_code=error_code, **kwargs)
 
 
-class InvalidTarball(ExtractionException):
+class InvalidTarball(PulpCodedException):
     """
     Raised if the tarball cannot be opened.
     """
-    pass
+    def __init__(self, error_code=error_codes.PUP0002, **kwargs):
+        super(InvalidTarball, self).__init__(error_code=error_code, **kwargs)
 
 
 CHECKSUM_READ_BUFFER_SIZE = 65536
@@ -54,7 +47,7 @@ def extract_metadata(filename, temp_dir):
     :type temp_dir: str
 
     :raise InvalidTarball: if the module file cannot be opened
-    :raise MissingModuleFile: if the module's metadata file cannot be found
+    :raise MissingMetadataFile: if the module's metadata file cannot be found
     """
     metadata = _extract_json(filename, temp_dir)
     return json.loads(metadata)
@@ -94,7 +87,7 @@ def _extract_json(filename, temp_dir):
     :type temp_dir: str
 
     :raise InvalidTarball: if the module file cannot be opened
-    :raise MissingModuleFile: if the module's metadata file cannot be found
+    :raise MissingMetadataFile: if the module's metadata file cannot be found
     """
 
     extraction_dir = tempfile.mkdtemp(dir=temp_dir)
@@ -105,7 +98,7 @@ def _extract_json(filename, temp_dir):
         tgz.extractall(path=extraction_dir)
         tgz.close()
     except Exception:
-        raise InvalidTarball(filename), None, sys.exc_info()[2]
+        raise InvalidTarball(), None, sys.exc_info()[2]
 
     try:
         # Attempt to find the metadata in the Puppet module's main directory
@@ -113,11 +106,11 @@ def _extract_json(filename, temp_dir):
         try:
             module_dir = os.listdir(extraction_dir)[0]
         except IndexError:
-            raise MissingModuleFile(filename)
+            raise MissingMetadataFile()
         metadata_filename = constants.MODULE_METADATA_FILENAME
         metadata_full_path = os.path.join(extraction_dir, module_dir, metadata_filename)
         if not os.path.isfile(metadata_full_path):
-            raise MissingModuleFile(filename)
+            raise MissingMetadataFile()
 
         return _read_contents(metadata_full_path)
     finally:

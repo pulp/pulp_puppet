@@ -72,11 +72,3 @@ class TestPuppetModuleImporter(unittest.TestCase):
         mock_handle_upload.return_value = {'success_flag': True, 'summary': '', 'details': {}}
         report = module_importer.upload_unit(Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock())
         self.assertTrue(report['success_flag'])
-
-    @patch('pulp_puppet.plugins.importers.upload.handle_uploaded_unit')
-    def TestUploadUnitFails(self, mock_handle_upload):
-        module_importer = PuppetModuleImporter()
-        mock_handle_upload.side_effect = Exception('bad')
-        report = module_importer.upload_unit(Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock())
-        self.assertFalse(report['success_flag'])
-        self.assertEquals(report['summary'], 'bad')
