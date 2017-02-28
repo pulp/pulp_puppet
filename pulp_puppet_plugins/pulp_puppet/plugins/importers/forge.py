@@ -6,7 +6,9 @@ import sys
 
 from mongoengine import NotUniqueError
 
+from pulp.plugins.loader import api as plugin_api
 from pulp.server.controllers import repository as repo_controller
+from pulp.server.controllers import units as units_controller
 
 from pulp_puppet.common import constants
 from pulp_puppet.common.constants import (STATE_FAILED, STATE_RUNNING,
@@ -148,7 +150,8 @@ class SynchronizeWithPuppetForge(object):
             msg_dict = {'repo_id': self.repo.id}
             _logger.exception(msg, msg_dict)
             self.progress_report.metadata_state = STATE_FAILED
-            self.progress_report.metadata_error_message = _('Error parsing repository modules metadata document')
+            self.progress_report.metadata_error_message = _('Error parsing repository modules '
+                                                            'metadata document')
             self.progress_report.metadata_exception = e
             self.progress_report.metadata_traceback = sys.exc_info()[2]
 
@@ -235,14 +238,15 @@ class SynchronizeWithPuppetForge(object):
         self.downloader = downloader
 
         # Ease module lookup
-        metadata_modules_by_key = dict([(m.unit_key_str, m) for m in metadata.modules])
+        metadata_modules_by_key = dict([(m.unit_key_as_named_tuple, m) for m in metadata.modules])
 
         # Collect information about the repository's modules before changing it
         existing_module_ids_by_key = {}
         modules = repo_controller.find_repo_content_units(
             self.repo.repo_obj, unit_fields=Module.unit_key_fields, yield_content_unit=True)
+
         for module in modules:
-            existing_module_ids_by_key[module.unit_key_str] = module.id
+            existing_module_ids_by_key[module.unit_key_as_named_tuple] = module.id
 
         new_unit_keys = self._resolve_new_units(existing_module_ids_by_key.keys(),
                                                 metadata_modules_by_key.keys())
@@ -272,7 +276,7 @@ class SynchronizeWithPuppetForge(object):
                                                           metadata_modules_by_key.keys())
             doomed_ids = [existing_module_ids_by_key[key] for key in remove_unit_keys]
             doomed_module_iterator = Module.objects.in_bulk(doomed_ids).itervalues()
-            repo_controller.disassociate_units(self.repo, doomed_module_iterator)
+            repo_controller.disassociate_units(self.repo.repo_obj, doomed_module_iterator)
 
         self.downloader = None
 
@@ -294,7 +298,7 @@ class SynchronizeWithPuppetForge(object):
 
             # Extract the extra metadata into the module
             metadata = metadata_module.extract_metadata(downloaded_filename,
-                                                         self.repo.working_dir)
+                                                        self.repo.working_dir)
 
             # Overwrite the author and name
             metadata.update(Module.split_filename(metadata['name']))
@@ -311,14 +315,32 @@ class SynchronizeWithPuppetForge(object):
         finally:
             downloader.cleanup_module(module)
 
-    def _resolve_new_units(self, existing_unit_keys, metadata_unit_keys):
+    def _resolve_new_units(self, existing, wanted):
         """
-        Returns a list of metadata keys that are new to the repository.
+        Decide what units are needed to be downloaded.
 
-        :return: list of unit keys; empty list if none are new
-        :rtype:  list
+        Filter out units which are already in a repository,
+        associate units which are already downloaded,
+
+        :param existing: units which are already in a repository
+        :type existing: list of unit keys as namedtuples
+        :param wanted: units which should be imported into a repository
+        :type wanted: list of unit keys as namedtuples
+
+        :return: list of unit keys to download; empty list if all units are already downloaded
+        :rtype:  list of unit keys as namedtuples
         """
-        return list(set(metadata_unit_keys) - set(existing_unit_keys))
+        model = plugin_api.get_unit_model_by_id(constants.TYPE_PUPPET_MODULE)
+        unit_generator = (model(**unit_tuple._asdict()) for unit_tuple in wanted)
+        still_wanted = set(wanted)
+        for unit in units_controller.find_units(unit_generator):
+            file_exists = unit._storage_path is not None and os.path.isfile(unit._storage_path)
+            if file_exists:
+                if unit.unit_key_as_named_tuple not in existing:
+                    repo_controller.associate_single_unit(self.repo.repo_obj, unit)
+                still_wanted.discard(unit.unit_key_as_named_tuple)
+
+        return list(still_wanted)
 
     def _resolve_remove_units(self, existing_unit_keys, metadata_unit_keys):
         """

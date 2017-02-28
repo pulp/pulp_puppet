@@ -4,7 +4,8 @@ from pulp.client import arg_utils, parsers
 from pulp.client.commands import options
 from pulp.client.commands.repo.importer_config import ImporterConfigMixin
 from pulp.client.extensions.extensions import PulpCliOption
-from pulp.client.commands.repo.cudl import CreateRepositoryCommand, ListRepositoriesCommand, UpdateRepositoryCommand
+from pulp.client.commands.repo.cudl import (CreateRepositoryCommand, ListRepositoriesCommand,
+                                            UpdateRepositoryCommand)
 
 from pulp_puppet.common import constants
 
@@ -45,6 +46,11 @@ OPTION_HTTPS = PulpCliOption('--serve-https', DESC_HTTPS, required=False)
 
 DESC_SEARCH = _('searches for Puppet repositories on the server')
 
+DESC_REMOVE_MISSING = _('if "true", units that were previously in the external feed but are '
+                        'no longer found will be removed from the repository; defaults to false')
+OPTION_REMOVE_MISSING = PulpCliOption('--remove-missing', DESC_REMOVE_MISSING, required=False,
+                                      parse_func=parsers.pulp_parse_optional_boolean)
+
 
 class CreatePuppetRepositoryCommand(CreateRepositoryCommand, ImporterConfigMixin):
     def __init__(self, context):
@@ -55,6 +61,7 @@ class CreatePuppetRepositoryCommand(CreateRepositoryCommand, ImporterConfigMixin
         self.add_option(OPTION_QUERY)
         self.add_option(OPTION_HTTP)
         self.add_option(OPTION_HTTPS)
+        self.add_option(OPTION_REMOVE_MISSING)
 
     def run(self, **kwargs):
 
@@ -72,28 +79,32 @@ class CreatePuppetRepositoryCommand(CreateRepositoryCommand, ImporterConfigMixin
 
         # -- importer metadata --
         importer_config = self.parse_user_input(kwargs)
-        importer_config.update({constants.CONFIG_QUERIES: kwargs[OPTION_QUERIES.keyword] or kwargs[OPTION_QUERY.keyword]})
+        importer_config.update({constants.CONFIG_QUERIES:
+                                kwargs[OPTION_QUERIES.keyword] or kwargs[OPTION_QUERY.keyword]})
         arg_utils.convert_removed_options(importer_config)
 
         # -- distributor metadata --
         distributor_config = {
-            constants.CONFIG_SERVE_HTTP : kwargs[OPTION_HTTP.keyword],
-            constants.CONFIG_SERVE_HTTPS : kwargs[OPTION_HTTPS.keyword],
+            constants.CONFIG_SERVE_HTTP: kwargs[OPTION_HTTP.keyword],
+            constants.CONFIG_SERVE_HTTPS: kwargs[OPTION_HTTPS.keyword],
             }
         arg_utils.convert_removed_options(distributor_config)
-        arg_utils.convert_boolean_arguments((constants.CONFIG_SERVE_HTTP, constants.CONFIG_SERVE_HTTPS), distributor_config)
+        arg_utils.convert_boolean_arguments((constants.CONFIG_SERVE_HTTP,
+                                             constants.CONFIG_SERVE_HTTPS), distributor_config)
 
         distributors = [
-            dict(distributor_type_id=constants.DISTRIBUTOR_TYPE_ID, distributor_config=distributor_config,
+            dict(distributor_type_id=constants.DISTRIBUTOR_TYPE_ID,
+                 distributor_config=distributor_config,
                  auto_publish=True, distributor_id=constants.DISTRIBUTOR_ID)
         ]
 
         # Create the repository
-        self.context.server.repo.create_and_configure(repo_id, name, description,
-            notes, constants.IMPORTER_TYPE_ID, importer_config, distributors)
+        self.context.server.repo.create_and_configure(repo_id, name, description, notes,
+                                                      constants.IMPORTER_TYPE_ID,
+                                                      importer_config, distributors)
 
         msg = _('Successfully created repository [%(r)s]')
-        self.context.prompt.render_success_message(msg % {'r' : repo_id})
+        self.context.prompt.render_success_message(msg % {'r': repo_id})
 
 
 class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand, ImporterConfigMixin):
@@ -106,6 +117,7 @@ class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand, ImporterConfigMixin
         self.add_option(OPTION_QUERY)
         self.add_option(OPTION_HTTP)
         self.add_option(OPTION_HTTPS)
+        self.add_option(OPTION_REMOVE_MISSING)
 
     def run(self, **kwargs):
         # -- importer metadata --
@@ -120,7 +132,7 @@ class UpdatePuppetRepositoryCommand(UpdateRepositoryCommand, ImporterConfigMixin
 
         # Remove the importer keys from kwargs so they don't get added to the repo config
         for key in importer_config:
-            kwargs.pop(key, None)
+            kwargs.pop(key.replace('_', '-'), None)
 
         # -- distributor metadata --
         distributor_config = {
@@ -158,7 +170,8 @@ class ListPuppetRepositoriesCommand(ListRepositoriesCommand):
         puppet_repos = []
         for repo in all_repos:
             notes = repo['notes']
-            if constants.REPO_NOTE_KEY in notes and notes[constants.REPO_NOTE_KEY] == constants.REPO_NOTE_PUPPET:
+            if constants.REPO_NOTE_KEY in notes and \
+                    notes[constants.REPO_NOTE_KEY] == constants.REPO_NOTE_PUPPET:
                 puppet_repos.append(repo)
 
         for repo in puppet_repos:
@@ -182,7 +195,7 @@ class ListPuppetRepositoriesCommand(ListRepositoriesCommand):
 
         # This is safe from any issues with concurrency due to how the CLI works
         if self.all_repos_cache is None:
-            self.all_repos_cache = self.context.server.repo.repositories(query_params).response_body
+            all_repos_cache = self.context.server.repo.repositories(query_params).response_body
+            self.all_repos_cache = all_repos_cache
 
         return self.all_repos_cache
-
