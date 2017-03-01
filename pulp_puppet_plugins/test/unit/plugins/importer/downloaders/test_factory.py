@@ -1,7 +1,7 @@
 import unittest
 
 from pulp_puppet.plugins.importers.downloaders import factory
-from pulp_puppet.plugins.importers.downloaders.exceptions import  UnsupportedFeedType, InvalidFeed
+from pulp_puppet.plugins.importers.downloaders.exceptions import UnsupportedFeedType, InvalidFeed
 from pulp_puppet.plugins.importers.downloaders.local import LocalDownloader
 
 

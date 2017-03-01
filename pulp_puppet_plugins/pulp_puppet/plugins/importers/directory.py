@@ -258,7 +258,8 @@ class SynchronizeWithDirectory(object):
             remote_paths[module.unit_key_str] = module_path
             list_of_modules.append(module)
 
-        pub_step = publish_step.GetLocalUnitsStep(constants.IMPORTER_TYPE_ID, available_units=list_of_modules, repo=self.repo)
+        pub_step = publish_step.GetLocalUnitsStep(constants.IMPORTER_TYPE_ID,
+                                                  available_units=list_of_modules, repo=self.repo)
         pub_step.process_main()
         self.report.modules_total_count = len(pub_step.units_to_download)
 

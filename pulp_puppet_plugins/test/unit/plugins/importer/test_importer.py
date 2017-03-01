@@ -1,7 +1,6 @@
 import unittest
 
 from mock import Mock, patch
-from pulp.plugins.model import SyncReport
 
 from pulp_puppet.common import constants
 from pulp_puppet.common.sync_progress import SyncProgressReport
@@ -66,7 +65,6 @@ class TestPuppetModuleImporter(unittest.TestCase):
         # validation
         mock_call.assert_called_with()
         self.assertEquals(report, conduit.build_failure_report.return_value)
-
 
     @patch('pulp_puppet.plugins.importers.upload.handle_uploaded_unit')
     def testUploadUnit(self, mock_handle_upload):

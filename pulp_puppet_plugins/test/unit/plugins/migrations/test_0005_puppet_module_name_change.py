@@ -3,7 +3,7 @@ Tests for pulp_rpm.plugins.migrations.0005_puppet_module_name_change
 """
 import unittest
 
-from mock import call, Mock, patch
+from mock import Mock, patch
 
 from mongoengine import NotUniqueError
 

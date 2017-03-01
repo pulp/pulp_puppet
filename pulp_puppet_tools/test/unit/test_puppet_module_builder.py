@@ -462,7 +462,8 @@ class TestBuilder(TestCase):
 
         # validation
         self.assertEquals(1, mock_shell.call_count)
-        self.assertEqual(sorted(list(modules)), sorted(['module_1', 'nested/module_2', 'nested/module_3']))
+        self.assertEqual(sorted(list(modules)), sorted(['module_1', 'nested/module_2',
+                                                        'nested/module_3']))
 
     @patch('pulp_puppet.tools.puppet_module_builder.shell')
     def test_git_checkout_branch(self, mock_shell):

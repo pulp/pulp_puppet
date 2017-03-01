@@ -12,6 +12,7 @@ DESC_FILE = _('path to a file to upload; may be specified multiple times '
               'for multiple files. File name format must be '
               'author-name-version.tar.gz')
 
+
 class UploadModuleCommand(upload_commands.UploadCommand):
 
     def __init__(self, context, upload_manager):

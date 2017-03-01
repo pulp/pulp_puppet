@@ -3,7 +3,6 @@
 
 import optparse
 import os
-import shutil
 import sys
 
 from pulp.devel import environment
@@ -32,13 +31,18 @@ DIR_PLUGINS = '/usr/lib/pulp/plugins'
 LINKS = (
     ('pulp_puppet_plugins/etc/httpd/conf.d/pulp_puppet.conf', '/etc/httpd/conf.d/pulp_puppet.conf'),
     ('pulp_puppet_plugins/etc/pulp/vhosts80/puppet.conf', '/etc/pulp/vhosts80/puppet.conf'),
-    ('pulp_puppet_plugins/usr/share/pulp/wsgi/puppet_forge.wsgi', '/usr/share/pulp/wsgi/puppet_forge.wsgi'),
+    ('pulp_puppet_plugins/usr/share/pulp/wsgi/puppet_forge.wsgi',
+     '/usr/share/pulp/wsgi/puppet_forge.wsgi'),
     # Puppet Support Admin Extensions
-    ('pulp_puppet_extensions_admin/etc/pulp/admin/conf.d/puppet.conf', '/etc/pulp/admin/conf.d/puppet.conf'),
+    ('pulp_puppet_extensions_admin/etc/pulp/admin/conf.d/puppet.conf',
+     '/etc/pulp/admin/conf.d/puppet.conf'),
     # handlers
-    ('pulp_puppet_handlers/etc/pulp/agent/conf.d/puppet_bind.conf', '/etc/pulp/agent/conf.d/puppet_bind.conf'),
-    ('pulp_puppet_handlers/etc/pulp/agent/conf.d/puppet_module.conf', '/etc/pulp/agent/conf.d/puppet_module.conf'),
+    ('pulp_puppet_handlers/etc/pulp/agent/conf.d/puppet_bind.conf',
+     '/etc/pulp/agent/conf.d/puppet_bind.conf'),
+    ('pulp_puppet_handlers/etc/pulp/agent/conf.d/puppet_module.conf',
+     '/etc/pulp/agent/conf.d/puppet_module.conf'),
 )
+
 
 def parse_cmdline():
     """
@@ -111,7 +115,7 @@ def install(opts):
     create_dirs(opts)
     currdir = os.path.abspath(os.path.dirname(__file__))
     for src, dst in getlinks():
-        warning_msg = create_link(opts, os.path.join(currdir,src), dst)
+        warning_msg = create_link(opts, os.path.join(currdir, src), dst)
         if warning_msg:
             warnings.append(warning_msg)
 
@@ -141,7 +145,8 @@ def create_link(opts, src, dst):
         return _create_link(opts, src, dst)
 
     if not os.path.islink(dst):
-        return "[%s] is not a symbolic link as we expected, please adjust if this is not what you intended." % (dst)
+        return ("[%s] is not a symbolic link as we expected, please adjust"
+                " if this is not what you intended." % (dst))
 
     if not os.path.exists(os.readlink(dst)):
         warning('BROKEN LINK: [%s] attempting to delete and fix it to point to %s.' % (dst, src))
@@ -149,14 +154,16 @@ def create_link(opts, src, dst):
             os.unlink(dst)
             return _create_link(opts, src, dst)
         except:
-            msg = "[%s] was a broken symlink, failed to delete and relink to [%s], please fix this manually" % (dst, src)
+            msg = ("[%s] was a broken symlink, failed to delete and relink to [%s], please fix "
+                   "this manually" % (dst, src))
             return msg
 
     debug(opts, 'verifying link: %s points to %s' % (dst, src))
     dst_stat = os.stat(dst)
     src_stat = os.stat(src)
     if dst_stat.st_ino != src_stat.st_ino:
-        msg = "[%s] is pointing to [%s] which is different than the intended target [%s]" % (dst, os.readlink(dst), src)
+        msg = ("[%s] is pointing to [%s] which is different than the intended "
+               "target [%s]" % (dst, os.readlink(dst), src))
         return msg
 
 
@@ -165,10 +172,12 @@ def _create_link(opts, src, dst):
         try:
             os.symlink(src, dst)
         except OSError, e:
-            msg = "Unable to create symlink for [%s] pointing to [%s], received error: <%s>" % (dst, src, e)
+            msg = "Unable to create symlink for [%s] pointing to [%s], received error: <%s>" % \
+                (dst, src, e)
             return msg
 
 # -----------------------------------------------------------------------------
+
 
 if __name__ == '__main__':
     # TODO add something to check for permissions

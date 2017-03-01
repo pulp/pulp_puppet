@@ -475,13 +475,13 @@ notice: Upgrading -- do not interrupt ...
 
         self.assertEqual(result, {})
 
-
     def test_value_error(self):
         result = self.handler._interpret_operation_report('\nnot valid json\n', 'upgrade', 'puppetlabs/stdlib')
 
         self.assertEqual(result, {})
 
 
+# flake8: noqa
 class TestCleanSuccessful(ModuleHandlerTest):
     def setUp(self):
         super(TestCleanSuccessful, self).setUp()

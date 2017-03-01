@@ -41,7 +41,7 @@ class SyncProgressReport(object):
         # list of dictionaries describing module failures. The keys are module, author, exception,
         # and traceback.
         self.modules_individual_errors = []
-        self.modules_error_message = None # overall execution error
+        self.modules_error_message = None  # overall execution error
         self.modules_exception = None
         self.modules_traceback = None
 
@@ -112,13 +112,13 @@ class SyncProgressReport(object):
             total_execution_time = self.metadata_execution_time + self.modules_execution_time
 
         summary = {
-            'total_execution_time' : total_execution_time
+            'total_execution_time': total_execution_time
         }
 
         details = {
-            'total_count' : self.modules_total_count,
-            'finished_count' : self.modules_finished_count,
-            'error_count' : self.modules_error_count,
+            'total_count': self.modules_total_count,
+            'finished_count': self.modules_finished_count,
+            'error_count': self.modules_error_count,
         }
 
         # Determine if the report was successful or failed
@@ -145,8 +145,8 @@ class SyncProgressReport(object):
         """
 
         report = {
-            'metadata' : self._metadata_section(),
-            'modules'  : self._modules_section(),
+            'metadata': self._metadata_section(),
+            'modules': self._modules_section(),
         }
         return report
 
@@ -172,27 +172,27 @@ class SyncProgressReport(object):
 
     def _metadata_section(self):
         metadata_report = {
-            'state' : self.metadata_state,
-            'execution_time' : self.metadata_execution_time,
-            'current_query' : self.metadata_current_query,
-            'query_finished_count' : self.metadata_query_finished_count,
-            'query_total_count' : self.metadata_query_total_count,
-            'error_message' : self.metadata_error_message,
-            'error' : reporting.format_exception(self.metadata_exception),
-            'traceback' : reporting.format_traceback(self.metadata_traceback),
+            'state': self.metadata_state,
+            'execution_time': self.metadata_execution_time,
+            'current_query': self.metadata_current_query,
+            'query_finished_count': self.metadata_query_finished_count,
+            'query_total_count': self.metadata_query_total_count,
+            'error_message': self.metadata_error_message,
+            'error': reporting.format_exception(self.metadata_exception),
+            'traceback': reporting.format_traceback(self.metadata_traceback),
         }
         return metadata_report
 
     def _modules_section(self):
         modules_report = {
-            'state' : self.modules_state,
-            'execution_time' : self.modules_execution_time,
-            'total_count' : self.modules_total_count,
-            'finished_count' : self.modules_finished_count,
-            'error_count' : self.modules_error_count,
-            'individual_errors' : self.modules_individual_errors,
-            'error_message' : self.modules_error_message,
-            'error' : reporting.format_exception(self.modules_exception),
-            'traceback' : reporting.format_traceback(self.modules_traceback),
+            'state': self.modules_state,
+            'execution_time': self.modules_execution_time,
+            'total_count': self.modules_total_count,
+            'finished_count': self.modules_finished_count,
+            'error_count': self.modules_error_count,
+            'individual_errors': self.modules_individual_errors,
+            'error_message': self.modules_error_message,
+            'error': reporting.format_exception(self.modules_exception),
+            'traceback': reporting.format_traceback(self.modules_traceback),
         }
         return modules_report

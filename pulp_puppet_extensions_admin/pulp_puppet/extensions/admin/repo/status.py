@@ -1,11 +1,10 @@
 from gettext import gettext as _
-import traceback
 
 from pulp.client.commands.repo.sync_publish import StatusRenderer
 from pulp.client.extensions.core import COLOR_FAILURE
 
 from pulp_puppet.common import constants
-from pulp_puppet.common.publish_progress import  PublishProgressReport
+from pulp_puppet.common.publish_progress import PublishProgressReport
 from pulp_puppet.common.sync_progress import SyncProgressReport
 
 
@@ -34,13 +33,15 @@ class PuppetStatusRenderer(StatusRenderer):
 
         # Sync Steps
         if constants.IMPORTER_ID in progress_report:
-            sync_report = SyncProgressReport.from_progress_dict(progress_report[constants.IMPORTER_ID])
+            sync_report = SyncProgressReport.from_progress_dict(
+                progress_report[constants.IMPORTER_ID])
             self._display_sync_metadata_step(sync_report)
             self._display_sync_modules_step(sync_report)
 
         # Publish Steps
         if constants.DISTRIBUTOR_ID in progress_report:
-            publish_report = PublishProgressReport.from_progress_dict(progress_report[constants.DISTRIBUTOR_ID])
+            publish_report = PublishProgressReport.from_progress_dict(
+                progress_report[constants.DISTRIBUTOR_ID])
             self._display_publish_modules_step(publish_report)
             self._display_publish_metadata_step(publish_report)
             self._display_publish_http_https_step(publish_report)
@@ -63,15 +64,16 @@ class PuppetStatusRenderer(StatusRenderer):
             item_type = _('Metadata Query')
 
             self._render_itemized_in_progress_state(items_done, items_total,
-                item_type, self.sync_metadata_bar, sync_report.metadata_state)
+                                                    item_type, self.sync_metadata_bar,
+                                                    sync_report.metadata_state)
 
         # The only state left to handle is if it failed
         else:
             self.prompt.render_failure_message(_('... failed'))
             self.prompt.render_spacer()
             self._render_error(sync_report.metadata_error_message,
-                                sync_report.metadata_exception,
-                                sync_report.metadata_traceback)
+                               sync_report.metadata_exception,
+                               sync_report.metadata_traceback)
 
         # Before finishing update the state
         self.sync_metadata_last_state = sync_report.metadata_state
@@ -94,7 +96,8 @@ class PuppetStatusRenderer(StatusRenderer):
             item_type = _('Module')
 
             self._render_itemized_in_progress_state(items_done, items_total, item_type,
-                self.sync_modules_bar, sync_report.modules_state)
+                                                    self.sync_modules_bar,
+                                                    sync_report.modules_state)
 
         # The only state left to handle is if it failed
         else:
@@ -130,7 +133,8 @@ class PuppetStatusRenderer(StatusRenderer):
             item_type = _('Module')
 
             self._render_itemized_in_progress_state(items_done, items_total, item_type,
-                self.publish_modules_bar, publish_report.modules_state)
+                                                    self.publish_modules_bar,
+                                                    publish_report.modules_state)
 
         # The only state left to handle is if it failed
         else:
@@ -225,10 +229,10 @@ class PuppetStatusRenderer(StatusRenderer):
         # a string and let the progress bar render it.
 
         message_data = {
-            'name'        : type_name.title(),
-            'items_done'  : items_done,
-            'items_total' : items_total,
-            }
+            'name': type_name.title(),
+            'items_done': items_done,
+            'items_total': items_total,
+        }
 
         template = _('%(name)s: %(items_done)s/%(items_total)s items')
         bar_message = template % message_data

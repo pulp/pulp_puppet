@@ -137,7 +137,6 @@ class HttpDownloader(BaseDownloader):
             if e.errno != errno.ENOENT:
                 raise
 
-
     def _create_metadata_download_urls(self):
         """
         Uses the plugin configuration to determine a list of URLs for all metadata documents

@@ -17,4 +17,3 @@ class UnbindCommand(bind.ConsumerUnbindCommand):
 
     def get_distributor_id(self, kwargs):
         return constants.DISTRIBUTOR_TYPE_ID
-

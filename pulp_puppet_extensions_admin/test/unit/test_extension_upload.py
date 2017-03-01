@@ -10,6 +10,7 @@ from pulp_puppet.extensions.admin.repo import upload
 
 MODULES_DIR = os.path.abspath(os.path.dirname(__file__)) + '/../data/good-modules/jdob-valid/pkg'
 
+
 class UploadModuleCommandTests(base_cli.ExtensionTests):
 
     def setUp(self):
@@ -49,7 +50,7 @@ class UploadModuleCommandTests(base_cli.ExtensionTests):
             self.assertTrue(os.path.exists(m))
 
     def test_validator_presence(self):
-        option_file =  [opt for opt in self.command.options if opt.keyword == OPTION_FILE.keyword][0]
+        option_file = [opt for opt in self.command.options if opt.keyword == OPTION_FILE.keyword][0]
         self.assertEqual(self.command.validate_file_name, option_file.validate_func)
 
 
@@ -68,16 +69,20 @@ class TestValidateFileName(unittest.TestCase):
         upload.UploadModuleCommand.validate_file_name(['/path/to/author-foo-1.0.0-rc1.tar.gz'])
 
     def test_require_author(self):
-        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['/-foo-1.0.0.tar.gz'])
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name,
+                          ['/-foo-1.0.0.tar.gz'])
 
     def test_require_name(self):
-        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['/author--1.0.0.tar.gz'])
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name,
+                          ['/author--1.0.0.tar.gz'])
 
     def test_require_version(self):
-        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['/author-foo.tar.gz'])
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name,
+                          ['/author-foo.tar.gz'])
 
     def test_require_extension(self):
-        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, ['/author-foo-1.0.0.gz'])
+        self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name,
+                          ['/author-foo-1.0.0.gz'])
 
     def test_empty(self):
         self.assertRaises(ValueError, upload.UploadModuleCommand.validate_file_name, [''])

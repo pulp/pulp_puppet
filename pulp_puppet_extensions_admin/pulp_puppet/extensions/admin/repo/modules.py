@@ -15,6 +15,7 @@ DESC_SEARCH = _('search for modules in a repository')
 
 # -- commands -----------------------------------------------------------------
 
+
 class ModulesCommand(DisplayUnitAssociationsCommand):
     def __init__(self, context):
         super(ModulesCommand, self).__init__(self.run, name='modules',
@@ -30,14 +31,14 @@ class ModulesCommand(DisplayUnitAssociationsCommand):
 
         # Strip out checksum information; not sure how to render it yet
         # or if it's even useful
-        map(lambda x : x['metadata'].pop('checksums', None), modules)
+        map(lambda x: x['metadata'].pop('checksums', None), modules)
 
         order = []
 
         if not kwargs.get(self.ASSOCIATION_FLAG.keyword):
             # Remove types from the metadata as it can be very long by default
             # and only display the module metadata, not the association
-            map(lambda x : x['metadata'].pop('types', None), modules)
+            map(lambda x: x['metadata'].pop('types', None), modules)
             modules = [m['metadata'] for m in modules]
             # Make sure the key info is at the top; the rest can be alpha
             order = ['name', 'version', 'author']

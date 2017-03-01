@@ -64,7 +64,7 @@ class RepoSyncSchedulingStrategyTests(base_cli.ExtensionTests):
         schedule = '2012-09-18'
         failure_threshold = 3
         enabled = True
-        kwargs = {OPTION_REPO_ID.keyword : 'test-repo'}
+        kwargs = {OPTION_REPO_ID.keyword: 'test-repo'}
 
         # Test
         self.strategy.create_schedule(schedule, failure_threshold, enabled, kwargs)
@@ -83,7 +83,7 @@ class RepoSyncSchedulingStrategyTests(base_cli.ExtensionTests):
     def test_delete_schedule(self, mock_delete):
         # Setup
         schedule_id = 'fake-schedule'
-        kwargs = {OPTION_REPO_ID.keyword : 'fake-repo'}
+        kwargs = {OPTION_REPO_ID.keyword: 'fake-repo'}
 
         # Test
         self.strategy.delete_schedule(schedule_id, kwargs)
@@ -98,7 +98,7 @@ class RepoSyncSchedulingStrategyTests(base_cli.ExtensionTests):
     @mock.patch('pulp.bindings.repository.RepositorySyncSchedulesAPI.list_schedules')
     def test_retrieve_schedules(self, mock_retrieve):
         # Setup
-        kwargs = {OPTION_REPO_ID.keyword : 'retrieve-repo'}
+        kwargs = {OPTION_REPO_ID.keyword: 'retrieve-repo'}
 
         # Test
         self.strategy.retrieve_schedules(kwargs)
@@ -112,7 +112,7 @@ class RepoSyncSchedulingStrategyTests(base_cli.ExtensionTests):
     @mock.patch('pulp.bindings.repository.RepositorySyncSchedulesAPI.update_schedule')
     def test_update_schedule(self, mock_update):
         # Setup
-        kwargs = {OPTION_REPO_ID.keyword : 'fake-repo', 'a' : 'a'}
+        kwargs = {OPTION_REPO_ID.keyword: 'fake-repo', 'a': 'a'}
         schedule_id = 'schedule-id'
 
         # Test
@@ -125,4 +125,4 @@ class RepoSyncSchedulingStrategyTests(base_cli.ExtensionTests):
         self.assertEqual(IMPORTER_ID, call_args[1])
         self.assertEqual(schedule_id, call_args[2])
         call_kwargs = mock_update.call_args[1]
-        self.assertEqual({'a' : 'a'}, call_kwargs)
+        self.assertEqual({'a': 'a'}, call_kwargs)

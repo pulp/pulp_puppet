@@ -225,4 +225,3 @@ class Module(FileContentUnit):
         :rtype:  str
         """
         return constants.MODULE_FILENAME % (self.author, self.name, self.version)
-

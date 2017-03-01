@@ -14,9 +14,9 @@ from pulp_puppet.plugins.importers.downloaders.local import LocalDownloader
 
 # Mapping from feed prefix to downloader class
 MAPPINGS = {
-    'file'  : LocalDownloader,
-    'http'  : HttpDownloader,
-    'https'  : HttpDownloader,
+    'file': LocalDownloader,
+    'http': HttpDownloader,
+    'https': HttpDownloader,
 }
 
 logger = logging.getLogger(__name__)

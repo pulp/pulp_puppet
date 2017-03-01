@@ -1,6 +1,5 @@
 import os
 
-from uuid import uuid4
 from unittest import TestCase
 from collections import namedtuple
 from urlparse import urljoin
@@ -171,7 +170,6 @@ class TestSynchronizeWithDirectory(TestCase):
         self.assertEqual(failed_reports[0].url, urls[1][0])
         self.assertEqual(failed_reports[0].destination, urls[1][1])
         self.assertTrue(isinstance(failed_reports, list))
-
 
     @patch('pulp_puppet.plugins.importers.directory.StringIO.getvalue')
     @patch('pulp_puppet.plugins.importers.directory.SynchronizeWithDirectory._download')
@@ -349,7 +347,7 @@ class TestSynchronizeWithDirectory(TestCase):
 
         # test
 
-        puppet_manifest = SynchronizeWithDirectory._extract_metadata(module_path)
+        SynchronizeWithDirectory._extract_metadata(module_path)
 
         # validation
 

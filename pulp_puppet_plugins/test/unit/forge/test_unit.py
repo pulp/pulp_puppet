@@ -16,17 +16,17 @@ unit_generator = functools.partial(
 
 class TestUnitsFromJSON(unittest.TestCase):
     UNIT_JSON = json.dumps([{
-        'version' : '1.2.0',
-        'file' : 'path/to/file.tar.gz',
-        'dependencies' : [{
-            'name':'me/mymodule',
+        'version': '1.2.0',
+        'file': 'path/to/file.tar.gz',
+        'dependencies': [{
+            'name': 'me/mymodule',
             'version_requirement': '>= 2.1.0'
         }]
     }])
 
     def test_valid(self):
         name = 'me/stuntmodule'
-        db = {name:self.UNIT_JSON}
+        db = {name: self.UNIT_JSON}
         result = Unit.units_from_json(name, db, 'repo1', 'localhost', 'http')
 
         self.assertEqual(len(result), 1)
@@ -88,8 +88,10 @@ class TestAddDepToMetadata(unittest.TestCase):
 
         # verify that this method was called correctly
         self.assertEqual(mock_units_from_json.call_count, 2)
-        mock_units_from_json.assert_any_call('foo/bar', unit.db, unit.repo_id, unit.host, unit.protocol)
-        mock_units_from_json.assert_called_with('you/yourmodule', unit.db, unit.repo_id, unit.host, unit.protocol)
+        mock_units_from_json.assert_any_call('foo/bar', unit.db, unit.repo_id, unit.host,
+                                             unit.protocol)
+        mock_units_from_json.assert_called_with('you/yourmodule', unit.db, unit.repo_id, unit.host,
+                                                unit.protocol)
 
         self.assertEqual(set(data.keys()), set(['foo/bar', 'you/yourmodule']))
         self.assertEqual(data['foo/bar'], [unit_generator(name='foo/bar').to_dict()])
@@ -125,7 +127,7 @@ class TestDepsAsList(unittest.TestCase):
         self.assertEqual(result, [])
 
     def test_default_version(self):
-        unit = unit_generator(dependencies=[{'name':'you/yourmodule'}])
+        unit = unit_generator(dependencies=[{'name': 'you/yourmodule'}])
         result = unit._deps_as_list
 
         self.assertEqual(result[0][1], '>= 0.0.0')
@@ -184,4 +186,5 @@ class TestCmp(unittest.TestCase):
         self.assertTrue(unit_generator(version='1.0.3') < unit_generator(version='1.1.0-alpha'))
 
     def test_alpha_eq(self):
-        self.assertEqual(unit_generator(version='1.2.0-alpha'), unit_generator(version='1.2.0-alpha'))
+        self.assertEqual(unit_generator(version='1.2.0-alpha'),
+                         unit_generator(version='1.2.0-alpha'))

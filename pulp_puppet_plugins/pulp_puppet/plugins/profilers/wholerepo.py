@@ -40,7 +40,7 @@ class WholeRepoProfiler(Profiler):
         return {
             'id': constants.WHOLE_REPO_PROFILER_ID,
             'display_name': _('Profiler to install entire puppet repo'),
-            'types' : [constants.TYPE_PUPPET_MODULE]
+            'types': [constants.TYPE_PUPPET_MODULE]
         }
 
     def install_units(self, consumer, units, options, config, conduit):

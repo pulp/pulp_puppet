@@ -11,7 +11,7 @@ class HttpTests(unittest.TestCase):
 
     def test_validate_serve_http(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_SERVE_HTTP : 'true'}, {})
+        config = PluginCallConfiguration({constants.CONFIG_SERVE_HTTP: 'true'}, {})
         result, msg = configuration._validate_http(config)
 
         # Verify
@@ -20,7 +20,7 @@ class HttpTests(unittest.TestCase):
 
     def test_validate_serve_http_invalid(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_SERVE_HTTP : 'foo'}, {})
+        config = PluginCallConfiguration({constants.CONFIG_SERVE_HTTP: 'foo'}, {})
         result, msg = configuration._validate_http(config)
 
         # Verify
@@ -33,7 +33,7 @@ class HttpsTests(unittest.TestCase):
 
     def test_validate_serve_https(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_SERVE_HTTPS : 'true'}, {})
+        config = PluginCallConfiguration({constants.CONFIG_SERVE_HTTPS: 'true'}, {})
         result, msg = configuration._validate_https(config)
 
         # Verify
@@ -42,7 +42,7 @@ class HttpsTests(unittest.TestCase):
 
     def test_validate_serve_https_invalid(self):
         # Test
-        config = PluginCallConfiguration({constants.CONFIG_SERVE_HTTPS : 'foo'}, {})
+        config = PluginCallConfiguration({constants.CONFIG_SERVE_HTTPS: 'foo'}, {})
         result, msg = configuration._validate_https(config)
 
         # Verify

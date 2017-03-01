@@ -3,8 +3,6 @@ import unittest
 import mock
 
 from pulp.bindings.responses import Task, STATE_FINISHED
-from pulp.client.commands.consumer.content import ConsumerContentUpdateCommand, \
-    ConsumerContentUninstallCommand
 
 from pulp_puppet.common import constants
 from pulp_puppet.devel import base_cli
@@ -375,7 +373,7 @@ class TestUninstallCommand(base_cli.ExtensionTests):
         self.assertEqual(len(options), 1)
 
     @mock.patch(
-        'pulp.client.commands.consumer.content.ConsumerContentUninstallCommand.get_uninstall_options')
+        'pulp.client.commands.consumer.content.ConsumerContentUninstallCommand.get_uninstall_options')  # noqa: E501
     def test_get_uninstall_options_not_present(self, mock_get_options):
         kwargs = {'foo': 'bar'}
 
@@ -383,7 +381,7 @@ class TestUninstallCommand(base_cli.ExtensionTests):
         self.assertEqual(len(result), 0)
 
     @mock.patch(
-        'pulp.client.commands.consumer.content.ConsumerContentUninstallCommand.get_uninstall_options')
+        'pulp.client.commands.consumer.content.ConsumerContentUninstallCommand.get_uninstall_options')  # noqa: E501
     def test_get_uninstall_options_not_present_2(self, mock_get_options):
         kwargs = {content.OPTION_MODULEPATH.keyword: 'foo'}
 

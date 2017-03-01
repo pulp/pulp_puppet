@@ -148,7 +148,8 @@ class SynchronizeWithPuppetForge(object):
             msg_dict = {'repo_id': self.repo.id}
             _logger.exception(msg, msg_dict)
             self.progress_report.metadata_state = STATE_FAILED
-            self.progress_report.metadata_error_message = _('Error parsing repository modules metadata document')
+            msg = _("Error parsing repository modules metadata document")
+            self.progress_report.metadata_error_message = msg
             self.progress_report.metadata_exception = e
             self.progress_report.metadata_traceback = sys.exc_info()[2]
 
@@ -294,7 +295,7 @@ class SynchronizeWithPuppetForge(object):
 
             # Extract the extra metadata into the module
             metadata = metadata_module.extract_metadata(downloaded_filename,
-                                                         self.repo.working_dir)
+                                                        self.repo.working_dir)
 
             # Overwrite the author and name
             metadata.update(Module.split_filename(metadata['name']))

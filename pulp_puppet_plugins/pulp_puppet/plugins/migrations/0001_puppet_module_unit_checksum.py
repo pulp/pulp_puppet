@@ -1,4 +1,3 @@
-from gettext import gettext as _
 import logging
 
 from pulp.server.managers.content.query import ContentQueryManager

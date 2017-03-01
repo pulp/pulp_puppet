@@ -97,7 +97,8 @@ class ModuleHandler(handler.ContentHandler):
         skip_dep = options.get(constants.SKIP_DEP_OPTION)
         module_path = options.get(constants.MODULEPATH_OPTION)
         successes, errors, num_changes = cls._perform_operation(
-            'install', units, cls._generate_forge_url(conduit, host, repo_id), skip_dep, module_path)
+            'install', units, cls._generate_forge_url(conduit, host, repo_id), skip_dep,
+            module_path)
         report = ContentReport()
         report.set_succeeded({'successes': successes, 'errors': errors}, num_changes)
         return report
@@ -125,7 +126,8 @@ class ModuleHandler(handler.ContentHandler):
         skip_dep = options.get(constants.SKIP_DEP_OPTION)
         module_path = options.get(constants.MODULEPATH_OPTION)
         successes, errors, num_changes = cls._perform_operation(
-            'upgrade', units, cls._generate_forge_url(conduit, host, repo_id), skip_dep, module_path)
+            'upgrade', units, cls._generate_forge_url(conduit, host, repo_id), skip_dep,
+            module_path)
         report = ContentReport()
         report.set_succeeded({'successes': successes, 'errors': errors}, num_changes)
         return report
@@ -152,11 +154,12 @@ class ModuleHandler(handler.ContentHandler):
         """
         module_path = options.get(constants.MODULEPATH_OPTION)
         previous_failure_count = 0
-        successes, errors, num_changes = cls._perform_operation('uninstall', units, None, None, module_path)
+        successes, errors, num_changes = cls._perform_operation('uninstall', units, None, None,
+                                                                module_path)
 
         # need this so we can easily access original unit objects when constructing
         # new requests below
-        units_by_full_name = dict(('%s/%s'% (u['author'], u['name']), u) for u in units)
+        units_by_full_name = dict(('%s/%s' % (u['author'], u['name']), u) for u in units)
 
         # loop over the results, and keep trying to uninstall failed attempts as
         # a dumb but effective way of dealing with dependency-related failures.

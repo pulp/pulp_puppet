@@ -10,7 +10,6 @@ from gettext import gettext as _
 # -- constants ----------------------------------------------------------------
 
 # Root section all puppet functionality will be located under
-from pulp_puppet.extensions.admin.consumer import content
 
 SECTION_ROOT = 'puppet'
 
@@ -44,6 +43,7 @@ DESC_PUBLISH = _('run, schedule, or view the status of publish tasks')
 DESC_PUBLISH_SCHEDULES = _('manage repository publish schedules')
 
 # -- creation -----------------------------------------------------------------
+
 
 def ensure_puppet_root(cli):
     """
@@ -120,6 +120,7 @@ def ensure_repo_structure(cli):
 
 # -- section retrieval --------------------------------------------------------
 
+
 def consumer_section(cli):
     return _find_section(cli, SECTION_ROOT, SECTION_CONSUMER)
 
@@ -157,9 +158,11 @@ def repo_publish_section(cli):
 
 
 def repo_publish_schedules_section(cli):
-    return _find_section(cli, SECTION_ROOT, SECTION_REPO, SECTION_PUBLISH, SECTION_PUBLISH_SCHEDULES)
+    return _find_section(cli, SECTION_ROOT, SECTION_REPO, SECTION_PUBLISH,
+                         SECTION_PUBLISH_SCHEDULES)
 
 # -- private ------------------------------------------------------------------
+
 
 def _find_section(cli, *path):
     """
@@ -169,7 +172,7 @@ def _find_section(cli, *path):
     :type  cli: pulp.client.extensions.core.PulpCli
     :param path: path through the nest of sections to the desired section
     :type  path: list of str
-    
+
     :return: section instance that matches the path
     :rtype:  pulp.client.extensions.core.PulpCliSection
     """

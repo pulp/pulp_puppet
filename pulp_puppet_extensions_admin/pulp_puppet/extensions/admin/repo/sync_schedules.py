@@ -17,6 +17,7 @@ DESC_NEXT_RUN = _('displays the next scheduled sync run for a repository')
 
 # -- commands -----------------------------------------------------------------
 
+
 class PuppetListScheduleCommand(ListScheduleCommand):
     def __init__(self, context):
         strategy = RepoSyncScheduleStrategy(context)
@@ -57,6 +58,7 @@ class PuppetNextRunCommand(NextRunCommand):
         self.add_option(OPTION_REPO_ID)
 
 # -- internal -----------------------------------------------------------------
+
 
 class RepoSyncScheduleStrategy(ScheduleStrategy):
 
