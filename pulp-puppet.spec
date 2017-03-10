@@ -276,6 +276,9 @@ A collection of tools used to manage puppet modules.
 
 
 %changelog
+* Fri Mar 10 2017 Sean Myers <sean.myers@redhat.com> 2.12.2-0.1.beta
+- Pulp rebuild
+
 * Thu Feb 16 2017 Unknown name 2.12.1-0.1.beta
 - Pulp rebuild
 
