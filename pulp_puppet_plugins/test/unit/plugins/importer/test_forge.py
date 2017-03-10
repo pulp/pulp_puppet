@@ -1,3 +1,4 @@
+import copy
 import os
 import shutil
 import tempfile
@@ -9,6 +10,7 @@ from pulp.plugins.config import PluginCallConfiguration
 from pulp.plugins.model import Repository, SyncReport, Unit
 
 from pulp_puppet.common import constants, sync_progress
+from pulp_puppet.plugins.db.models import Module
 from pulp_puppet.plugins.importers.forge import SynchronizeWithPuppetForge
 
 
@@ -57,6 +59,10 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
         })
 
         self.method = SynchronizeWithPuppetForge(self.repo, self.conduit, self.config)
+
+        self.sample_units = [Module(author='a1', name='n1', version='1.0'),
+                             Module(author='a2', name='n2', version='2.0'),
+                             Module(author='a3', name='n3', version='3.0')]
 
     def tearDown(self):
         shutil.rmtree(self.working_dir)
@@ -241,3 +247,80 @@ class TestSynchronizeWithPuppetForge(unittest.TestCase):
         self.assertTrue(pr.modules_error_message is not None)
         self.assertTrue(pr.modules_exception is not None)
         self.assertTrue(pr.modules_traceback is not None)
+
+    @mock.patch('pulp.plugins.loader.api.get_unit_model_by_id', return_value=Module)
+    @mock.patch('pulp.server.controllers.repository.associate_single_unit')
+    @mock.patch('pulp.server.controllers.units.find_units')
+    @mock.patch('os.path.isfile')
+    def test__resolve_new_units_all_new(self, mock_is_file, mock_find_units, mock_associate,
+                                        mock_get_model):
+        """
+        Test that units which are not in a repo and not downloaded are asked to be downloaded.
+        """
+        existing = []
+        wanted = [unit.unit_key_as_named_tuple for unit in self.sample_units]
+        mock_find_units.return_value = self.sample_units
+
+        units_to_download = self.method._resolve_new_units(existing, wanted)
+
+        self.assertFalse(mock_is_file.called)
+        self.assertFalse(mock_associate.called)
+
+        # check that all units will be asked to be downloaded
+        self.assertEqual(sorted(wanted), sorted(units_to_download))
+
+    @mock.patch('pulp.plugins.loader.api.get_unit_model_by_id', return_value=Module)
+    @mock.patch('pulp.server.controllers.repository.associate_single_unit')
+    @mock.patch('pulp.server.controllers.units.find_units')
+    @mock.patch('os.path.isfile')
+    def test__resolve_new_units_no_new(self, mock_is_file, mock_find_units, mock_associate,
+                                       mock_get_model):
+        """
+        Test that units which are in a repo and downloaded are not asked to be downloaded.
+        """
+        units_with_path = copy.copy(self.sample_units)
+        for unit in units_with_path:
+            unit._storage_path = 'something'
+
+        existing = [unit.unit_key_as_named_tuple for unit in units_with_path]
+        wanted = existing
+        mock_find_units.return_value = self.sample_units
+        mock_is_file.return_value = True
+
+        units_to_download = self.method._resolve_new_units(existing, wanted)
+
+        self.assertEqual(mock_is_file.call_count, 3)
+
+        # all units are already in repo
+        self.assertEqual(mock_associate.call_count, 0)
+
+        # check that no units will be asked to be downloaded
+        self.assertEqual([], units_to_download)
+
+    @mock.patch('pulp.plugins.loader.api.get_unit_model_by_id', return_value=Module)
+    @mock.patch('pulp.server.controllers.repository.associate_single_unit')
+    @mock.patch('pulp.server.controllers.units.find_units')
+    @mock.patch('os.path.isfile')
+    def test__resolve_new_units_downloaded(self, mock_is_file, mock_find_units, mock_associate,
+                                           mock_get_model):
+        """
+        Test that units which are not in a repo but downloaded are not asked to be downloaded.
+        """
+        units_with_path = copy.copy(self.sample_units)
+        for unit in units_with_path:
+            unit._storage_path = 'something'
+
+        existing = []
+        wanted = [unit.unit_key_as_named_tuple for unit in units_with_path]
+        mock_find_units.return_value = self.sample_units
+        mock_is_file.return_value = True
+
+        units_to_download = self.method._resolve_new_units(existing, wanted)
+
+        self.assertEqual(mock_is_file.call_count, 3)
+
+        # all units are already downloaded but were not in repo
+        self.assertEqual(mock_associate.call_count, 3)
+
+        # check that no units will be asked to be downloaded
+        self.assertEqual([], units_to_download)
