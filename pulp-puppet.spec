@@ -138,6 +138,7 @@ rm -rf %{buildroot}
 %package -n python-pulp-puppet-common
 Summary: Pulp Puppet support common library
 Group: Development/Languages
+Provides: python2-pulp-puppet-common
 Requires: python-pulp-common = %{pulp_version}
 Requires: python-setuptools
 
