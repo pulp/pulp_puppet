@@ -21,7 +21,7 @@ class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         expected_options = set([options.OPTION_REPO_ID, options.OPTION_DESCRIPTION,
                                 options.OPTION_NAME, options.OPTION_NOTES,
                                 cudl.OPTION_HTTP, cudl.OPTION_HTTPS, cudl.OPTION_QUERY,
-                                cudl.OPTION_QUERIES])
+                                cudl.OPTION_QUERIES, cudl.OPTION_REMOVE_MISSING])
         found_options = set(self.command.options)
         self.assertEqual(expected_options, found_options)
 
@@ -43,7 +43,8 @@ class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
             cudl.OPTION_HTTP.keyword: 'true',
             cudl.OPTION_HTTPS.keyword: 'true',
             cudl.OPTION_QUERY.keyword: ['q1', 'q2'],
-            cudl.OPTION_QUERIES.keyword: None
+            cudl.OPTION_QUERIES.keyword: None,
+            cudl.OPTION_REMOVE_MISSING.keyword: True
         }
 
         self.server_mock.request.return_value = 200, {}
@@ -69,6 +70,7 @@ class CreatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         expected_config = {
             u'feed': u'http://localhost',
             u'queries': [u'q1', u'q2'],
+            u'remove_missing': True
         }
         self.assertEqual(expected_config, body['importer_config'])
 
@@ -124,7 +126,8 @@ class UpdatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         expected_options = set([options.OPTION_REPO_ID, options.OPTION_DESCRIPTION,
                                 options.OPTION_NAME, options.OPTION_NOTES,
                                 cudl.OPTION_HTTP, cudl.OPTION_HTTPS, cudl.OPTION_QUERY,
-                                cudl.OPTION_QUERIES_UPDATE, polling.FLAG_BACKGROUND])
+                                cudl.OPTION_QUERIES_UPDATE, polling.FLAG_BACKGROUND,
+                                cudl.OPTION_REMOVE_MISSING])
         found_options = set(self.command.options)
         self.assertEqual(expected_options, found_options)
 
@@ -145,7 +148,8 @@ class UpdatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
             cudl.OPTION_FEED.keyword: 'http://localhost',
             cudl.OPTION_HTTP.keyword: 'true',
             cudl.OPTION_HTTPS.keyword: 'true',
-            cudl.OPTION_QUERY.keyword: ['q1', 'q2']
+            cudl.OPTION_QUERY.keyword: ['q1', 'q2'],
+            cudl.OPTION_REMOVE_MISSING.keyword: True
         }
         self.mock_repo_response = Mock(response_body={})
         self.context.server.repo = Mock()
@@ -155,7 +159,8 @@ class UpdatePuppetRepositoryCommandTests(base_cli.ExtensionTests):
         self.command.run(**user_input)
         repo_config = {'display_name': 'Test Name', 'description': 'Test Description',
                        'notes': {'a': 'a'}}
-        importer_config = {'feed': 'http://localhost', 'queries': ['q1', 'q2']}
+        importer_config = {'feed': 'http://localhost', 'queries': ['q1', 'q2'],
+                           'remove_missing': True}
         dist_config = {'puppet_distributor': {'serve_https': True, 'serve_http': True}}
         call_details = self.context.server.repo.update.call_args[0]
         self.assertEquals('test-repo', call_details[0])
