@@ -64,7 +64,7 @@ document.
 Missing metadata.json file
 --------------------------
 
-If uploading a puppet module results in `MissingModuleFile` error, one possible problem is that the
+If uploading a puppet module results in `MissingMetadataFile` error, one possible problem is that the
 tar.gz file being uploaded does not contain `metadata.json` file. Another possible problem is
 presence of more than one directory (Puppet module) inside the archive.
 

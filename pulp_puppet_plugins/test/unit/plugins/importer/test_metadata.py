@@ -4,8 +4,9 @@ import tempfile
 import unittest
 
 import mock
-from pulp.server.exceptions import InvalidValue
+from pulp.server.exceptions import PulpCodedException
 
+from pulp_puppet.plugins import error_codes
 from pulp_puppet.plugins.importers import metadata
 
 
@@ -38,22 +39,9 @@ class NegativeMetadataTests(unittest.TestCase):
         try:
             metadata.extract_metadata(filename, self.tmp_dir)
             self.fail()
-        except metadata.ExtractionException, e:
-            self.assertEqual(e.module_filename, filename)
-            self.assertEqual(e.property_names[0], filename)
-            self.assertTrue(isinstance(e, InvalidValue))
-
-    def test_extract_non_standard_bad_tarball(self):
-        # Setup
-        self.module.name = 'empty'
-        filename = os.path.join(self.module_dir, self.module.filename())
-
-        # Test
-        try:
-            metadata._extract_json(filename, self.tmp_dir)
-            self.fail()
-        except metadata.ExtractionException, e:
-            self.assertEqual(e.module_filename, filename)
+        except metadata.InvalidTarball, e:
+            self.assertEqual(e.error_code, error_codes.PUP0002)
+            self.assertTrue(isinstance(e, PulpCodedException))
 
     @mock.patch(MODULE_STRING + '.tarfile')
     def test_extract_metadata_no_metadata(self, mock_tarfile):
@@ -65,5 +53,6 @@ class NegativeMetadataTests(unittest.TestCase):
         try:
             metadata.extract_metadata(filename, self.tmp_dir)
             self.fail()
-        except metadata.MissingModuleFile, e:
-            self.assertEqual(e.module_filename, filename)
+        except metadata.MissingMetadataFile, e:
+            self.assertEqual(e.error_code, error_codes.PUP0001)
+            self.assertTrue(isinstance(e, PulpCodedException))

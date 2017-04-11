@@ -4,6 +4,7 @@ from gettext import gettext as _
 
 from pulp.plugins.importer import Importer
 from pulp.common.config import read_json_config
+from pulp.server.exceptions import PulpCodedException
 
 from pulp_puppet.common import constants
 from pulp_puppet.plugins.importers import configuration, upload, copier
@@ -77,12 +78,8 @@ class PuppetModuleImporter(Importer):
         return copier.copy_units(import_conduit, units)
 
     def upload_unit(self, repo, type_id, unit_key, metadata, file_path, conduit, config):
-        try:
-            report = upload.handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path,
-                                                 conduit)
-        except Exception, e:
-            _logger.exception(e)
-            report = {'success_flag': False, 'summary': e.message, 'details': {}}
+        report = upload.handle_uploaded_unit(repo, type_id, unit_key, metadata, file_path,
+                                             conduit)
         return report
 
     def cancel_sync_repo(self):
