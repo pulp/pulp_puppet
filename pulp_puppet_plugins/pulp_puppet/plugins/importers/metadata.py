@@ -103,10 +103,14 @@ def _extract_json(filename, temp_dir):
     try:
         # Attempt to find the metadata in the Puppet module's main directory
         # It is expected the .tar.gz file will contain exactly one Puppet module
-        try:
-            module_dir = os.listdir(extraction_dir)[0]
-        except IndexError:
+        module_dir = None
+        for module_dir in os.listdir(extraction_dir):
+            if os.path.isdir(module_dir):
+                break
+
+        if module_dir is None:
             raise MissingMetadataFile()
+
         metadata_filename = constants.MODULE_METADATA_FILENAME
         metadata_full_path = os.path.join(extraction_dir, module_dir, metadata_filename)
         if not os.path.isfile(metadata_full_path):
