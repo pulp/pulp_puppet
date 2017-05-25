@@ -3,7 +3,7 @@ Pulp Puppet 2.13 Release Notes
 ==============================
 
 Pulp Puppet 2.13.1
-===========
+==================
 
 Bug Fixes
 ---------
