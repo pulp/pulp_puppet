@@ -11,16 +11,22 @@
 %define pulp_puppet_tools 1
 %endif # End RHEL 5 if block
 
+# The release number
+%global release_number 0.1.alpha
+
+# Create tag for the Source0 and setup
+%global git_tag %{name}-%{version}-%{release_number}
+
 # ---- Pulp (puppet) -----------------------------------------------------------
 
 Name: pulp-puppet
 Version: 2.14.0
-Release: 0.1.alpha%{?dist}
+Release: %{release_number}%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
-URL: https://fedorahosted.org/pulp/
-Source0: https://fedorahosted.org/releases/p/u/%{name}/%{name}-%{version}.tar.gz
+URL: http://pulpproject.org/
+Source0: https://codeload.github.com/pulp/pulp_puppet/tar.gz/%{git_tag}#/%{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 BuildRequires:  python2-devel
@@ -32,7 +38,7 @@ Provides a collection of platform plugins, client extensions and agent
 handlers that provide Puppet support.
 
 %prep
-%setup -q
+%setup -q -n pulp_puppet-%{git_tag}
 
 %build
 pushd pulp_puppet_common
