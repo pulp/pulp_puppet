@@ -98,7 +98,7 @@ class PuppetModuleInstallDistributor(Distributor):
         path = config.get(constants.CONFIG_INSTALL_PATH)
         if not isinstance(path, basestring):
             # path not here, nothing else to validate
-            return False, _('An install_path has to be specified for the puppet install distributor.')
+            return True, None
         if not os.path.isabs(path):
             return False, _('install path is not absolute')
         return True, None
