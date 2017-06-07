@@ -95,7 +95,7 @@ class TestValidateConfig(unittest.TestCase):
 
         result, message = self.distributor.validate_config(self.repo, config, [])
 
-        self.assertTrue(result)
+        self.assertFalse(result)
 
     def test_relative_path(self):
         config = PluginCallConfiguration({}, {constants.CONFIG_INSTALL_PATH: 'a/b/c'})
@@ -422,20 +422,20 @@ class TestMoveToDestinationDirectory(unittest.TestCase):
         touch(existing_file)
         new_dir = os.path.join(self.source_dir, 'bar')
         os.makedirs(new_dir)
-        installdistributor.PuppetModuleInstallDistributor.\
+        installdistributor.PuppetModuleInstallDistributor. \
             _move_to_destination_directory(self.source_dir, self.destination_dir)
 
         self.assertTrue(os.path.exists(existing_file))
 
     def test_source_dir_removed(self):
-        installdistributor.PuppetModuleInstallDistributor.\
+        installdistributor.PuppetModuleInstallDistributor. \
             _move_to_destination_directory(self.source_dir, self.destination_dir)
         self.assertFalse(os.path.exists(self.source_dir))
 
     def test_move_dirs(self):
         new_dir = os.path.join(self.source_dir, 'bar')
         os.makedirs(new_dir)
-        installdistributor.PuppetModuleInstallDistributor.\
+        installdistributor.PuppetModuleInstallDistributor. \
             _move_to_destination_directory(self.source_dir, self.destination_dir)
 
         self.assertTrue(os.path.exists(os.path.join(self.destination_dir, 'bar')))
@@ -602,7 +602,6 @@ class TestClearDestinationDirectory(unittest.TestCase):
 
 
 class TestCreateTemporaryDestinationDirectory(unittest.TestCase):
-
     def setUp(self):
         self.tmp_dir = tempfile.mkdtemp()
 
