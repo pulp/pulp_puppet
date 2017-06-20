@@ -14,8 +14,8 @@
 # ---- Pulp (puppet) -----------------------------------------------------------
 
 Name: pulp-puppet
-Version: 2.13.1
-Release: 1%{?dist}
+Version: 2.13.2
+Release: 0.1.beta%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
 License: GPLv2
@@ -139,6 +139,7 @@ rm -rf %{buildroot}
 Summary: Pulp Puppet support common library
 Group: Development/Languages
 Provides: python2-pulp-puppet-common
+Obsoletes: python2-pulp-puppet-common < %{version}
 Requires: python-pulp-common = %{pulp_version}
 Requires: python-setuptools
 
