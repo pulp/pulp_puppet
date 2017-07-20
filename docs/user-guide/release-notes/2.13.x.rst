@@ -2,6 +2,22 @@
 Pulp Puppet 2.13 Release Notes
 ==============================
 
+Pulp Puppet 2.13.3
+==================
+
+Bug Fixes
+---------
+
+See the list of :fixedbugs_pulp_puppet:`2.13.3`
+
+Pulp Puppet 2.13.2
+==================
+
+Bug Fixes
+---------
+
+See the list of :fixedbugs_pulp_puppet:`2.13.2`
+
 Pulp Puppet 2.13.1
 ==================
 
