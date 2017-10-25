@@ -12,7 +12,7 @@
 %endif # End RHEL 5 if block
 
 # The release number
-%global release_number 1
+%global release_number 0.1.beta
 
 # Create tag for the Source0 and setup
 %global git_tag %{name}-%{version}-%{release_number}
@@ -20,7 +20,7 @@
 # ---- Pulp (puppet) -----------------------------------------------------------
 
 Name: pulp-puppet
-Version: 2.14.1
+Version: 2.14.2
 Release: %{release_number}%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
@@ -284,9 +284,6 @@ A collection of tools used to manage puppet modules.
 
 
 %changelog
-* Thu Oct 05 2017 Patrick Creech <pcreech@redhat.com> 2.14.1-1
-- Pulp rebuild
-
 * Wed Apr 06 2016 Sean Myers <sean.myers@redhat.com> 2.8.2-1
 - Pulp rebuild
 
