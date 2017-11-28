@@ -1,0 +1,13 @@
+==============================
+Pulp Puppet 2.15 Release Notes
+==============================
+
+Pulp Puppet 2.15.0
+==================
+
+
+Bugs Fixed
+----------
+
+You can see the :fixedbugs_pulp_puppet:`list of bugs fixed<2.15.0>`.
+
