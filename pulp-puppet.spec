@@ -12,7 +12,7 @@
 %endif # End RHEL 5 if block
 
 # The release number
-%global release_number 0.1.beta
+%global release_number 0.4.rc
 
 # Create tag for the Source0 and setup
 %global git_tag %{name}-%{version}-%{release_number}
