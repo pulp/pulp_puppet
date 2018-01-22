@@ -12,7 +12,7 @@
 %endif # End RHEL 5 if block
 
 # The release number
-%global release_number 0.4.rc
+%global release_number 0.2.beta
 
 # Create tag for the Source0 and setup
 %global git_tag %{name}-%{version}-%{release_number}
@@ -20,7 +20,7 @@
 # ---- Pulp (puppet) -----------------------------------------------------------
 
 Name: pulp-puppet
-Version: 2.15.0
+Version: 2.15.1
 Release: %{release_number}%{?dist}
 Summary: Support for Puppet content in the Pulp platform
 Group: Development/Languages
