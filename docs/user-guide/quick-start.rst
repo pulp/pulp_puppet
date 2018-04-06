@@ -20,7 +20,7 @@ This creates a basic repository that will fetch modules from Puppet Forge.
 
 ::
 
-  $ pulp-admin puppet repo create --repo-id=repo1 --description="Mirror of Puppet Forge" --display-name="Repo 1" --feed=http://forge.puppetlabs.com
+  $ pulp-admin puppet repo create --repo-id=repo1 --description="Mirror of Puppet Forge" --display-name="Repo 1" --feed=http://forge.puppet.com
   Successfully created repository [repo1]
 
 By default, Pulp will serve this repository over HTTP without SSL. Adding
@@ -71,7 +71,7 @@ To include more details, use the ``--details`` flag.
   Notes:
   Importers:
     Config:
-      Feed:    http://forge.puppetlabs.com
+      Feed:    http://forge.puppet.com
       Queries: libvirt
     Id:               puppet_importer
     Importer Type Id: puppet_importer

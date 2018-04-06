@@ -10,13 +10,13 @@ Installation
 Prerequisites
 -------------
 
-Puppet support requires the namespace ``/api/v1/`` at the root of your web server
+Puppet support requires the namespace ``/api/v1/`` or ``/v3/`` at the root of your web server
 in order to implement an API compatible with Puppet Forge. We don't like
-taking that namespace, but it was the only way to support the use of Puppet
-Labs' command line tool against a Pulp server.
+taking that namespace, but it was the only way to support the use of Puppet,
+Inc's command line tool against a Pulp server.
 
-Consumers must have Puppet 2.7.14 to 3.4.3 installed, and we recommend getting packages
-directly from `Puppet Labs <http://puppetlabs.com>`_.
+Consumers must have Puppet 4.10.x to 5.x installed, and we recommend getting packages
+directly from `Puppet, Inc <http://puppet.com>`_.
 
 Please see the `Pulp User Guide`_ for other prerequisites including repository
 setup.
