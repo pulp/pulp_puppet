@@ -71,8 +71,8 @@ presence of more than one directory (Puppet module) inside the archive.
 Solution
 ^^^^^^^^
 
-Modules must adhere to the `3.6+ metadata guidlines
-<https://docs.puppetlabs.com/puppet/latest/reference/modules_publishing.html#publishing-modules-on-the-puppet-forge>`_.
+Modules must adhere to the `4.10+ metadata guidlines
+<https://puppet.com/docs/puppet/latest/modules_publishing.html>`_.
 Also ensure that an uploaded archive contains only one Puppet module.
 
 Incorrect Puppet module metadata
