@@ -1,0 +1,22 @@
+==============================
+Pulp Puppet 2.16 Release Notes
+==============================
+
+Pulp Puppet 2.16.1
+==================
+
+Bugs Fixed
+----------
+
+See the list of :fixedbugs_pulp_puppet:`2.16.1`
+
+
+Pulp Puppet 2.16.0
+==================
+
+
+Bugs Fixed
+----------
+
+You can see the :fixedbugs_pulp_puppet:`list of bugs fixed<2.16.0>`.
+
