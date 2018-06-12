@@ -9,6 +9,7 @@ import sys
 from datetime import datetime
 from gettext import gettext as _
 
+from pulp.server.util import md5 as pulp_md5
 from pulp.server.controllers.repository import find_repo_content_units
 
 from pulp_puppet.common import constants
@@ -317,7 +318,7 @@ class PuppetModulePublishRun(object):
                 path = os.path.join(self._repo_path, self._build_relative_path(module))
                 # calculate the checksum
                 with open(module._storage_path, 'rb') as file_handle:
-                    file_hash = hashlib.md5()
+                    file_hash = pulp_md5()
                     while True:
                         # This leverages the style of 128 chunking size of MD5 and does
                         # compute the checksum on the entire file.
