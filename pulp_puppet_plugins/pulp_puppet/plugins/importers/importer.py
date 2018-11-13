@@ -4,7 +4,6 @@ from gettext import gettext as _
 
 from pulp.plugins.importer import Importer
 from pulp.common.config import read_json_config
-from pulp.server.exceptions import PulpCodedException
 
 from pulp_puppet.common import constants
 from pulp_puppet.plugins.importers import configuration, upload, copier

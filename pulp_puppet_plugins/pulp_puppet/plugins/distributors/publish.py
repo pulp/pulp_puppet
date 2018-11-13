@@ -1,5 +1,4 @@
 import gdbm
-import hashlib
 import json
 import logging
 import os
